@@ -21,7 +21,7 @@ Actualmente el repositorio se encuentra en su etapa inicial de configuración.
 
 - Next.js
 - TypeScript
-- Supabase (PostgreSQL)
+- SQL Server con ASP .NET Core
 
 ## Licencia
 Proyecto académico de la materia Desarrollo de Software
