@@ -6,6 +6,7 @@ import Image from 'next/image';
 export default function LoginPage() {
   const [usuarioId, setUsuarioId] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -23,12 +24,14 @@ export default function LoginPage() {
         body: JSON.stringify({ usuarioId, password, rememberMe }),
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Error al iniciar sesión');
+      if (!response.ok) {
+        setErrorMessage('ID o contraseña incorrectos. Vuelve a intentarlo.');
+        return;
+      }
 
       alert('¡Inicio de sesión exitoso!');
-    } catch (error: unknown) {
-      setErrorMessage(error instanceof Error ? error.message : 'Ocurrió un error inesperado');
+    } catch {
+      setErrorMessage('No se pudo iniciar sesión. Verifica tu conexión e inténtalo de nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -79,15 +82,44 @@ export default function LoginPage() {
               />
             </div>
 
-            <div>
+            <div className="relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition"
+                className="w-full rounded-lg border border-slate-300 py-2.5 pl-4 pr-12 text-sm text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              >
+                <svg
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  className="h-5 w-5"
+                >
+                  {showPassword ? (
+                    <>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M10.6 10.6a2 2 0 002.8 2.8" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.9 5.2A10.8 10.8 0 0112 5c5 0 8.5 4.5 9.5 7-.4 1.1-1.3 2.4-2.6 3.5M6.2 6.2C4.3 7.5 3 9.3 2.5 12c1 2.5 4.5 7 9.5 7 1.1 0 2.1-.2 3.1-.6" />
+                    </>
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z" />
+                  )}
+                  {!showPassword && (
+                    <circle cx="12" cy="12" r="2.5" />
+                  )}
+                </svg>
+              </button>
             </div>
 
             <div className="flex items-center space-x-2 pt-1">
