@@ -7,8 +7,7 @@ de apoyo al análisis de información clínica.
 
 ## Estado del proyecto
 
-En desarrollo
-Actualmente el repositorio se encuentra en su etapa inicial de configuración.
+En desarrollo, actualmente el repositorio se encuentra en su etapa inicial de configuración.
 
 ## Equipo
 
