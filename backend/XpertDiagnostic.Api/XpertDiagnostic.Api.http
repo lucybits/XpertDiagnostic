@@ -1,0 +1,6 @@
+@XpertDiagnostic.Api_HostAddress = http://localhost:5140
+
+GET {{XpertDiagnostic.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
