@@ -10,7 +10,8 @@ public class Usuario
     [Column("IdUSUARIO")]
     public int Id { get; set; }
 
-    [Column("PASS")]
+    [StringLength(60)]
+    [Column("PASS", TypeName = "varchar(60)")]
     public string PasswordHash { get; set; } = string.Empty;
 
     [Column("ROL")]

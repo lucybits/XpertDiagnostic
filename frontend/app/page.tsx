@@ -2,6 +2,9 @@
 
 import { useState, FormEvent } from 'react';
 import Image from 'next/image';
+import { Eye, EyeOff, IdCard, LockKeyhole } from 'lucide-react';
+
+type LoginField = 'usuarioId' | 'password';
 
 export default function LoginPage() {
   const [usuarioId, setUsuarioId] = useState<string>('');
@@ -11,25 +14,65 @@ export default function LoginPage() {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [invalidFields, setInvalidFields] = useState<LoginField[]>([]);
+
+  const clearLoginFeedback = () => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setInvalidFields([]);
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setErrorMessage(null);
+    clearLoginFeedback();
+
+    const normalizedUsuarioId = usuarioId.trim();
+    const parsedUsuarioId = Number(normalizedUsuarioId);
+    const invalidId =
+      normalizedUsuarioId.length > 0 &&
+      (!/^\d+$/.test(normalizedUsuarioId) ||
+        !Number.isSafeInteger(parsedUsuarioId) ||
+        parsedUsuarioId < 1 ||
+        parsedUsuarioId > 2147483647);
+    const missingFields: LoginField[] = [];
+    if (!normalizedUsuarioId || invalidId) missingFields.push('usuarioId');
+    if (!password) missingFields.push('password');
+
+    if (missingFields.length > 0) {
+      setInvalidFields(missingFields);
+      setErrorMessage(
+        invalidId
+          ? 'Ingresa un ID numérico válido.'
+          : missingFields.length === 2
+            ? 'Ingresa tu ID y contraseña.'
+            : missingFields[0] === 'usuarioId'
+              ? 'Ingresa tu ID.'
+              : 'Ingresa tu contraseña.',
+      );
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuarioId, password, rememberMe }),
+        body: JSON.stringify({ usuarioId: parsedUsuarioId, password }),
       });
 
       if (!response.ok) {
-        setErrorMessage('ID o contraseña incorrectos. Vuelve a intentarlo.');
+        if (response.status === 401) {
+          setErrorMessage('ID o contraseña incorrectos. Vuelve a intentarlo.');
+          setInvalidFields(['usuarioId', 'password']);
+        } else {
+          setErrorMessage('No se pudo iniciar sesión. Inténtalo de nuevo.');
+        }
         return;
       }
 
-      alert('¡Inicio de sesión exitoso!');
+      setSuccessMessage('¡Inicio de sesión exitoso!');
     } catch {
       setErrorMessage(
         'No se pudo iniciar sesión. Verifica tu conexión e inténtalo de nuevo.',
@@ -56,9 +99,19 @@ export default function LoginPage() {
             className="login-visual-glow pointer-events-none absolute inset-0 -z-[5]"
           />
           <div className="relative z-10">
-            <h1 className="login-brand-title font-bold text-slate-800 tracking-tight">
-              XpertDiagnostic
-            </h1>
+            <div className="flex items-center justify-center gap-3">
+              <Image
+                src="/logoxd.png"
+                alt=""
+                width={52}
+                height={52}
+                className="h-10 w-10 shrink-0 object-contain md:h-12 md:w-12"
+                priority
+              />
+              <h1 className="login-brand-title font-bold text-slate-800 tracking-tight">
+                XpertDiagnostic
+              </h1>
+            </div>
             <p className="login-brand-subtitle text-slate-600 mt-1">
               Sistema experto para análisis médicos
             </p>
@@ -70,7 +123,7 @@ export default function LoginPage() {
                 alt="Ilustración de personal médico"
                 fill
                 sizes="(max-width: 767px) 100vw, 40vw"
-                className="object-contain scale-125"
+                className="object-contain -translate-y-8 scale-150"
               />
             </div>
             <p className="login-security-note mt-3 text-center text-slate-500 leading-relaxed">
@@ -85,58 +138,79 @@ export default function LoginPage() {
           </h2>
 
           {errorMessage && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs">
+            <div id="login-error" role="alert" className="login-error-message mb-4 rounded-lg bg-red-600 p-3 text-white">
               {errorMessage}
             </div>
           )}
+          {successMessage && (
+            <div id="login-success" role="status" className="login-success-message mb-4 rounded-lg bg-green-600 p-3 text-white">
+              {successMessage}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div>
+          <form onSubmit={handleSubmit} noValidate className="space-y-3">
+            <div className="relative">
+              <IdCard
+                aria-hidden="true"
+                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+              />
               <input
                 type="text"
                 placeholder="ID"
                 value={usuarioId}
-                onChange={(e) => setUsuarioId(e.target.value)}
+                onChange={(e) => {
+                  setUsuarioId(e.target.value);
+                  clearLoginFeedback();
+                }}
                 required
-                className="login-input w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                aria-invalid={invalidFields.includes('usuarioId')}
+                aria-describedby={errorMessage ? 'login-error' : successMessage ? 'login-success' : undefined}
+                className={`login-input w-full rounded-lg py-2.5 pl-12 pr-4 text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 ${
+                  invalidFields.includes('usuarioId')
+                    ? 'border-2 border-red-600 focus:ring-red-500'
+                    : successMessage
+                      ? 'border-2 border-green-600 focus:ring-green-500'
+                      : 'border-2 border-slate-300 focus:ring-indigo-500'
+                }`}
               />
             </div>
 
             <div className="relative">
+              <LockKeyhole
+                aria-hidden="true"
+                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+              />
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Contraseña"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearLoginFeedback();
+                }}
                 required
-                className="login-input w-full rounded-lg border border-slate-300 py-2.5 pl-4 pr-12 text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                aria-invalid={invalidFields.includes('password')}
+                aria-describedby={errorMessage ? 'login-error' : successMessage ? 'login-success' : undefined}
+                className={`login-input w-full rounded-lg py-2.5 pl-12 pr-12 text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 ${
+                  invalidFields.includes('password')
+                    ? 'border-2 border-red-600 focus:ring-red-500'
+                    : successMessage
+                      ? 'border-2 border-green-600 focus:ring-green-500'
+                      : 'border-2 border-slate-300 focus:ring-indigo-500'
+                }`}
               />
               <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full mt-1 bg-[#4c589c] hover:bg-[#3d4780] text-white font-medium py-2 px-3 rounded-lg shadow text-xs transition duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
               >
-                <svg
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  className="h-6 w-6"
-                >
-                  {showPassword ? (
-                    <>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M10.6 10.6a2 2 0 002.8 2.8" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.9 5.2A10.8 10.8 0 0112 5c5 0 8.5 4.5 9.5 7-.4 1.1-1.3 2.4-2.6 3.5M6.2 6.2C4.3 7.5 3 9.3 2.5 12c1 2.5 4.5 7 9.5 7 1.1 0 2.1-.2 3.1-.6" />
-                    </>
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z" />
-                  )}
-                  {!showPassword && (
-                    <circle cx="12" cy="12" r="2.5" />
-                  )}
-                </svg>
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" className="h-5 w-5" />
+                ) : (
+                  <Eye aria-hidden="true" className="h-5 w-5" />
+                )}
               </button>
             </div>
 
@@ -171,6 +245,15 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <div className="login-secondary-links mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-slate-500">
+            <span className="cursor-pointer underline decoration-slate-300 underline-offset-4 transition-colors hover:text-indigo-600 hover:decoration-indigo-500">
+              Términos y privacidad
+            </span>
+            <span className="cursor-pointer underline decoration-slate-300 underline-offset-4 transition-colors hover:text-indigo-600 hover:decoration-indigo-500">
+              Recuperar contraseña
+            </span>
+          </div>
 
         </section>
       </div>

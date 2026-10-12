@@ -16,28 +16,17 @@ public class AuthService(
         string password)
     {
         var usuario = await db.Usuarios
-            .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == usuarioId);
 
         if (usuario is null)
             return null;
 
-        bool passwordCorrecta;
-
-        try
-        {
-            passwordCorrecta = BCrypt.Net.BCrypt.Verify(
-                password,
-                usuario.PasswordHash
-            );
-        }
-        catch (BCrypt.Net.SaltParseException)
-        {
-            passwordCorrecta = false;
-        }
-
-        if (!passwordCorrecta)
+        var storedPassword = usuario.PasswordHash;
+        if (!PasswordCredentialVerifier.VerifyAndUpgrade(password, usuario))
             return null;
+
+        if (!string.Equals(storedPassword, usuario.PasswordHash, StringComparison.Ordinal))
+            await db.SaveChangesAsync();
 
         var (token, expiraEn) =
             jwtTokenService.GenerarToken(usuario);
