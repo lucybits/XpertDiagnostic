@@ -8,8 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-atkinson-hyperlegible);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +21,89 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-atkinson-hyperlegible), sans-serif;
+}
+
+.login-visual-glow {
+  background-color: rgb(59 130 246 / 12%);
+  background:
+    radial-gradient(ellipse at 18% 24%, rgb(14 165 233 / 22%), transparent 62%),
+    radial-gradient(ellipse at 78% 68%, rgb(79 70 229 / 18%), transparent 60%),
+    radial-gradient(ellipse at 72% 12%, rgb(6 182 212 / 17%), transparent 58%);
+}
+
+.login-brand-title {
+  font-size: clamp(1.5rem, 4.5svh, 1.875rem);
+}
+
+.login-brand-subtitle {
+  font-size: clamp(0.875rem, 2.5svh, 1rem);
+}
+
+.login-heading {
+  font-size: clamp(1.375rem, 3.7svh, 1.625rem);
+}
+
+.login-input {
+  min-height: clamp(2.75rem, 8svh, 3rem);
+  font-size: clamp(1rem, 2.8svh, 1.125rem);
+}
+
+.login-remember-label {
+  font-size: clamp(0.875rem, 2.5svh, 0.9375rem);
+}
+
+.login-submit {
+  min-height: clamp(2.875rem, 8svh, 3.125rem);
+  font-size: clamp(1rem, 3svh, 1.125rem);
+}
+
+.login-security-note {
+  font-size: clamp(0.75rem, 2svh, 0.875rem);
+}
+
+@media (max-width: 767px) {
+  .login-visual-art {
+    display: none;
+  }
+}
+
+@media (max-height: 560px) {
+  .login-content {
+    padding-block: 0.75rem;
+  }
+
+  .login-content h2 {
+    margin-bottom: 0.75rem;
+  }
+
+  .login-content form > :not(:first-child) {
+    margin-block-start: 0.5rem;
+  }
+
+  .login-visual {
+    min-height: 6.5rem;
+  }
+
+  .login-visual-art {
+    margin-top: auto;
+  }
+
+  .login-security-note {
+    display: none;
+  }
+}
+
+@media (max-height: 460px) {
+  .login-visual {
+    min-height: 5.5rem;
+  }
+
+  .login-content {
+    padding-block: 0.5rem;
+  }
+
+  .login-content h2 {
+    margin-bottom: 0.5rem;
+  }
 }
