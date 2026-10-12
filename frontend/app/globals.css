@@ -33,15 +33,15 @@ body {
 }
 
 .login-brand-title {
-  font-size: clamp(1.5rem, 4.5svh, 1.875rem);
+  font-size: clamp(1.625rem, 4.8svh, 2rem);
 }
 
 .login-brand-subtitle {
-  font-size: clamp(0.875rem, 2.5svh, 1rem);
+  font-size: clamp(0.9375rem, 2.7svh, 1.0625rem);
 }
 
 .login-heading {
-  font-size: clamp(1.375rem, 3.7svh, 1.625rem);
+  font-size: clamp(1.5rem, 3.9svh, 1.75rem);
 }
 
 .login-input {
@@ -50,16 +50,28 @@ body {
 }
 
 .login-remember-label {
-  font-size: clamp(0.875rem, 2.5svh, 0.9375rem);
+  font-size: clamp(0.9375rem, 2.7svh, 1rem);
 }
 
 .login-submit {
   min-height: clamp(2.875rem, 8svh, 3.125rem);
-  font-size: clamp(1rem, 3svh, 1.125rem);
+  font-size: clamp(1.0625rem, 3.2svh, 1.1875rem);
 }
 
 .login-security-note {
-  font-size: clamp(0.75rem, 2svh, 0.875rem);
+  font-size: clamp(0.8125rem, 2.2svh, 0.9375rem);
+}
+
+.login-error-message {
+  font-size: clamp(0.9375rem, 2.6svh, 1rem);
+}
+
+.login-success-message {
+  font-size: clamp(0.9375rem, 2.6svh, 1rem);
+}
+
+.login-secondary-links {
+  font-size: clamp(0.9375rem, 2.6svh, 1rem);
 }
 
 @media (max-width: 767px) {

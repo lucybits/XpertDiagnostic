@@ -1,0 +1,11 @@
+USE XpertDiagnostic;
+GO
+
+IF OBJECT_ID(N'dbo.USUARIOS', N'U') IS NULL
+    THROW 50001, 'No existe la tabla dbo.USUARIOS.', 1;
+
+IF COL_LENGTH(N'dbo.USUARIOS', N'PASS') IS NULL
+    THROW 50002, 'No existe la columna dbo.USUARIOS.PASS.', 1;
+
+ALTER TABLE dbo.USUARIOS
+ALTER COLUMN PASS VARCHAR(60) NOT NULL;
