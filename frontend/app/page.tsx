@@ -38,29 +38,47 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-200">
-        
-        {/* 1ra Imagen: Cabecera (Parte Azul) */}
-        <div className="relative isolate min-h-[190px] bg-cyan-50/50 px-6 py-8 text-center border-b border-slate-100 flex flex-col items-center justify-center">
+    <main className="login-page h-dvh overflow-hidden bg-slate-100 flex items-center justify-center p-3 sm:p-4">
+      <div className="login-card grid grid-cols-1 md:grid-cols-2 bg-white rounded-3xl shadow-xl w-full max-w-4xl max-h-full overflow-hidden border border-slate-200">
+        <section className="login-visual relative isolate min-h-[clamp(7.5rem,18svh,10rem)] md:min-h-[min(70svh,42rem)] bg-blue-100/60 px-6 py-5 md:p-9 flex flex-col items-center justify-center text-center">
           <Image
             src="/logo-header.png"
-            alt="XpertDiagnostic Header Logo"
+            alt=""
             fill
-            sizes="(max-width: 384px) 100vw, 384px"
+            sizes="(max-width: 767px) 100vw, 50vw"
             className="absolute inset-0 -z-10 object-cover"
+            priority
           />
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
-            XpertDiagnostic
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Sistema experto para análisis médicos
-          </p>
-        </div>
+          <div
+            aria-hidden="true"
+            className="login-visual-glow pointer-events-none absolute inset-0 -z-[5]"
+          />
+          <div className="relative z-10">
+            <h1 className="login-brand-title font-bold text-slate-800 tracking-tight">
+              XpertDiagnostic
+            </h1>
+            <p className="login-brand-subtitle text-slate-600 mt-1">
+              Sistema experto para análisis médicos
+            </p>
+          </div>
+          <div className="login-visual-art relative z-10 mt-6 md:mt-auto md:pt-8 w-full max-w-sm">
+            <div className="login-illustration relative mx-auto h-[clamp(10rem,30svh,20rem)] w-full">
+              <Image
+                src="/footer-image.png"
+                alt="Ilustración de personal médico"
+                fill
+                sizes="(max-width: 767px) 100vw, 40vw"
+                className="object-contain scale-125"
+              />
+            </div>
+            <p className="login-security-note mt-3 text-center text-slate-500 leading-relaxed">
+              Sistema seguro de acceso restringido para personal médico autorizado.
+            </p>
+          </div>
+        </section>
 
-        {/* Formulario */}
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-6">
+        <section className="login-content flex flex-col justify-center p-5 sm:p-8 md:p-10">
+          <h2 className="login-heading font-bold text-slate-900 mb-5">
             Iniciar sesión
           </h2>
 
@@ -70,7 +88,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <input
                 type="text"
@@ -78,7 +96,7 @@ export default function LoginPage() {
                 value={usuarioId}
                 onChange={(e) => setUsuarioId(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition"
+                className="login-input w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               />
             </div>
 
@@ -89,7 +107,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-lg border border-slate-300 py-2.5 pl-4 pr-12 text-sm text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="login-input w-full rounded-lg border border-slate-300 py-2.5 pl-4 pr-12 text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <button
                 type="button"
@@ -105,7 +123,7 @@ export default function LoginPage() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth="1.8"
-                  className="h-5 w-5"
+                  className="h-6 w-6"
                 >
                   {showPassword ? (
                     <>
@@ -128,9 +146,9 @@ export default function LoginPage() {
                 id="remember"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                className="h-[1.125rem] w-[1.125rem] rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
               />
-              <label htmlFor="remember" className="text-xs text-slate-600 font-medium cursor-pointer">
+              <label htmlFor="remember" className="login-remember-label text-slate-600 font-medium cursor-pointer">
                 Recuérdame la sesión
               </label>
             </div>
@@ -138,7 +156,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 bg-[#4c589c] hover:bg-[#3d4780] text-white font-medium py-2.5 px-4 rounded-lg shadow transition duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+              className="login-submit w-full mt-2 bg-[#4c589c] hover:bg-[#3d4780] text-white font-medium py-2.5 px-4 rounded-lg shadow transition duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">
@@ -154,23 +172,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* 2da Imagen: Base / Footer (Parte Baja) */}
-          <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col items-center">
-            <div className="relative mb-2 h-50 w-full">
-              <Image
-                src="/footer-image.png"
-                alt="Ilustración inferior"
-                fill
-                sizes="(max-width: 384px) 100vw, 384px"
-                className="object-contain"
-              />
-            </div>
-            <p className="text-[11px] text-center text-slate-400 leading-relaxed">
-              Sistema seguro de acceso restringido para personal médico autorizado.
-            </p>
-          </div>
-
-        </div>
+        </section>
       </div>
     </main>
   );
