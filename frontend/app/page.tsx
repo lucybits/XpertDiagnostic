@@ -31,7 +31,9 @@ export default function LoginPage() {
 
       alert('¡Inicio de sesión exitoso!');
     } catch {
-      setErrorMessage('No se pudo iniciar sesión. Verifica tu conexión e inténtalo de nuevo.');
+      setErrorMessage(
+        'No se pudo iniciar sesión. Verifica tu conexión e inténtalo de nuevo.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -110,11 +112,9 @@ export default function LoginPage() {
                 className="login-input w-full rounded-lg border border-slate-300 py-2.5 pl-4 pr-12 text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <button
-                type="button"
-                onClick={() => setShowPassword((visible) => !visible)}
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                aria-pressed={showPassword}
-                className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                type="submit"
+                disabled={isLoading}
+                className="w-full mt-1 bg-[#4c589c] hover:bg-[#3d4780] text-white font-medium py-2 px-3 rounded-lg shadow text-xs transition duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 <svg
                   aria-hidden="true"
