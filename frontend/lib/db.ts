@@ -6,13 +6,12 @@ const config: mssql.config = {
   server: process.env.DB_SERVER || 'localhost',
   database: process.env.DB_DATABASE,
   options: {
-    instanceName: process.env.DB_INSTANCE, // Toma INSTANCIA_1 si lo definiste en .env.local
-    encrypt: false, // Requerido para desarrollo local
-    trustServerCertificate: true, // Evita errores de certificados autofirmados en local
+    instanceName: process.env.DB_INSTANCE,
+    encrypt: false,
+    trustServerCertificate: true,
   },
 };
 
-// Variable para reutilizar la conexión y evitar abrir múltiples conexiones
 let pool: mssql.ConnectionPool | null = null;
 
 export async function getConnection() {
