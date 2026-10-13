@@ -154,14 +154,21 @@ export default function LoginPage() {
                 aria-hidden="true"
                 className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
               />
-              <input
-                type="text"
-                placeholder="ID"
-                value={usuarioId}
-                onChange={(e) => {
-                  setUsuarioId(e.target.value);
-                  clearLoginFeedback();
-                }}
+<input
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  maxLength={10}
+  autoComplete="username"
+  placeholder="ID"
+  value={usuarioId}
+  onChange={(e) => {
+    const soloDigitos = e.target.value.replace(/\D/g, '');
+    setUsuarioId(soloDigitos);
+    clearLoginFeedback();
+  }}
+
+                
                 required
                 aria-invalid={invalidFields.includes('usuarioId')}
                 aria-describedby={errorMessage ? 'login-error' : successMessage ? 'login-success' : undefined}
