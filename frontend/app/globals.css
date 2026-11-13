@@ -11,6 +11,75 @@
   --font-sans: var(--font-atkinson-hyperlegible);
 }
 
+@theme {
+  --animate-login-float-one: login-float-one 7s ease-in-out infinite;
+  --animate-login-float-two: login-float-two 8s ease-in-out infinite;
+  --animate-login-float-three: login-float-three 6s ease-in-out infinite;
+  --animate-splash-letter: splash-letter 1.25s cubic-bezier(0.2, 1.08, 0.2, 1) both;
+
+  @keyframes login-float-one {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -10px, 0); }
+  }
+
+  @keyframes login-float-two {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -13px, 0); }
+  }
+
+  @keyframes login-float-three {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -8px, 0); }
+  }
+
+  @keyframes splash-letter {
+    0% {
+      opacity: 0;
+      transform: translateY(var(--splash-letter-start)) scale(0.96);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(var(--splash-letter-bounce)) scale(1.03);
+    }
+    68% {
+      transform: translateY(var(--splash-letter-rebound)) scale(0.99);
+    }
+    84% {
+      transform: translateY(var(--splash-letter-settle)) scale(1.005);
+    }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+}
+
+.splash-letter:nth-child(4n + 1) {
+  --splash-letter-start: -0.3rem;
+  --splash-letter-bounce: 0.08rem;
+  --splash-letter-rebound: -0.035rem;
+  --splash-letter-settle: 0.015rem;
+}
+
+.splash-letter:nth-child(4n + 2) {
+  --splash-letter-start: 0.25rem;
+  --splash-letter-bounce: -0.07rem;
+  --splash-letter-rebound: 0.03rem;
+  --splash-letter-settle: -0.012rem;
+}
+
+.splash-letter:nth-child(4n + 3) {
+  --splash-letter-start: -0.2rem;
+  --splash-letter-bounce: 0.055rem;
+  --splash-letter-rebound: -0.025rem;
+  --splash-letter-settle: 0.01rem;
+}
+
+.splash-letter:nth-child(4n) {
+  --splash-letter-start: 0.35rem;
+  --splash-letter-bounce: -0.09rem;
+  --splash-letter-rebound: 0.04rem;
+  --splash-letter-settle: -0.015rem;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -24,98 +93,7 @@ body {
   font-family: var(--font-atkinson-hyperlegible), sans-serif;
 }
 
-.login-visual-glow {
-  background-color: rgb(59 130 246 / 12%);
-  background:
-    radial-gradient(ellipse at 18% 24%, rgb(14 165 233 / 22%), transparent 62%),
-    radial-gradient(ellipse at 78% 68%, rgb(79 70 229 / 18%), transparent 60%),
-    radial-gradient(ellipse at 72% 12%, rgb(6 182 212 / 17%), transparent 58%);
-}
-
-.login-brand-title {
-  font-size: clamp(1.625rem, 4.8svh, 2rem);
-}
-
-.login-brand-subtitle {
-  font-size: clamp(0.9375rem, 2.7svh, 1.0625rem);
-}
-
-.login-heading {
-  font-size: clamp(1.5rem, 3.9svh, 1.75rem);
-}
-
-.login-input {
-  min-height: clamp(2.75rem, 8svh, 3rem);
-  font-size: clamp(1rem, 2.8svh, 1.125rem);
-}
-
-.login-remember-label {
-  font-size: clamp(0.9375rem, 2.7svh, 1rem);
-}
-
-.login-submit {
-  min-height: clamp(2.875rem, 8svh, 3.125rem);
-  font-size: clamp(1.0625rem, 3.2svh, 1.1875rem);
-}
-
-.login-security-note {
-  font-size: clamp(0.8125rem, 2.2svh, 0.9375rem);
-}
-
-.login-error-message {
-  font-size: clamp(0.9375rem, 2.6svh, 1rem);
-}
-
-.login-success-message {
-  font-size: clamp(0.9375rem, 2.6svh, 1rem);
-}
-
-.login-secondary-links {
-  font-size: clamp(0.9375rem, 2.6svh, 1rem);
-}
-
-@media (max-width: 767px) {
-  .login-visual-art {
-    display: none;
-  }
-}
-
-@media (max-height: 560px) {
-  .login-content {
-    padding-block: 0.75rem;
-  }
-
-  .login-content h2 {
-    margin-bottom: 0.75rem;
-  }
-
-  .login-content form > :not(:first-child) {
-    margin-block-start: 0.5rem;
-  }
-
-  .login-visual {
-    min-height: 6.5rem;
-  }
-
-  .login-visual-art {
-    margin-top: auto;
-  }
-
-  .login-security-note {
-    display: none;
-  }
-}
-
-@media (max-height: 460px) {
-  .login-visual {
-    min-height: 5.5rem;
-  }
-
-  .login-content {
-    padding-block: 0.5rem;
-  }
-
-  .login-content h2 {
-    margin-bottom: 0.5rem;
-  }
+.login-password-input::-ms-reveal,
+.login-password-input::-ms-clear {
+  display: none;
 }

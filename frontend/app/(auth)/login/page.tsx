@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Eye, EyeOff, IdCard, LockKeyhole } from 'lucide-react';
+import LoadingDots from '../../../components/ui/LoadingDots';
 
 type LoginField = 'usuarioId' | 'password';
 type LoginMode = 'medico' | 'administrador';
@@ -13,6 +14,9 @@ type LoginFeedback = {
 };
 
 export default function LoginPage() {
+  const [isBackgroundRevealed, setIsBackgroundRevealed] = useState<boolean>(false);
+  const [isLoginRevealed, setIsLoginRevealed] = useState<boolean>(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
   const [usuarioId, setUsuarioId] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loginMode, setLoginMode] = useState<LoginMode>('medico');
@@ -26,7 +30,28 @@ export default function LoginPage() {
     medico: { errorMessage: null, successMessage: null, invalidFields: [] },
     administrador: { errorMessage: null, successMessage: null, invalidFields: [] },
   });
+  const [displayedErrorMessage, setDisplayedErrorMessage] = useState<string | null>(null);
+  const errorMessageDismissTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { errorMessage, successMessage, invalidFields } = feedbackByMode[loginMode];
+
+  useEffect(() => {
+    const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setPrefersReducedMotion(shouldReduceMotion);
+
+    const backgroundRevealTimeout = setTimeout(
+      () => setIsBackgroundRevealed(true),
+      shouldReduceMotion ? 0 : 2200,
+    );
+    const loginRevealTimeout = setTimeout(
+      () => setIsLoginRevealed(true),
+      shouldReduceMotion ? 0 : 4200,
+    );
+
+    return () => {
+      clearTimeout(backgroundRevealTimeout);
+      clearTimeout(loginRevealTimeout);
+    };
+  }, []);
 
   const updateLoginFeedback = (updates: Partial<LoginFeedback>) => {
     setFeedbackByMode((current) => ({
@@ -48,8 +73,27 @@ export default function LoginPage() {
       if (sectionTransitionTimeout.current !== null) {
         clearTimeout(sectionTransitionTimeout.current);
       }
+      if (errorMessageDismissTimeout.current !== null) {
+        clearTimeout(errorMessageDismissTimeout.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (errorMessageDismissTimeout.current !== null) {
+      clearTimeout(errorMessageDismissTimeout.current);
+      errorMessageDismissTimeout.current = null;
+    }
+
+    if (errorMessage) {
+      setDisplayedErrorMessage(errorMessage);
+    } else if (displayedErrorMessage) {
+      errorMessageDismissTimeout.current = setTimeout(() => {
+        setDisplayedErrorMessage(null);
+        errorMessageDismissTimeout.current = null;
+      }, 250);
+    }
+  }, [errorMessage, displayedErrorMessage]);
 
   const handleLoginModeChange = (mode: LoginMode) => {
     if (mode === loginMode) return;
@@ -134,45 +178,104 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-x-hidden bg-slate-100 bg-[url('/bg.png')] bg-center bg-cover bg-no-repeat px-3 pt-3 pb-7 sm:px-4 sm:pt-4 max-[767px]:justify-start">
-      <div className="grid w-full max-w-4xl grid-cols-1 overflow-hidden rounded-md border border-slate-200 bg-white shadow-xl md:grid-cols-2">
-        <section className="relative isolate flex min-h-[clamp(7.5rem,18svh,10rem)] flex-col items-center justify-center bg-slate-100 px-6 py-5 text-center md:min-h-[min(70svh,42rem)] md:justify-start md:p-9">
-          <div className="relative z-10">
-            <div className="flex items-center justify-center gap-3">
-              <Image
-                src="/logoxd.png"
-                alt=""
-                width={52}
-                height={52}
-                className="h-10 w-10 shrink-0 object-contain md:h-12 md:w-12"
-                priority
-              />
-              <h1 className="text-[length:clamp(1.625rem,4.8svh,2rem)] font-bold tracking-tight text-slate-800">
-                XpertDiagnostic
-              </h1>
-            </div>
-            <p className="mt-1 text-[length:clamp(0.9375rem,2.7svh,1.0625rem)] text-slate-600">
+    <main
+      className={`relative isolate flex min-h-dvh flex-col items-center bg-white px-3 pt-3 pb-7 sm:px-4 sm:pt-4 ${
+        isLoginRevealed
+          ? 'h-auto justify-center overflow-x-hidden'
+          : 'h-dvh justify-center overflow-hidden'
+      }`}
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 bg-[url('/bg.png')] bg-center bg-cover bg-no-repeat"
+        style={{
+          clipPath: isBackgroundRevealed ? 'circle(150vmax at 50% 50%)' : 'circle(0 at 50% 50%)',
+          transition: prefersReducedMotion
+            ? 'none'
+            : 'clip-path 900ms cubic-bezier(0.76, 0, 0.24, 1)',
+        }}
+      />
+      <div
+        className={`relative z-10 flex w-full max-w-4xl flex-col items-center ${
+          isLoginRevealed ? 'flex-none' : 'flex-1 justify-center'
+        }`}
+      >
+        <h1
+          aria-label="XpertDiagnostic"
+          className={`absolute left-1/2 z-20 w-max max-w-[calc(100vw-2rem)] whitespace-nowrap text-center leading-none font-bold tracking-wide text-white drop-shadow ${
+            isLoginRevealed
+              ? 'text-base sm:text-lg'
+              : 'text-[clamp(1.5rem,6vw,2.25rem)]'
+          }`}
+          style={{
+            top: isLoginRevealed ? '0' : '50%',
+            transform: isLoginRevealed
+              ? 'translate(-50%, 0)'
+              : 'translate(-50%, -50%)',
+            color: isBackgroundRevealed ? '#fff' : '#0f172a',
+            transition: prefersReducedMotion
+              ? 'none'
+              : 'top 900ms cubic-bezier(0.22, 1, 0.36, 1), transform 900ms cubic-bezier(0.22, 1, 0.36, 1), font-size 900ms cubic-bezier(0.22, 1, 0.36, 1), color 400ms ease 250ms',
+          }}
+        >
+          {'XpertDiagnostic'.split('').map((character, index) => (
+            <span
+              key={`${character}-${index}`}
+              aria-hidden="true"
+              className="splash-letter inline-block animate-splash-letter motion-reduce:animate-none"
+              style={{ animationDelay: `${index * 65}ms` }}
+            >
+              {character}
+            </span>
+          ))}
+        </h1>
+
+        <div
+          aria-hidden="true"
+          className={isLoginRevealed ? 'h-5 w-full shrink-0' : 'hidden'}
+        />
+
+        <div
+          aria-hidden={!isLoginRevealed}
+          inert={!isLoginRevealed}
+          className={`mt-3 grid w-full max-w-4xl grid-cols-1 overflow-hidden rounded-md border border-slate-200 bg-white shadow-xl transition-[opacity,transform] duration-[800ms] delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:grid-cols-2 ${
+            isLoginRevealed
+              ? 'relative translate-y-0 opacity-100'
+              : 'pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 translate-y-6 opacity-0'
+          }`}
+        >
+        <section className="relative isolate flex min-h-[clamp(7.5rem,18svh,10rem)] flex-col items-center justify-center bg-slate-100 px-6 py-5 text-center lg:min-h-[min(70svh,42rem)] lg:justify-start lg:p-9">
+          <div className="relative z-10 flex flex-col items-center justify-center">
+            <Image
+              src="/logoxd.png"
+              alt=""
+              width={56}
+              height={56}
+              className="h-12 w-12 shrink-0 object-contain lg:h-14 lg:w-14"
+              priority
+            />
+            <p className="mt-1 text-[length:clamp(0.9375rem,2.7svh,1.0625rem)] text-slate-700">
               Sistema experto para análisis médicos
             </p>
           </div>
-          <div className="relative z-10 mt-6 w-full max-w-sm max-[767px]:hidden md:mt-8 md:pt-8">
+          <div className="relative z-10 mt-6 w-full max-w-sm max-[1023px]:hidden lg:mt-8 lg:pt-8">
             <div className="relative mx-auto h-[clamp(10rem,30svh,20rem)] w-full">
               <Image
                 src="/footer-image.png"
                 alt="Ilustración de personal médico"
                 fill
-                sizes="(max-width: 767px) 100vw, 40vw"
+                sizes="(max-width: 1023px) 100vw, 448px"
                 className="-translate-y-8 scale-150 object-contain"
               />
             </div>
-            <p className="mt-3 text-center text-base leading-relaxed text-slate-500">
+            <p className="mt-3 text-center text-base leading-relaxed text-slate-700">
               Si olvidaste tu contraseña, comunícate con soporte técnico para recuperarla.
             </p>
           </div>
         </section>
 
         <section
-          className={`flex flex-col justify-center p-5 max-[560px]:py-3 max-[460px]:py-2 sm:p-8 md:p-10 transition-[opacity,transform] duration-250 ease-in-out motion-reduce:transition-none ${
+          className={`flex flex-col justify-center p-5 max-[560px]:py-3 max-[460px]:py-2 sm:p-8 lg:p-10 transition-[opacity,transform] duration-250 ease-in-out motion-reduce:transition-none ${
             isSectionTransitioning
               ? 'scale-[0.995] opacity-75 motion-reduce:scale-100 motion-reduce:opacity-100'
               : 'scale-100 opacity-100'
@@ -183,7 +286,7 @@ export default function LoginPage() {
             <div className="relative grid grid-cols-2 rounded-xl bg-slate-100 p-1">
               <span
                 aria-hidden="true"
-                className={`pointer-events-none absolute inset-y-1 left-1 w-[calc(50%_-_0.25rem)] rounded-lg bg-[#5f77ff] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                className={`pointer-events-none absolute inset-y-1 left-1 w-[calc(50%_-_0.25rem)] rounded-lg bg-[#4c589c] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
                   loginMode === 'administrador' ? 'translate-x-full' : 'translate-x-0'
                 }`}
               />
@@ -197,7 +300,7 @@ export default function LoginPage() {
                   className="peer sr-only"
                 />
                 <span className={`block rounded-lg px-3 py-2 text-center text-base font-semibold transition-colors duration-200 peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 ${
-                  loginMode === 'medico' ? 'text-white' : 'text-slate-600'
+                  loginMode === 'medico' ? 'text-white' : 'text-slate-700'
                 }`}>
                   Médico
                 </span>
@@ -212,7 +315,7 @@ export default function LoginPage() {
                   className="peer sr-only"
                 />
                 <span className={`block rounded-lg px-3 py-2 text-center text-base font-semibold transition-colors duration-200 peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 ${
-                  loginMode === 'administrador' ? 'text-white' : 'text-slate-600'
+                  loginMode === 'administrador' ? 'text-white' : 'text-slate-700'
                 }`}>
                   Administrador
                 </span>
@@ -228,16 +331,16 @@ export default function LoginPage() {
             id="login-error"
             role="alert"
             aria-hidden={!errorMessage}
-            className={`overflow-hidden rounded-lg bg-red-600 text-[length:clamp(0.9375rem,2.6svh,1rem)] text-white ${
+            className={`overflow-hidden rounded-lg bg-red-600 text-[length:clamp(0.9375rem,2.6svh,1rem)] text-white transition-[max-height,opacity,transform,margin,padding] duration-250 ease-out motion-reduce:transition-none ${
               errorMessage
-                ? 'mb-4 max-h-24 translate-y-0 p-3 opacity-100 transition-[max-height,opacity,transform,margin,padding] duration-250 ease-out motion-reduce:transition-none'
+                ? 'mb-4 max-h-24 translate-y-0 p-3 opacity-100'
                 : 'pointer-events-none mb-0 max-h-0 translate-y-1 p-0 opacity-0'
             }`}
           >
-            {errorMessage}
+            {displayedErrorMessage ?? errorMessage}
           </div>
           {successMessage && (
-            <div id="login-success" role="status" className="mb-4 rounded-lg bg-green-600 p-3 text-[length:clamp(0.9375rem,2.6svh,1rem)] text-white">
+            <div id="login-success" role="status" className="mb-4 rounded-lg bg-green-700 p-3 text-[length:clamp(0.9375rem,2.6svh,1rem)] text-white">
               {successMessage}
             </div>
           )}
@@ -246,7 +349,7 @@ export default function LoginPage() {
             <div className="relative">
               <IdCard
                 aria-hidden="true"
-                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
               />
               <input
                 type="text"
@@ -266,12 +369,12 @@ export default function LoginPage() {
                 required
                 aria-invalid={invalidFields.includes('usuarioId')}
                 aria-describedby={errorMessage ? 'login-error' : successMessage ? 'login-success' : undefined}
-                className={`w-full min-h-[clamp(2.75rem,8svh,3rem)] rounded-lg border-2 py-2.5 pl-12 pr-4 text-[length:clamp(1rem,2.8svh,1.125rem)] text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 ${
+                className={`w-full min-h-[clamp(2.75rem,8svh,3rem)] rounded-lg border-2 py-2.5 pl-12 pr-4 text-[length:clamp(1rem,2.8svh,1.125rem)] text-slate-700 placeholder-slate-500 transition duration-250 ease-out focus:outline-none ${
                   invalidFields.includes('usuarioId')
-                    ? 'border-red-600 focus:ring-red-500'
+                    ? 'border-red-600 focus:ring-0'
                     : successMessage
-                      ? 'border-green-600 focus:ring-green-500'
-                      : 'border-slate-300 focus:ring-indigo-500'
+                      ? 'border-green-600 focus:ring-2 focus:ring-green-500'
+                      : 'border-slate-300 focus:ring-2 focus:ring-indigo-500'
                 }`}
               />
             </div>
@@ -279,7 +382,7 @@ export default function LoginPage() {
             <div className="relative">
               <LockKeyhole
                 aria-hidden="true"
-                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
               />
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -292,12 +395,12 @@ export default function LoginPage() {
                 required
                 aria-invalid={invalidFields.includes('password')}
                 aria-describedby={errorMessage ? 'login-error' : successMessage ? 'login-success' : undefined}
-                className={`w-full min-h-[clamp(2.75rem,8svh,3rem)] rounded-lg border-2 py-2.5 pl-12 pr-12 text-[length:clamp(1rem,2.8svh,1.125rem)] text-slate-700 placeholder-slate-400 transition focus:outline-none focus:ring-2 ${
+                className={`login-password-input w-full min-h-[clamp(2.75rem,8svh,3rem)] rounded-lg border-2 py-2.5 pl-12 pr-12 text-[length:clamp(1rem,2.8svh,1.125rem)] text-slate-700 placeholder-slate-500 transition duration-250 ease-out focus:outline-none ${
                   invalidFields.includes('password')
-                    ? 'border-red-600 focus:ring-red-500'
+                    ? 'border-red-600 focus:ring-0'
                     : successMessage
-                      ? 'border-green-600 focus:ring-green-500'
-                      : 'border-slate-300 focus:ring-indigo-500'
+                      ? 'border-green-600 focus:ring-2 focus:ring-green-500'
+                      : 'border-slate-300 focus:ring-2 focus:ring-indigo-500'
                 }`}
               />
               <button
@@ -305,7 +408,7 @@ export default function LoginPage() {
                 onClick={() => setShowPassword((visible) => !visible)}
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 aria-pressed={showPassword}
-                className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-600 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
               >
                 {showPassword ? (
                   <EyeOff aria-hidden="true" className="h-5 w-5" />
@@ -323,7 +426,7 @@ export default function LoginPage() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-[1.125rem] w-[1.125rem] rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
               />
-              <label htmlFor="remember" className="cursor-pointer text-[length:clamp(0.9375rem,2.7svh,1rem)] font-medium text-slate-600">
+              <label htmlFor="remember" className="cursor-pointer text-[length:clamp(0.9375rem,2.7svh,1rem)] font-medium text-slate-700">
                 Recuérdame la sesión
               </label>
             </div>
@@ -334,35 +437,27 @@ export default function LoginPage() {
               className="mt-2 flex min-h-[clamp(2.875rem,8svh,3.125rem)] w-full cursor-pointer items-center justify-center rounded-lg bg-[#4c589c] px-4 py-2.5 text-[length:clamp(1.0625rem,3.2svh,1.1875rem)] font-medium text-white shadow transition duration-200 hover:bg-[#3d4780] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24">
-                    <circle className="fill-none stroke-current stroke-4 opacity-25" cx="12" cy="12" r="10"></circle>
-                    <path className="fill-current opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Cargando...</span>
-                </div>
+                <LoadingDots />
               ) : (
                 'Entrar'
               )}
             </button>
           </form>
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[length:clamp(0.9375rem,2.6svh,1rem)] text-slate-500">
-            <span className="cursor-pointer underline decoration-slate-300 underline-offset-4 transition-colors hover:text-indigo-600 hover:decoration-indigo-500">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[length:clamp(0.9375rem,2.6svh,1rem)] text-slate-700">
+            <span className="cursor-pointer underline decoration-slate-500 underline-offset-4 transition-colors hover:text-indigo-700 hover:decoration-indigo-600">
               Términos y privacidad
             </span>
-            <span className="cursor-pointer underline decoration-slate-300 underline-offset-4 transition-colors hover:text-indigo-600 hover:decoration-indigo-500">
+            <span className="cursor-pointer underline decoration-slate-500 underline-offset-4 transition-colors hover:text-indigo-700 hover:decoration-indigo-600">
               Recuperar contraseña
             </span>
           </div>
-          <p className="mt-6 mb-4 text-center text-base leading-relaxed text-slate-500 md:hidden">
+          <p className="mt-6 mb-4 text-center text-base leading-relaxed text-slate-700 max-[560px]:mt-3 max-[560px]:mb-2 max-[460px]:text-sm lg:hidden">
             Si olvidaste tu contraseña, comunícate con soporte técnico para recuperarla.
           </p>
         </section>
+        </div>
       </div>
-      <footer className="mt-3 text-center text-base text-white max-[767px]:mt-4">
-        © XpertDiagnostic
-      </footer>
     </main>
   );
 }
