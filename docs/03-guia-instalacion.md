@@ -29,30 +29,24 @@ py --list
 
 La solución apunta a .NET 8. Para el frontend, el requisito mínimo de Node.js declarado por Next.js es 20.9.0. La versión exacta de Python no está fijada en un manifiesto de proyecto; Python 3.12 es la versión de desarrollo usada como referencia para esta guía.
 
-**[Pega aquí la imagen 1: herramientas instaladas y versiones en PowerShell.]**
-
 ## 2. Descargar el proyecto
 
 ### Opción A: descargar como ZIP
 
 1. Abre el repositorio de XpertDiagnostic en GitHub.
-2. En el selector de ramas, selecciona `database` si deseas descargar el estado de esa rama.
+2. En el selector de ramas, selecciona `Develop` si deseas descargar el estado de esa rama.
 3. Abre el menú **Code** y selecciona **Download ZIP**.
 4. Extrae el ZIP en una carpeta de trabajo, por ejemplo `C:\Proyectos\XpertDiagnostic`.
 5. Abre esa carpeta extraída en el Explorador de archivos y escribe `powershell` en la barra de dirección para abrir una terminal en la raíz del proyecto.
 
 Un ZIP no contiene la carpeta interna `.git`. Sirve para consultar y ejecutar una copia, pero no permite crear ramas, confirmar cambios ni hacer push. Para colaborar, sigue la opción B.
 
-**[Pega aquí la imagen 2: selector de rama y menú Code > Download ZIP.]**
-
-**[Pega aquí la imagen 3: ZIP extraído y terminal PowerShell abierta en la raíz.]**
-
 ### Opción B: clonar para contribuir
 
 Abre PowerShell en el directorio donde quieras guardar el repositorio y ejecuta:
 
 ```powershell
-git clone --branch database https://github.com/lucybits/XpertDiagnostic.git
+git clone --branch Develop https://github.com/lucybits/XpertDiagnostic.git
 Set-Location XpertDiagnostic
 ```
 
@@ -63,7 +57,7 @@ git status --short --branch
 git branch --show-current
 ```
 
-Debe aparecer `database` como rama actual y un árbol de trabajo limpio.
+Debe aparecer `Develop` como rama actual y un árbol de trabajo limpio.
 
 ## 3. Estructura actual del repositorio
 
@@ -210,10 +204,6 @@ Deja esta terminal abierta mientras uses la API. Para detenerla, presiona `Ctrl+
 
 Swagger puede mostrar una API sin operaciones: el proyecto todavía no tiene controladores implementados. El comando confirma que el esqueleto ASP.NET Core arranca, no que los endpoints de login o SQL Server ya funcionen.
 
-**[Pega aquí la imagen 4: restauración y arranque de ASP.NET Core en PowerShell.]**
-
-**[Pega aquí la imagen 5: Swagger abierto en http://localhost:5140/swagger.]**
-
 ## 6. Arrancar el frontend Next.js
 
 Abre una segunda terminal PowerShell en la raíz del repositorio e instala las dependencias:
@@ -238,10 +228,6 @@ npm run start
 ```
 
 El formulario que se muestra es solo interfaz por ahora. Su envío apunta a `/api/login`, pero esa ruta no existe en la estructura actual; por tanto, el inicio de sesión no se completa.
-
-**[Pega aquí la imagen 6: instalación npm ci y servidor Next.js listo.]**
-
-**[Pega aquí la imagen 7: interfaz de XpertDiagnostic abierta en http://localhost:3000.]**
 
 ## 7. SQL Server y servicio de IA
 
@@ -269,13 +255,13 @@ El directorio `ai-service` es únicamente una estructura inicial. Como `main.py`
 
 ## 9. Flujo de trabajo para contribuir
 
-Para enviar cambios, trabaja desde un clon Git, no desde un ZIP. No desarrolles directamente sobre `database`, que es la rama base/producción del flujo acordado.
+Para enviar cambios, trabaja desde un clon Git, no desde un ZIP. No desarrolles directamente sobre `Develop`, que es la rama base/producción del flujo acordado.
 
 Actualiza la rama base y crea una rama para cada cambio:
 
 ```powershell
-git switch database
-git pull origin database
+git switch Develop
+git pull origin Develop
 git switch -c feature/descripcion-corta
 ```
 
@@ -339,29 +325,24 @@ Sustituye el mensaje de ejemplo y el nombre de rama por los de tu cambio. Si `gi
 git push
 ```
 
-**[Pega aquí la imagen 8: rama de trabajo creada y cambios revisados con git status.]**
-
-## 11. Crear un Pull Request hacia `database`
+## 11. Crear un Pull Request hacia `Develop`
 
 1. En GitHub, abre el repositorio y selecciona **Compare & pull request** para la rama que acabas de subir.
-2. Confirma que la rama de destino (**base**) sea `database` y que la rama de origen (**compare**) sea tu rama de trabajo.
+2. Confirma que la rama de destino (**base**) sea `Develop` y que la rama de origen (**compare**) sea tu rama de trabajo.
 3. Escribe un título claro y explica qué cambió, cómo se probó y cualquier pendiente conocido.
 4. Revisa la pestaña **Files changed** y confirma que no se incluyan secretos ni archivos generados.
 5. Espera las revisiones y verificaciones automatizadas configuradas en el repositorio.
 6. Corrige los comentarios necesarios, envía los nuevos commits a la misma rama y espera a que GitHub actualice el PR.
-7. Cuando esté aprobado y las comprobaciones pasen, usa la opción de merge acordada por el equipo. No hagas push directo a `database`.
+7. Cuando esté aprobado y las comprobaciones pasen, usa la opción de merge acordada por el equipo. No hagas push directo a `Develop`.
 
-**[Pega aquí la imagen 9: Pull Request con base database y compare en la rama de trabajo.]**
-
-**[Pega aquí la imagen 10: revisión de Files changed y comprobaciones antes del merge.]**
 
 ## 12. Cerrar la copia local después del merge
 
 Cuando el PR ya se haya integrado, actualiza tu rama base:
 
 ```powershell
-git switch database
-git pull origin database
+git switch Develop
+git pull origin Develop
 ```
 
 Puedes borrar la rama local solo después de confirmar que el PR se integró y que ya no necesitas trabajar en ella:
