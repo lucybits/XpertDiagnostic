@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XpertDiagnostic.Api", "XpertDiagnostic.Api\XpertDiagnostic.Api.csproj", "{3EF4897F-FCDA-4E46-A397-28989DFE25DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XpertDiagnostic.Tests", "XpertDiagnostic.Tests\XpertDiagnostic.Tests.csproj", "{C476684F-5A48-44DB-949D-7F2C210287C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{3EF4897F-FCDA-4E46-A397-28989DFE25DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EF4897F-FCDA-4E46-A397-28989DFE25DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EF4897F-FCDA-4E46-A397-28989DFE25DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C476684F-5A48-44DB-949D-7F2C210287C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C476684F-5A48-44DB-949D-7F2C210287C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C476684F-5A48-44DB-949D-7F2C210287C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C476684F-5A48-44DB-949D-7F2C210287C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,91 @@
+Id_labs,Estudio_lab,Lim_Inf,Lim_Sup,Unidades,Id_Pacient
+DIGES00017LABOR00001,Hematócrito (descenso tardío),,,,
+DIGES00017LABOR00002,BUN aumentado,,,,PACIE00008
+DIGES00017LABOR00003,Leucocitosis y trombocitosis leves,,,,PACIE00008
+DIGES00017LABOR00004,Tipo sanguíneo y pruebas cruzadas,,,,
+DIGES00017LABOR00005,Aspirado nasogástrico,,,,PACIE00008
+ONCOL00014LABOR00001,Estadio IA: supervivencia a 5 años 73%,,,,PACIE00009
+ONCOL00014LABOR00002,Estadio IB: 58%,,,,PACIE00009
+ONCOL00014LABOR00003,Estadio IIA: 46%,,,,PACIE00009
+ONCOL00014LABOR00004,Estadio IIB: 36%,,,,
+ONCOL00014LABOR00005,Estadio IIIA: 24%,,,,
+ONCOL00014LABOR00006,Estadio IIIB: 9%,,,,
+ONCOL00014LABOR00007,Estadio IV: 13%,,,,
+ONCOL00014LABOR00008,T1a: tumor ?2 cm,,,,PACIE00009
+ONCOL00014LABOR00009,T1b: >2 y ?3 cm,,,,
+ONCOL00014LABOR00010,T2a: >3 y ?5 cm,,,,
+ONCOL00014LABOR00011,T2b: >5 y ?7 cm,,,,PACIE00009
+ONCOL00014LABOR00012,T3: tumor >7 cm o invasión de pared torácica,,,,
+ONCOL00014LABOR00013,Mutación del receptor EGF,,,,PACIE00009
+ONCOL00014LABOR00014,Rearreglo de alk o ros,,,,PACIE00009
+INFEC00033LABOR00001,Criterios de Duke: hemocultivo positivo (dos separados) o persistente,,,,PACIE00010
+INFEC00033LABOR00002,Coxiella burnetii: IgG fase I >1:800,,,,
+INFEC00033LABOR00003,"Ecocardiografía positiva (vegetación, absceso, dehiscencia, insuficiencia nueva)",,,,PACIE00010
+INFEC00033LABOR00004,"Serología para Brucella, Bartonella, Legionella y C. burnetii",,,,
+INFEC00033LABOR00005,"Supervivencia 85 a 90% (viridans, HACEK, enterococo) y 55 a 70% (S. aureus)",,,,PACIE00010
+INFEC00033LABOR00006,Mortalidad de PVE temprana 40 a 50% y tardía 10 a 20%,,,,PACIE00010
+CARDI00017LABOR00001,Péptido natriurético (elevado en insuficiencia cardiaca y miocardiopatía; no en disnea de origen pulmonar),,,,PACIE00001
+CARDI00017LABOR00002,Sodio sérico,,,,
+CARDI00017LABOR00003,Potasio sérico,,,,PACIE00001
+CARDI00017LABOR00004,Calcio sérico,,,,
+CARDI00017LABOR00005,Magnesio sérico,,,,
+CARDI00017LABOR00006,Glucemia en ayuno,,,,
+CARDI00017LABOR00007,Creatinina,,,,
+CARDI00017LABOR00008,Nitrógeno de la urea sanguínea,,,,
+CARDI00017LABOR00009,Albúmina,,,,
+CARDI00017LABOR00010,Proteína total,,,,
+CARDI00017LABOR00011,Pruebas funcionales hepáticas,,,,
+CARDI00017LABOR00012,Hierro sérico y saturación de transferrina,,,,PACIE00001
+CARDI00017LABOR00013,Recuento de leucocitos con diferencial (eosinófilos),,,,PACIE00001
+CARDI00017LABOR00014,Títulos virales: coxsackievirus,,,,PACIE00001
+CARDI00017LABOR00015,Títulos virales: echovirus,,,,
+CARDI00017LABOR00016,Títulos virales: virus de la gripe,,,,PACIE00001
+CARDI00017LABOR00017,Títulos para enfermedad de Chagas,,,,
+CARDI00017LABOR00018,Títulos para enfermedad de Lyme,,,,
+CARDI00017LABOR00019,Títulos para toxoplasmosis,,,,
+CARDI00017LABOR00020,Pruebas serológicas para enfermedades reumáticas activas,,,,PACIE00001
+NEUMO00008LABOR00001,Espirometría con FEV1 y FEV1/FVC reducidos,,,,
+NEUMO00008LABOR00002,Reversibilidad con broncodilatador: aumento del FEV1 (ml),200,,ml,PACIE00003
+NEUMO00008LABOR00003,Reversibilidad con broncodilatador: aumento del FEV1 basal (%),12,,%,PACIE00003
+NEUMO00008LABOR00004,Respuesta a metacolina o histamina,,,,
+NEUMO00008LABOR00005,Flujo espiratorio máximo en casa,,,,
+NEUMO00008LABOR00006,Eosinofilia,,,,
+NEUMO00008LABOR00007,IgE específica (RAST) o pruebas cutáneas,,,,PACIE00003
+NEUMO00008LABOR00008,IgE sérica total muy elevada en aspergilosis broncopulmonar alérgica,,,,PACIE00003
+NEUMO00008LABOR00009,Óxido nítrico exhalado,,,,PACIE00003
+NEUMO00008LABOR00010,Capacidad pulmonar total y volumen residual aumentados,,,,PACIE00003
+NEUMO00008LABOR00011,DLco normal,,,,PACIE00003
+NEUMO00025LABOR00001,Dímero D normal que descarta PE (?g/ml),,500,?g/ml,PACIE00004
+NEUMO00025LABOR00002,Hipoxemia y gradiente alveoloarterial aumentado,,,,PACIE00004
+NEUMO00025LABOR00003,Troponina y péptido natriurético elevados,,,,
+NEUMO00025LABOR00004,ECG con S1Q3T3 (poco frecuente),,,,PACIE00004
+RENAL00008LABOR00001,Hiperazoemia >3 meses,,,,PACIE00005
+RENAL00008LABOR00002,Electroforesis de proteínas séricas y urinarias y cadenas ligeras libres en >35 años,,,,PACIE00005
+RENAL00008LABOR00003,"Calcio, fosfato, vitamina D y hormona paratiroidea",,,,PACIE00005
+RENAL00008LABOR00004,"Hemoglobina, vitamina B12, folato y hierro",,,,PACIE00005
+RENAL00008LABOR00005,Anticuerpos antinucleares y serología de hepatitis B y C si se sospecha glomerulonefritis,,,,
+RENAL00008LABOR00006,Proteinuria >3.5 g/día sugiere síndrome nefrótico,,,,
+MUSCU00004LABOR00001,ANA positivos,,,,PACIE00006
+MUSCU00004LABOR00002,"Anticuerpos anti-dsDNA, ssDNA, Sm, Ro, La e histona",,,,
+MUSCU00004LABOR00003,"Complemento C3, C4 y CH50",,,,PACIE00006
+MUSCU00004LABOR00004,Anticuerpo anticardiolipina y anticoagulante lúpico,,,,PACIE00006
+MUSCU00004LABOR00005,ESR,,,,PACIE00006
+MUSCU00004LABOR00006,Diagnóstico con ?4 criterios,,,,
+ENDOC00015LABOR00001,TSH suprimida,,,,
+ENDOC00015LABOR00002,T4 libre elevada,,,,PACIE00002
+ENDOC00015LABOR00003,T3 libre,,,,PACIE00002
+ENDOC00015LABOR00004,Captación de radionúclido (alta o baja),,,,PACIE00002
+ENDOC00015LABOR00005,Bilirrubina elevada,,,,PACIE00002
+ENDOC00015LABOR00006,Enzimas hepáticas elevadas,,,,
+ENDOC00015LABOR00007,Ferritina elevada,,,,
+NEURO00085LABOR00001,Presión de abertura >180 mmH2O,,,,PACIE00007
+NEURO00085LABOR00002,Leucocitos de 10 a 10 000/?l con predominio de neutrófilos,,,,PACIE00007
+NEURO00085LABOR00003,Glucosa en LCR <40 mg/100 ml,,,,PACIE00007
+NEURO00085LABOR00004,Cociente glucosa LCR/suero <0.4,,,,
+NEURO00085LABOR00005,Proteína >45 mg/100 ml,,,,
+NEURO00085LABOR00006,Tinción de Gram positiva en >60%,,,,
+NEURO00085LABOR00007,Cultivo positivo en >80%,,,,
+NEURO00085LABOR00008,PCR de rRNA 16S bacteriano,,,,PACIE00007
+NEURO00085LABOR00009,Aglutinación de látex,,,,PACIE00007
+NEURO00085LABOR00010,Lisado de Limulus en gramnegativos,,,,PACIE00007
+NEURO00085LABOR00011,Hemocultivos,,,,PACIE00007

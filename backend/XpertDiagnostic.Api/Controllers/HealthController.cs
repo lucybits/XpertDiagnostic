@@ -1,28 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using XpertDiagnostic.Api.Data;
+using XpertDiagnostic.Api.Models.Results;
+using XpertDiagnostic.Api.Services.Interfaces;
 
 namespace XpertDiagnostic.Api.Controllers;
 
+/// <summary>Endpoints de diagnóstico del servicio.</summary>
 [ApiController]
 [Route("api/[controller]")]
-public class HealthController(AppDbContext db, ILogger<HealthController> logger) : ControllerBase
+[Produces("application/json")]
+public class HealthController(IDatabaseHealthService salud) : ControllerBase
 {
+    /// <summary>Indica si la API puede conectarse a SQL Server.</summary>
+    /// <remarks>@post 200 si hay conexión; 503 si no la hay.</remarks>
     [HttpGet("db")]
-    public async Task<IActionResult> Db()
+    [ProducesResponseType<DatabaseStatus>(StatusCodes.Status200OK)]
+    [ProducesResponseType<DatabaseStatus>(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> Db(CancellationToken cancellationToken)
     {
-        try
-        {
-            if (!await db.Database.CanConnectAsync())
-                return StatusCode(503, new { conectado = false });
+        var estado = await salud.ConsultarAsync(cancellationToken);
 
-            var usuarios = await db.Usuarios.CountAsync();
-            return Ok(new { conectado = true, usuarios });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Fallo la conexion a SQL Server");
-            return StatusCode(503, new { conectado = false });
-        }
+        return estado.Conectado
+            ? Ok(estado)
+            : StatusCode(StatusCodes.Status503ServiceUnavailable, estado);
     }
 }

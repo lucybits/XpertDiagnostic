@@ -1,0 +1,108 @@
+Id_comorb,Comorbilid
+DIGES00017COMOR00001,Ácido acetilsalicílico y NSAID
+DIGES00017COMOR00002,Alcohol
+DIGES00017COMOR00003,Estrés
+DIGES00017COMOR00004,Epistaxis con sangre deglutida
+DIGES00017COMOR00005,"Neoplasia esofágica, gástrica o intestinal"
+DIGES00017COMOR00006,Anticoagulantes y fibrinolíticos
+DIGES00017COMOR00007,Aneurisma aórtico
+DIGES00017COMOR00008,Vasculitis
+DIGES00017COMOR00009,Seudoxantoma elástico
+DIGES00017COMOR00010,Síndrome de Ehlers-Danlos
+DIGES00017COMOR00011,Discrasias sanguíneas
+DIGES00017COMOR00012,Neurofibroma
+DIGES00017COMOR00013,Amiloidosis
+DIGES00017COMOR00014,Edad mayor de 60 años
+DIGES00017COMOR00015,Coagulopatía
+DIGES00017COMOR00016,Inmunosupresión
+ONCOL00014COMOR00001,Tabaquismo
+ONCOL00014COMOR00002,Mutaciones ras
+ONCOL00014COMOR00003,Amplificación de myc
+ONCOL00014COMOR00004,"Expresión excesiva de bcl-2, Her2/neu y telomerasa"
+ONCOL00014COMOR00005,"Deleciones de 3p, 9p, 13q14 (rb) y 17p13 (p53)"
+INFEC00033COMOR00001,Cardiopatías congénitas
+INFEC00033COMOR00002,Drogas intravenosas
+INFEC00033COMOR00003,Valvulopatía degenerativa
+INFEC00033COMOR00004,Dispositivos intracardiacos
+INFEC00033COMOR00005,Cardiopatía reumática
+INFEC00033COMOR00006,Prótesis valvular
+INFEC00033COMOR00007,Estreptococo viridans
+INFEC00033COMOR00008,S. aureus
+INFEC00033COMOR00009,Grupo HACEK
+INFEC00033COMOR00010,Streptococcus gallolyticus (cáncer de colon)
+INFEC00033COMOR00011,Enterococo
+INFEC00033COMOR00012,Síndrome antifosfolípido
+CARDI00017COMOR00001,Forma familiar (hasta 33% de los pacientes)
+CARDI00017COMOR00002,Mutaciones en genes de proteínas sarcoméricas
+CARDI00017COMOR00003,Miocarditis previa
+CARDI00017COMOR00004,Toxina: etanol
+CARDI00017COMOR00005,Toxina: doxorrubicina
+CARDI00017COMOR00006,Toxina: trastuzumab
+CARDI00017COMOR00007,Toxina: mesilato de imatinib
+CARDI00017COMOR00008,Trastornos del tejido conjuntivo
+CARDI00017COMOR00009,Distrofias musculares
+CARDI00017COMOR00010,Periparto
+NEUMO00008COMOR00001,Atopia
+NEUMO00008COMOR00002,Rinitis alérgica
+NEUMO00008COMOR00003,Eccema
+NEUMO00008COMOR00004,Pólipos nasales
+NEUMO00008COMOR00005,Infecciones virales de vías respiratorias superiores
+NEUMO00008COMOR00006,Bloqueadores adrenérgicos ?
+NEUMO00008COMOR00007,Ejercicio
+NEUMO00008COMOR00008,Contaminación ambiental
+NEUMO00008COMOR00009,Aire frío
+NEUMO00008COMOR00010,Diisocianato de tolueno y anhídrido trimetílico
+NEUMO00008COMOR00011,Estrés
+NEUMO00008COMOR00012,Tabaquismo
+NEUMO00008COMOR00013,Aspergilosis broncopulmonar alérgica
+NEUMO00025COMOR00001,Factor V de Leiden
+NEUMO00025COMOR00002,Mutación G20210A de protrombina
+NEUMO00025COMOR00003,Inmovilización en viajes prolongados
+NEUMO00025COMOR00004,Cáncer
+NEUMO00025COMOR00005,Obesidad
+NEUMO00025COMOR00006,Tabaquismo
+NEUMO00025COMOR00007,Cirugías y traumatismos
+NEUMO00025COMOR00008,Embarazo
+NEUMO00025COMOR00009,Anticonceptivos orales
+NEUMO00025COMOR00010,Sustitución hormonal posmenopáusica
+NEUMO00025COMOR00011,Síndrome de anticuerpos antifosfolípidos
+NEUMO00025COMOR00012,Catéteres venosos permanentes
+RENAL00008COMOR00001,Nefropatía diabética
+RENAL00008COMOR00002,Nefroesclerosis hipertensiva
+RENAL00008COMOR00003,Glomerulonefritis
+RENAL00008COMOR00004,Nefropatía vascular isquémica
+RENAL00008COMOR00005,Poliquistosis renal
+RENAL00008COMOR00006,Nefropatía por reflujo y otras congénitas
+RENAL00008COMOR00007,Nefritis intersticial incluida nefropatía por analgésicos
+RENAL00008COMOR00008,Nefropatía por VIH
+RENAL00008COMOR00009,Rechazo crónico del aloinjerto
+RENAL00008COMOR00010,Obstrucción de vías urinarias
+RENAL00008COMOR00011,Síndrome de Alport
+MUSCU00004COMOR00001,90% mujeres en edad de procrear
+MUSCU00004COMOR00002,Más frecuente en raza negra
+MUSCU00004COMOR00003,"Factores genéticos, ambientales y hormonales"
+ENDOC00015COMOR00001,Enfermedad de Graves
+ENDOC00015COMOR00002,Bocio multinodular tóxico
+ENDOC00015COMOR00003,Adenoma tóxico
+ENDOC00015COMOR00004,Yodo excesivo
+ENDOC00015COMOR00005,Tiroiditis subaguda
+ENDOC00015COMOR00006,Tiroiditis asintomática
+ENDOC00015COMOR00007,Amiodarona
+ENDOC00015COMOR00008,Radioterapia
+ENDOC00015COMOR00009,Estruma ovárico
+ENDOC00015COMOR00010,Carcinoma folicular funcional
+ENDOC00015COMOR00011,Tumores secretores de hCG
+ENDOC00015COMOR00012,Tirotoxicosis gestacional
+NEURO00085COMOR00001,Streptococcus pneumoniae (50%)
+NEURO00085COMOR00002,Neisseria meningitidis (25%)
+NEURO00085COMOR00003,"Listeria monocytogenes (embarazo, >60 años, alcoholismo, inmunodepresión)"
+NEURO00085COMOR00004,Estreptococo del grupo B
+NEURO00085COMOR00005,Bacilos gramnegativos
+NEURO00085COMOR00006,Staphylococcus aureus tras neurocirugía o derivación
+NEURO00085COMOR00007,"Neumonía, otitis o sinusitis"
+NEURO00085COMOR00008,Asplenia
+NEURO00085COMOR00009,Hipogammaglobulinemia
+NEURO00085COMOR00010,Deficiencia de complemento
+NEURO00085COMOR00011,Alcoholismo
+NEURO00085COMOR00012,Diabetes
+NEURO00085COMOR00013,Traumatismo craneal con fuga de LCR

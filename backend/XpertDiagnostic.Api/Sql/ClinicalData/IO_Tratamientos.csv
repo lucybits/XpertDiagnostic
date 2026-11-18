@@ -1,0 +1,136 @@
+Id_Tratam,Tratamient,Dosis_Max,Dosis_MIN,Unidades
+DIGES00017TRATA00001,Catéter IV de calibre grande (14 a 18),,,
+DIGES00017TRATA00002,Líquidos isotónicos,,,
+DIGES00017TRATA00003,Concentrados eritrocitarios para mantener hematócrito >25 a 30,,,
+DIGES00017TRATA00004,Plasma fresco congelado,,,
+DIGES00017TRATA00005,Vitamina K IV o SC en cirróticos,,,
+DIGES00017TRATA00006,Vitamina K (mg),10,10,mg
+DIGES00017TRATA00007,Gluconato de calcio IV en 10 a 15 min (ml),20,10,ml
+DIGES00017TRATA00008,Octreótido en bolo y en infusión por 2 a 5 días (?g/h),50,50,?g/h
+DIGES00017TRATA00009,Taponamiento con sonda de Sengstaken-Blakemore,,,
+DIGES00017TRATA00010,Esclerosis endoscópica o ligadura con banda,,,
+DIGES00017TRATA00011,"Coagulación endoscópica, sonda calórica, láser o inyección de adrenalina en úlcera",,,
+DIGES00017TRATA00012,Inhibidor de la bomba de protones IV,,,
+DIGES00017TRATA00013,Embolización o vasopresina de la arteria gástrica izquierda,,,
+DIGES00017TRATA00014,Etinilestradiol/noretisterona en telangiectasias,,,
+DIGES00017TRATA00015,Etinilestradiol/noretisterona al día (mg de noretisterona),1,1,mg de noretisterona
+DIGES00017TRATA00016,Derivación portosistémica intrahepática transyugular (TIPS),,,
+DIGES00017TRATA00017,"Cirugía urgente en hemorragia no controlada, recidivante grave o fístula aortoentérica",,,
+DIGES00017TRATA00018,Propranolol o nadolol para prevenir hemorragia por varices (no en hemorragia aguda),,,
+ONCOL00014TRATA00001,Resección quirúrgica en estadios IA a IIB,,,
+ONCOL00014TRATA00002,Cisplatino complementario por cuatro ciclos (mg/m2),100,100,mg/m2
+ONCOL00014TRATA00003,Radioterapia torácica con quimioterapia basada en cisplatino en etapa II irresecable,,,
+ONCOL00014TRATA00004,Cisplatino/taxano en enfermedad irresecable o metastásica,,,
+ONCOL00014TRATA00005,Pemetrexed,,,
+ONCOL00014TRATA00006,Bevacizumab en pacientes seleccionados,,,
+ONCOL00014TRATA00007,Quimioterapia combinada en células pequeñas,,,
+ONCOL00014TRATA00008,Radioterapia torácica concurrente en células pequeñas limitada,,,
+ONCOL00014TRATA00009,Radiación craneal profiláctica,,,
+ONCOL00014TRATA00010,Gefitinib o erlotinib (mutaciones EGF),,,
+ONCOL00014TRATA00011,Crizotinib (ALK),,,
+ONCOL00014TRATA00012,Obliteración con láser por broncoscopia,,,
+ONCOL00014TRATA00013,"Radioterapia para metástasis cerebrales, compresión medular y lesiones óseas",,,
+ONCOL00014TRATA00014,Suspensión del tabaquismo,,,
+INFEC00033TRATA00001,"Penicilina G IV c/4 h por 4 semanas (estreptococo sensible, millones U)",3,2,millones U
+INFEC00033TRATA00002,Ceftriaxona IV al día por 4 semanas (g),2,2,g
+INFEC00033TRATA00003,Vancomicina IV c/12 h (mg/kg),15,15,mg/kg
+INFEC00033TRATA00004,Gentamicina IV o IM al día por 2 semanas (mg/kg),3,3,mg/kg
+INFEC00033TRATA00005,Enterococo: penicilina G c/4 h más gentamicina c/8 h por 4 a 6 semanas (millones U),5,4,millones U
+INFEC00033TRATA00006,Ampicilina IV c/4 h (g),2,2,g
+INFEC00033TRATA00007,Nafcilina u oxacilina IV c/4 h por 4 a 6 semanas (g),2,2,g
+INFEC00033TRATA00008,Cefazolina IV c/8 h (g),2,2,g
+INFEC00033TRATA00009,Rifampicina VO c/8 h en prótesis valvular (mg),300,300,mg
+INFEC00033TRATA00010,Ampicilina/sulbactam IV c/6 h por 4 semanas en HACEK (g),3,3,g
+INFEC00033TRATA00011,Daptomicina 6 mg/kg (o 8 a 10) en S. aureus con MIC de vancomicina ?2,,,
+INFEC00033TRATA00012,"Cirugía en insuficiencia cardiaca moderada o grave, dehiscencia, bacteriemia persistente o vegetaciones >10 mm",,,
+INFEC00033TRATA00013,Profilaxis dental: amoxicilina VO 1 h antes (g),2,2,g
+INFEC00033TRATA00014,Clindamicina 600 mg VO 1 h antes (mg),600,600,mg
+CARDI00017TRATA00001,Diurético para sobrecarga de volumen,,,
+CARDI00017TRATA00002,Inhibidor de la ACE,,,
+CARDI00017TRATA00003,Antagonista del receptor de angiotensina,,,
+CARDI00017TRATA00004,Hidralazina-nitrato,,,
+CARDI00017TRATA00005,Antagonista beta,,,
+CARDI00017TRATA00006,Espironolactona en insuficiencia cardiaca avanzada,,,
+CARDI00017TRATA00007,"Warfarina prolongada (AF concomitante, embolia previa o infarto anterior grande reciente)",,,
+CARDI00017TRATA00008,Amiodarona para mantener ritmo sinusal en AF,,,
+CARDI00017TRATA00009,Dofetilida para mantener ritmo sinusal en AF,,,
+CARDI00017TRATA00010,Cardioversor desfibrilador implantado (clase ?III y LVEF <35%),,,
+CARDI00017TRATA00011,"Electromarcación biventricular (clases III-IV, LVEF <35% y QRS >120 ms)",,,
+CARDI00017TRATA00012,Fármacos inmunodepresores si hay miocarditis activa en biopsia (controvertido),,,
+CARDI00017TRATA00013,Trasplante cardiaco,,,
+NEUMO00008TRATA00001,Eliminar desencadenantes,,,
+NEUMO00008TRATA00002,Agonistas ?2 de acción corta (albuterol) de rescate,,,
+NEUMO00008TRATA00003,"Agonistas ?2 de acción prolongada (salmeterol, formoterol) siempre con corticoesteroide inhalado",,,
+NEUMO00008TRATA00004,Corticoesteroides inhalados dos veces al día,,,
+NEUMO00008TRATA00005,Anticolinérgicos como complemento,,,
+NEUMO00008TRATA00006,Teofilina,,,
+NEUMO00008TRATA00007,Montelukast o zafirlukast,,,
+NEUMO00008TRATA00008,Cromoglicato disódico o nedocromilo,,,
+NEUMO00008TRATA00009,Omalizumab en asma grave con IgE alta,,,
+NEUMO00008TRATA00010,Corticoesteroides sistémicos solo en exacerbaciones,,,
+NEUMO00008TRATA00011,Cámara de inhalación y enjuague bucal,,,
+NEUMO00008TRATA00012,Tratamiento escalonado según gravedad,,,
+NEUMO00008TRATA00013,Suspender el tabaquismo,,,
+NEUMO00025TRATA00001,Heparina no fraccionada en bolo (U),10000,5000,U
+NEUMO00025TRATA00002,Heparina no fraccionada en infusión (U/h),1000,1000,U/h
+NEUMO00025TRATA00003,Meta de aPTT 2 a 3 veces el límite normal superior,,,
+NEUMO00025TRATA00004,Enoxaparina o dalteparina,,,
+NEUMO00025TRATA00005,Fondaparinux,,,
+NEUMO00025TRATA00006,"Argatrobán, lepirudina o bivalirudina en trombocitopenia por heparina",,,
+NEUMO00025TRATA00007,Warfarina dosis inicial diaria (mg),5,5,mg
+NEUMO00025TRATA00008,INR de 2 a 3,,,
+NEUMO00025TRATA00009,Anticoagulación por 3 a 6 meses,,,
+NEUMO00025TRATA00010,Anticoagulación prolongada en cáncer o PE idiopática,,,
+NEUMO00025TRATA00011,Anticoagulación de por vida si recurre,,,
+NEUMO00025TRATA00012,Protamina para revertir heparina,,,
+NEUMO00025TRATA00013,Plasma fresco congelado o crioprecipitados para sangrado por warfarina,,,
+NEUMO00025TRATA00014,Vitamina K,,,
+NEUMO00025TRATA00015,Factor VIIa recombinante,,,
+NEUMO00025TRATA00016,Evitar warfarina en embarazo,,,
+NEUMO00025TRATA00017,Filtro en vena cava inferior,,,
+NEUMO00025TRATA00018,Fibrinolíticos (activador del plasminógeno hístico) en insuficiencia cardiaca derecha,,,
+NEUMO00025TRATA00019,Embolectomía por catéter o quirúrgica,,,
+NEUMO00025TRATA00020,Tromboendarterectomía pulmonar,,,
+RENAL00008TRATA00001,Tratamiento de la hipertensión con diuréticos potentes,,,
+RENAL00008TRATA00002,Eritropoyetina humana recombinante hasta hemoglobina de 100 a 110 g/L,,,
+RENAL00008TRATA00003,"Hierro complementario, a menudo parenteral",,,
+RENAL00008TRATA00004,Restricción dietética de fósforo,,,
+RENAL00008TRATA00005,"Fijadores de fosfato posprandiales (carbonato o acetato de calcio, sevelamer)",,,
+RENAL00008TRATA00006,Restricción dietética de potasio,,,
+RENAL00008TRATA00007,Diálisis si el potasio es >6 mmol/L en varias ocasiones,,,
+RENAL00008TRATA00008,Inhibidores de la ACE o ARB para retrasar la progresión,,,
+RENAL00008TRATA00009,Diálisis,,,
+RENAL00008TRATA00010,Trasplante renal,,,
+MUSCU00004TRATA00001,Ibuprofeno 400 a 800 mg tres a cuatro veces al día,800,400,mg
+MUSCU00004TRATA00002,Hidroxicloroquina 400 mg/día,400,400,mg/día
+MUSCU00004TRATA00003,"Belimumab 10 mg/kg IV en semanas 0, 2, 4 y luego cada mes",10,10,mg/kg
+MUSCU00004TRATA00004,Glucocorticoides sistémicos,,,
+MUSCU00004TRATA00005,Ciclofosfamida IV (mg/m2) por seis meses,750,500,mg/m2
+MUSCU00004TRATA00006,Micofenolato mofetilo (g/día),3,2,g/día
+MUSCU00004TRATA00007,Azatioprina,,,
+ENDOC00015TRATA00001,Metimazol o carbimazol inicial dos a tres veces al día (mg),20,10,mg
+ENDOC00015TRATA00002,Metimazol o carbimazol de mantenimiento (mg/día),10,2.5,mg/día
+ENDOC00015TRATA00003,Propiltiouracilo inicial cada 8 h (mg),200,100,mg
+ENDOC00015TRATA00004,Propiltiouracilo de mantenimiento (mg),50,50,mg
+ENDOC00015TRATA00005,Yodo radiactivo,,,
+ENDOC00015TRATA00006,Tiroidectomía subtotal,,,
+ENDOC00015TRATA00007,Propranolol cada 6 h (mg),40,20,mg
+ENDOC00015TRATA00008,Atenolol (mg/día),50,50,mg/día
+ENDOC00015TRATA00009,Warfarina si hay fibrilación auricular,,,
+NEURO00085TRATA00001,Antibioticoterapia empírica antes de neuroimagen y punción lumbar,,,
+NEURO00085TRATA00002,Ampicilina adultos (g/día),12,12,g/día
+NEURO00085TRATA00003,Cefotaxima adultos (g/día),12,12,g/día
+NEURO00085TRATA00004,Ceftriaxona adultos (g/día),4,4,g/día
+NEURO00085TRATA00005,Cefepima adultos (g/día),6,6,g/día
+NEURO00085TRATA00006,Ceftazidima adultos (g/día),6,6,g/día
+NEURO00085TRATA00007,Meropenem adultos (g/día),3,3,g/día
+NEURO00085TRATA00008,Vancomicina adultos (g/día),2,2,g/día
+NEURO00085TRATA00009,Nafcilina adultos (g/día),12,9,g/día
+NEURO00085TRATA00010,Penicilina G adultos (millones U/día),24,20,millones U/día
+NEURO00085TRATA00011,Duración 7 días en meningococo,,,
+NEURO00085TRATA00012,Duración 14 días en neumococo,,,
+NEURO00085TRATA00013,Duración 21 días en gramnegativos y Listeria,,,
+NEURO00085TRATA00014,Dexametasona 10 mg IV cada 6 h por 4 días,,,
+NEURO00085TRATA00015,Rifampicina 600 mg cada 12 h por 2 días como profilaxis de contactos,,,
+NEURO00085TRATA00016,Azitromicina 500 mg dosis única como profilaxis,,,
+NEURO00085TRATA00017,Ceftriaxona 250 mg IM como profilaxis,,,

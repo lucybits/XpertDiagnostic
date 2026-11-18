@@ -1,26 +1,35 @@
-
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using XpertDiagnostic.Api.Configuration;
 using XpertDiagnostic.Api.Models.Entities;
+using XpertDiagnostic.Api.Models.Results;
+using XpertDiagnostic.Api.Services.Interfaces;
 
 namespace XpertDiagnostic.Api.Services;
 
-public class JwtTokenService(IConfiguration configuration)
+/// <summary>
+/// Emite tokens JWT firmados con HMAC-SHA256. La clave, el emisor, la audiencia y la duración
+/// vienen de <see cref="JwtOptions"/>; ninguno está escrito en el código.
+/// </summary>
+public sealed class JwtTokenService(IOptions<JwtOptions> options, TimeProvider tiempo) : ITokenService
 {
-    public (string Token, DateTime ExpiraEn) GenerarToken(Usuario usuario)
+    private readonly JwtOptions _opciones = options.Value;
+
+    public GeneratedToken GenerarToken(User usuario)
     {
-        var key = configuration["Jwt:Key"]
-            ?? throw new InvalidOperationException("Falta configurar Jwt:Key.");
+        ArgumentNullException.ThrowIfNull(usuario);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(usuario.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(usuario.Rol);
 
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-        var credentials = new SigningCredentials(
-            securityKey,
-            SecurityAlgorithms.HmacSha256
-        );
+        var ahora = tiempo.GetUtcNow().UtcDateTime;
+        var expiracion = ahora.AddMinutes(_opciones.ExpirationMinutes);
 
-        var expiracion = DateTime.UtcNow.AddHours(2);
+        var credenciales = new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_opciones.Key)),
+            SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
@@ -29,11 +38,13 @@ public class JwtTokenService(IConfiguration configuration)
         };
 
         var token = new JwtSecurityToken(
+            issuer: _opciones.Issuer,
+            audience: _opciones.Audience,
             claims: claims,
+            notBefore: ahora,
             expires: expiracion,
-            signingCredentials: credentials
-        );
+            signingCredentials: credenciales);
 
-        return (new JwtSecurityTokenHandler().WriteToken(token), expiracion);
+        return new GeneratedToken(new JwtSecurityTokenHandler().WriteToken(token), expiracion);
     }
 }
