@@ -9,7 +9,10 @@ namespace XpertDiagnostic.Tests;
 
 public class UnitTest1
 {
+    // Prueba de integración: requiere la API ejecutándose en http://localhost:5140.
+    // Para omitirla: dotnet test --filter "Categoria!=Integracion"
     [Fact]
+    [Trait("Categoria", "Integracion")]
     public async Task PT02_ContrasenaIncorrecta_DebeRetornar401()
     {
         // Arrange: preparar una solicitud con una contraseña incorrecta.

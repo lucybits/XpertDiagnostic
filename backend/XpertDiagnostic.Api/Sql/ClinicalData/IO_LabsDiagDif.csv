@@ -1,0 +1,62 @@
+Id_Estudio,Nombre,Lim_Inf,Lim_Sup,Unidades,Id_Enferme,Id_Pacient
+DIGES00017DIAGD00001,Endoscopia superior (exactitud >90%),,,,DIGES00017,PACIE00008
+DIGES00017DIAGD00002,Radiografía de tubo digestivo alto con bario,,,,DIGES00017,
+DIGES00017DIAGD00003,Arteriografía mesentérica selectiva,,,,DIGES00017,PACIE00008
+DIGES00017DIAGD00004,Gammagrama con 99Tc,,,,DIGES00017,
+ONCOL00014DIAGD00001,Radiografía de tórax,,,,ONCOL00014,PACIE00009
+ONCOL00014DIAGD00002,CT de tórax y abdomen,,,,ONCOL00014,
+ONCOL00014DIAGD00003,Tomografía por emisión de positrones,,,,ONCOL00014,PACIE00009
+ONCOL00014DIAGD00004,Examen histológico del mediastino,,,,ONCOL00014,
+ONCOL00014DIAGD00005,CT helicoidal de dosis baja para detección (mayores de 55 a 74 años con más de 30 paquetes-año),,,,ONCOL00014,
+ONCOL00014DIAGD00006,"Nódulo pulmonar solitario: tabaquismo, edad ?35 años, lesión >2 cm, ausencia de calcificación, síntomas o crecimiento",,,,ONCOL00014,
+INFEC00033DIAGD00001,Ecocardiografía transtorácica (no detecta vegetaciones <2 mm),,,,INFEC00033,PACIE00010
+INFEC00033DIAGD00002,Ecocardiografía transesofágica (más de 90% de sensibilidad),,,,INFEC00033,
+INFEC00033DIAGD00003,Repetir TEE a los 7 a 10 días si es negativa,,,,INFEC00033,
+INFEC00033DIAGD00004,Dos grupos de tres hemocultivos en las primeras 24 h,,,,INFEC00033,PACIE00010
+CARDI00017DIAGD00001,ECG: bloqueo de rama izquierda y anomalías de ST y onda T,,,,CARDI00017,PACIE00001
+CARDI00017DIAGD00002,Radiografía de tórax: cardiomegalia,,,,CARDI00017,
+CARDI00017DIAGD00003,Radiografía de tórax: redistribución vascular,,,,CARDI00017,
+CARDI00017DIAGD00004,Radiografía de tórax: derrames pulmonares,,,,CARDI00017,PACIE00001
+CARDI00017DIAGD00005,"Ecocardiograma, CT o MRI: crecimiento del LV",,,,CARDI00017,
+CARDI00017DIAGD00006,"Ecocardiograma, CT o MRI: crecimiento del RV",,,,CARDI00017,
+CARDI00017DIAGD00007,"Ecocardiograma, CT o MRI: alteración generalizada de la contracción",,,,CARDI00017,
+CARDI00017DIAGD00008,Cateterismo con angiografía coronaria (angina de pecho),,,,CARDI00017,
+CARDI00017DIAGD00009,Biopsia endomiocárdica con microscopio electrónico si se sospecha diagnóstico específico,,,,CARDI00017,PACIE00001
+CARDI00017DIAGD00010,Detección de alteraciones respiratorias durante el sueño,,,,CARDI00017,PACIE00001
+NEUMO00008DIAGD00001,Obstrucción de vías respiratorias superiores por tumor o edema laríngeo (estridor),,,,NEUMO00008,
+NEUMO00008DIAGD00002,Tumor endobronquial o cuerpo extraño (sibilancias circunscritas),,,,NEUMO00008,
+NEUMO00008DIAGD00003,Insuficiencia cardiaca congestiva (estertores bibasilares),,,,NEUMO00008,PACIE00003
+NEUMO00008DIAGD00004,Neumonías eosinofílicas,,,,NEUMO00008,
+NEUMO00008DIAGD00005,Síndrome de Churg-Strauss,,,,NEUMO00008,
+NEUMO00008DIAGD00006,Disfunción de cuerdas vocales (laringoscopia),,,,NEUMO00008,
+NEUMO00008DIAGD00007,EPOC,,,,NEUMO00008,PACIE00003
+NEUMO00008DIAGD00008,Radiografía de tórax normal,,,,NEUMO00008,PACIE00003
+NEUMO00008DIAGD00009,CT con bronquiectasias centrales en ABPA,,,,NEUMO00008,PACIE00003
+NEUMO00025DIAGD00001,Ecografía venosa con compresión y Doppler,,,,NEUMO00025,
+NEUMO00025DIAGD00002,CT de tórax con contraste IV,,,,NEUMO00025,
+NEUMO00025DIAGD00003,Gammagrafía de ventilación y perfusión,,,,NEUMO00025,
+NEUMO00025DIAGD00004,Ecocardiografía transtorácica,,,,NEUMO00025,PACIE00004
+NEUMO00025DIAGD00005,Ecocardiografía transesofágica,,,,NEUMO00025,
+NEUMO00025DIAGD00006,Radiografía con oligohemia focal y densidades en cuña,,,,NEUMO00025,
+NEUMO00025DIAGD00007,Quiste de Baker roto,,,,NEUMO00025,
+NEUMO00025DIAGD00008,Celulitis,,,,NEUMO00025,
+NEUMO00025DIAGD00009,Neumonía,,,,NEUMO00025,PACIE00004
+NEUMO00025DIAGD00010,Infarto agudo del miocardio,,,,NEUMO00025,PACIE00004
+NEUMO00025DIAGD00011,Disección aórtica,,,,NEUMO00025,PACIE00004
+RENAL00008DIAGD00001,Ecografía renal para medir tamaño,,,,RENAL00008,PACIE00005
+RENAL00008DIAGD00002,Biopsia renal (glomeruloesclerosis o fibrosis intersticial),,,,RENAL00008,
+RENAL00008DIAGD00003,"Nefropatía diabética, por VIH y mieloma pueden cursar con riñones de tamaño normal o grande",,,,RENAL00008,PACIE00005
+MUSCU00004DIAGD00001,Biopsia renal si hay glomerulonefritis,,,,MUSCU00004,PACIE00006
+MUSCU00004DIAGD00002,Electrocardiograma,,,,MUSCU00004,PACIE00006
+MUSCU00004DIAGD00003,"Lupus por fármacos (procainamida, hidralazina, isoniazida, clorpromazina, metildopa, minociclina, anti-TNF)",,,,MUSCU00004,
+ENDOC00015DIAGD00001,Adenoma hipofisario secretor de TSH,,,,ENDOC00015,
+ENDOC00015DIAGD00002,Síndrome de resistencia a hormona tiroidea,,,,ENDOC00015,PACIE00002
+ENDOC00015DIAGD00003,Tiroiditis,,,,ENDOC00015,
+ENDOC00015DIAGD00004,Exceso de yodo,,,,ENDOC00015,PACIE00002
+ENDOC00015DIAGD00005,Tirotoxicosis falsa,,,,ENDOC00015,
+NEURO00085DIAGD00001,Meningoencefalitis viral por HSV,,,,NEURO00085,
+NEURO00085DIAGD00002,Fiebre exantemática de las Montañas Rocallosas,,,,NEURO00085,
+NEURO00085DIAGD00003,Empiema subdural o epidural,,,,NEURO00085,
+NEURO00085DIAGD00004,Absceso cerebral,,,,NEURO00085,
+NEURO00085DIAGD00005,Hemorragia subaracnoidea,,,,NEURO00085,PACIE00007
+NEURO00085DIAGD00006,Encefalomielitis diseminada aguda,,,,NEURO00085,PACIE00007

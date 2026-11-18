@@ -16,6 +16,15 @@
   --animate-login-float-two: login-float-two 8s ease-in-out infinite;
   --animate-login-float-three: login-float-three 6s ease-in-out infinite;
   --animate-splash-letter: splash-letter 1.25s cubic-bezier(0.2, 1.08, 0.2, 1) both;
+  /* Etiqueta "Pendiente": figuras naranjas que se dispersan sin parar (P-98). Solo anima transform y
+     opacity; cada figura define su rumbo con --dx y --dy (ver SectionHeader). */
+  --animate-status-particle: status-particle 3s ease-out infinite;
+
+  @keyframes status-particle {
+    0% { transform: translate(0, 0) scale(0.4); opacity: 0; }
+    25% { opacity: 0.85; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0; }
+  }
 
   @keyframes login-float-one {
     0%, 100% { transform: translate3d(0, 0, 0); }

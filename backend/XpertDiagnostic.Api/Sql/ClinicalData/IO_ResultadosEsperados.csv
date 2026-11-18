@@ -1,0 +1,11 @@
+Id_Pacient,Id_Enferme_Esperado,Enfermedad_Esperada
+PACIE00001,CARDI00017,Miocardiopatía dilatada
+PACIE00002,ENDOC00015,Tirotoxicosis
+PACIE00003,NEUMO00008,Asma
+PACIE00004,NEUMO00025,Tromboembolia pulmonar
+PACIE00005,RENAL00008,Nefropatía crónica (CKD)
+PACIE00006,MUSCU00004,Lupus eritematoso sistémico
+PACIE00007,NEURO00085,Meningitis bacteriana aguda
+PACIE00008,DIGES00017,Hemorragia de tubo digestivo alto
+PACIE00009,ONCOL00014,Cáncer pulmonar
+PACIE00010,INFEC00033,Endocarditis infecciosa
