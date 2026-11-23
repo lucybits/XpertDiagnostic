@@ -115,7 +115,7 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
           <h2 id={titleId} className="text-xl font-semibold text-slate-900">
             Buscar paciente
           </h2>
-          <p className="mt-0.5 text-base text-slate-500">
+          <p className="mt-0.5 text-base text-slate-700">
             Busca entre los pacientes registrados por nombre o número de expediente.
           </p>
         </div>
@@ -123,7 +123,7 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
           type="button"
           onClick={onClose}
           aria-label="Cerrar buscador"
-          className={`rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${FOCUS_RING}`}
+          className={`rounded-lg p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-800 ${FOCUS_RING}`}
         >
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
@@ -135,7 +135,7 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
           <label htmlFor={`${ids}-query`} className="sr-only">
             Nombre o número de expediente
           </label>
-          <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-slate-600" />
           <input
             id={`${ids}-query`}
             data-autofocus
@@ -177,16 +177,16 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
                   onClick={() => onSelect(patient)}
                   className={`group flex min-w-0 flex-1 items-center gap-4 rounded-xl px-3 py-3 text-left transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700">
                     <UserRound aria-hidden="true" className="h-5 w-5" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium text-slate-900">{patient.fullName}</span>
-                    <span className="block text-slate-500">
+                    <span className="block text-slate-700">
                       {patient.recordNumber} | {patient.age} años
                     </span>
                   </span>
-                  <span className="hidden max-w-[40%] items-center gap-1.5 text-slate-500 sm:flex">
+                  <span className="hidden max-w-[40%] items-center gap-1.5 text-slate-700 sm:flex">
                     <Stethoscope aria-hidden="true" className="h-4 w-4 shrink-0" />
                     <span className="sr-only">Diagnóstico:</span>
                     <span className="truncate">{patient.diagnosis ?? 'Sin diagnóstico'}</span>
@@ -218,12 +218,12 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
             {patients.length === 0 ? (
               <>
                 <p className="font-medium text-slate-900">Aún no hay pacientes registrados</p>
-                <p className="text-slate-500">Cuando se registren pacientes, podrás buscarlos aquí.</p>
+                <p className="text-slate-700">Cuando se registren pacientes, podrás buscarlos aquí.</p>
               </>
             ) : (
               <>
                 <p className="font-medium text-slate-900">No se encontraron pacientes</p>
-                <p className="text-slate-500">Prueba con otro nombre o quita algunos filtros.</p>
+                <p className="text-slate-700">Prueba con otro nombre o quita algunos filtros.</p>
               </>
             )}
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
@@ -253,7 +253,7 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
 
       {/* Pie */}
       <footer className="flex items-center gap-3 border-t-2 border-slate-200 px-6 py-3">
-        <p aria-live="polite" className="flex-1 text-slate-500">
+        <p aria-live="polite" className="flex-1 text-slate-700">
           {results.length === 1 ? '1 paciente encontrado' : `${results.length} pacientes encontrados`}
           {results.length > 0 && (
             <>
@@ -273,7 +273,7 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
           <button
             type="button"
             onClick={clearFilters}
-            className={`rounded-lg px-3 py-2 font-medium text-slate-600 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
+            className={`rounded-lg px-3 py-2 font-medium text-slate-800 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
           >
             Limpiar filtros
           </button>

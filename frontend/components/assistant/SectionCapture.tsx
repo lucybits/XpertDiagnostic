@@ -124,24 +124,19 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
           <h3 id={`${ids}-title`} className="text-lg font-semibold text-[#0b1533]">
             {sectionLabel}
           </h3>
-          <p className="mt-0.5 text-slate-600">
-            {isSingle
-              ? 'Elige la enfermedad que el paciente ya padecía, si tiene alguna.'
-              : `Marca los ${capture.noun} que presenta el paciente. Si se pueden medir, anota el valor.`}
-          </p>
         </header>
 
         {options === null ? (
-          <div role="status" className="flex items-center justify-center gap-3 px-5 py-10 text-slate-600">
+          <div role="status" className="flex items-center justify-center gap-3 px-5 py-10 text-slate-800">
             {loadError ? (
               <span className="flex items-center gap-2 text-red-700">
                 <CircleAlert aria-hidden="true" className="h-5 w-5" />
-                No se pudo cargar el catálogo. Revisa tu sesión e inténtalo de nuevo.
+                No se pudo cargar el catálogo.
               </span>
             ) : (
               <>
                 <LoadingDots label={null} />
-                <span>Cargando la base de conocimiento…</span>
+                <span>Cargando…</span>
               </>
             )}
           </div>
@@ -153,7 +148,7 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
                 Buscar {noun}
               </label>
               <div className="relative">
-                <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-600" />
                 <input
                   id={`${ids}-search`}
                   type="search"
@@ -190,15 +185,15 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
                           {isChecked && <Check className="h-3.5 w-3.5" />}
                         </span>
                         <span className="min-w-0 flex-1">{option.label}</span>
-                        {option.units && <span className="shrink-0 text-sm text-slate-400">{option.units}</span>}
+                        {option.units && <span className="shrink-0 text-sm text-slate-600">{option.units}</span>}
                       </button>
                     </li>
                   );
                 })}
-                {visible.length === 0 && <li className="px-3 py-6 text-center text-slate-500">Sin coincidencias.</li>}
+                {visible.length === 0 && <li className="px-3 py-6 text-center text-slate-700">Sin coincidencias.</li>}
                 {visible.length > MAX_VISIBLE && (
-                  <li className="px-3 py-2 text-center text-sm text-slate-500">
-                    Hay {visible.length - MAX_VISIBLE} más: escribe para acotar la búsqueda.
+                  <li className="px-3 py-2 text-center text-sm text-slate-700">
+                    {visible.length - MAX_VISIBLE} más. Escribe para filtrar.
                   </li>
                 )}
               </ul>
@@ -210,9 +205,7 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
                 {isSingle ? 'Seleccionada' : `Seleccionados (${selected.size})`}
               </p>
               {selected.size === 0 ? (
-                <p className="mt-2 text-slate-500">
-                  {isSingle ? 'Ninguna: el paciente no tiene enfermedad preexistente.' : `Aún no marcas ${capture.noun}.`}
-                </p>
+                <p className="mt-2 text-slate-700">Sin selección.</p>
               ) : (
                 <ul className="mt-2 space-y-2">
                   {[...selected].map(([id, value]) => {
@@ -227,14 +220,14 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
                             type="button"
                             onClick={() => toggle(option)}
                             aria-label={`Quitar ${option.label}`}
-                            className={`rounded-md p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 ${FOCUS_RING}`}
+                            className={`rounded-md p-1 text-slate-600 hover:bg-slate-200 hover:text-slate-700 ${FOCUS_RING}`}
                           >
                             <X aria-hidden="true" className="h-4 w-4" />
                           </button>
                         </div>
                         {option.units && (
                           <div className="mt-1.5 flex items-center gap-2">
-                            <label htmlFor={`${ids}-${id}`} className="text-sm text-slate-600">
+                            <label htmlFor={`${ids}-${id}`} className="text-sm text-slate-800">
                               Valor
                             </label>
                             <input
@@ -249,10 +242,10 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
                                 isInvalid ? 'border-red-600' : 'border-slate-200 focus:border-[#116ee6]'
                               }`}
                             />
-                            <span className="text-sm text-slate-500">{option.units}</span>
+                            <span className="text-sm text-slate-700">{option.units}</span>
                           </div>
                         )}
-                        {isInvalid && <p className="mt-1 text-sm text-red-700">Escribe solo un número, p. ej. 38.5</p>}
+                        {isInvalid && <p className="mt-1 text-sm text-red-700">Solo números, p. ej. 38.5</p>}
                       </li>
                     );
                   })}

@@ -98,7 +98,7 @@ export default function PatientResultScreen({ patientId }: { patientId: string }
             </Link>
           </div>
         ) : !result ? (
-          <div role="status" className="flex min-h-dvh items-center justify-center gap-3 text-slate-600">
+          <div role="status" className="flex min-h-dvh items-center justify-center gap-3 text-slate-800">
             <LoadingDots label={null} />
             Cargando el resultado del expediente…
           </div>
@@ -111,17 +111,17 @@ export default function PatientResultScreen({ patientId }: { patientId: string }
               </span>
               <div className="min-w-0 flex-1">
                 <h1 className="truncate text-2xl font-bold text-[#0b1533]">{result.paciente.nombreCompleto}</h1>
-                <p className="text-slate-600">
+                <p className="text-slate-800">
                   {result.paciente.edad} años | Exp. {result.paciente.idPaciente}
                 </p>
               </div>
-              <span className="hidden text-sm text-slate-500 print:block">XpertDiagnostic | Resultado del expediente</span>
+              <span className="hidden text-sm text-slate-700 print:block">XpertDiagnostic | Resultado del expediente</span>
               {/* Acciones en pantallas medianas y móvil (la columna izquierda se oculta). */}
               <div className="flex gap-2 print:hidden lg:hidden">
-                <Link href={`/home?paciente=${patientId}`} aria-label="Volver a la captura" className="rounded-lg p-2 text-slate-600 hover:bg-slate-100">
+                <Link href={`/home?paciente=${patientId}`} aria-label="Volver a la captura" className="rounded-lg p-2 text-slate-800 hover:bg-slate-100">
                   <ArrowLeft aria-hidden="true" className="h-5 w-5" />
                 </Link>
-                <button type="button" onClick={printWithTitle} aria-label="Descargar PDF" className="rounded-lg p-2 text-slate-600 hover:bg-slate-100">
+                <button type="button" onClick={printWithTitle} aria-label="Descargar PDF" className="rounded-lg p-2 text-slate-800 hover:bg-slate-100">
                   <Download aria-hidden="true" className="h-5 w-5" />
                 </button>
               </div>
@@ -132,7 +132,7 @@ export default function PatientResultScreen({ patientId }: { patientId: string }
               <DiagnosisCard result={result} />
               <TreatmentCard key={result.idEnfermedadDiagnosticada ?? 'none'} result={result} onSaved={setResult} />
               <CarePlanCard result={result} onSaved={setResult} />
-              <p className="text-center text-xs text-slate-600">
+              <p className="text-center text-xs text-slate-800">
                 Uso exclusivo para médicos. XpertDiagnostic es orientativo; la decisión clínica es del médico tratante.
               </p>
             </div>
@@ -155,7 +155,7 @@ export default function PatientResultScreen({ patientId }: { patientId: string }
             <Status done={result.idTratamiento !== null} label="Tratamiento" detail={result.idTratamiento ? 'Indicado' : 'Pendiente'} />
             <Status done={result.plan !== null} label="Plan y seguimiento" detail={result.plan ? 'Guardado' : 'Pendiente'} />
           </ul>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-700">
             Las salidas se guardan en el expediente del paciente: diagnóstico, tratamiento y plan.
           </p>
         </aside>
@@ -168,13 +168,13 @@ function Status({ done, label, detail }: { done: boolean; label: string; detail:
   const Icon = done ? CircleCheck : CircleDashed;
   return (
     <li className="flex items-start gap-2.5">
-      <Icon aria-hidden="true" className={`mt-0.5 h-5 w-5 shrink-0 ${done ? 'text-teal-700' : 'text-slate-400'}`} />
+      <Icon aria-hidden="true" className={`mt-0.5 h-5 w-5 shrink-0 ${done ? 'text-teal-700' : 'text-slate-600'}`} />
       <span className="min-w-0">
         <span className="block font-medium text-slate-900">
           {label}
           <span className="sr-only">: {done ? 'completo' : 'pendiente'}</span>
         </span>
-        <span className="block truncate text-slate-500">{detail}</span>
+        <span className="block truncate text-slate-700">{detail}</span>
       </span>
     </li>
   );

@@ -26,7 +26,7 @@ export default function ChatNotice() {
           {isOpen ? 'Menos información' : 'Más información'}
         </button>
       </p>
-      <p id={detailId} hidden={!isOpen} className="mx-auto mt-2 max-w-2xl text-slate-600">
+      <p id={detailId} hidden={!isOpen} className="mx-auto mt-2 max-w-2xl text-slate-800">
         XpertDiagnostic compara los hallazgos que capturas con su base de conocimiento y propone un diagnóstico
         diferencial con los datos que apoyan cada opción. Es una herramienta de apoyo: no sustituye la valoración
         clínica. El motor de análisis actual es provisional y los pacientes de prueba son ficticios.

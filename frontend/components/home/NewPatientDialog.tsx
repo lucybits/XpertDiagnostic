@@ -101,7 +101,7 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
 
   return (
     <form noValidate onSubmit={handleSubmit}>
-      <header className="flex items-start gap-4 border-b-2 border-slate-200 px-6 pt-5 pb-4">
+      <header className="flex items-center gap-4 border-b-2 border-slate-200 px-6 pt-5 pb-4">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800">
           <UserPlus aria-hidden="true" className="h-5 w-5" />
         </span>
@@ -109,13 +109,12 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
           <h2 id={titleId} className="text-xl font-semibold text-slate-900">
             Nuevo paciente
           </h2>
-          <p className="mt-0.5 text-slate-500">Solo necesitamos su nombre y su edad para abrir el expediente.</p>
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Cerrar"
-          className={`rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${FOCUS_RING}`}
+          className={`rounded-lg p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-800 ${FOCUS_RING}`}
         >
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
@@ -150,7 +149,7 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
           <label htmlFor={`${ids}-age`} className="mb-1.5 block font-medium text-slate-700">
             Edad
           </label>
-          <div className="relative w-40">
+          <div className="relative w-28">
             <input
               id={`${ids}-age`}
               ref={ageRef}
@@ -164,21 +163,15 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
                 clearError('age');
               }}
               aria-invalid={errors.age ? true : undefined}
-              aria-describedby={errors.age ? `${ids}-age-error` : `${ids}-age-hint`}
+              aria-describedby={errors.age ? `${ids}-age-error` : undefined}
               placeholder="0"
               className={`${FIELD} pr-14 ${fieldBorder(Boolean(errors.age))}`}
             />
-            <span aria-hidden="true" className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-slate-500">
+            <span aria-hidden="true" className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-slate-700">
               años
             </span>
           </div>
-          {errors.age ? (
-            <FieldError id={`${ids}-age-error`} message={errors.age} />
-          ) : (
-            <p id={`${ids}-age-hint`} className="mt-1.5 text-sm text-slate-500">
-              De {PATIENT_LIMITS.ageMin} a {PATIENT_LIMITS.ageMax} años.
-            </p>
-          )}
+          {errors.age && <FieldError id={`${ids}-age-error`} message={errors.age} />}
         </div>
 
         {serverError && (
@@ -188,8 +181,8 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
           </p>
         )}
 
-        <p className="flex items-start gap-2 rounded-lg bg-slate-100 px-3 py-2.5 text-slate-600">
-          <Hash aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
+        <p className="flex items-start gap-2 rounded-lg bg-slate-100 px-3 py-2.5 text-slate-800">
+          <Hash aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
           El número de expediente se asigna automáticamente. Síntomas, signos y antecedentes se capturan después, en
           el chat.
         </p>
@@ -199,7 +192,7 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
         <button
           type="button"
           onClick={onClose}
-          className={`rounded-lg px-4 py-2 font-medium text-slate-600 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
+          className={`rounded-lg px-4 py-2 font-medium text-slate-800 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
         >
           Cancelar
         </button>

@@ -60,14 +60,14 @@ export function ClinicalHistoryCard({ result }: { result: PatientResult }) {
               <dt className="font-medium text-slate-700">{label}</dt>
               <dd>
                 {items.length === 0 ? (
-                  <span className="text-slate-500">Sin registros</span>
+                  <span className="text-slate-700">Sin registros</span>
                 ) : (
                   <ul className="mt-1 flex flex-wrap gap-1.5">
                     {items.map((item) => (
                       <li key={item.idRegistro} className="rounded-md bg-slate-100 px-2 py-0.5 text-slate-800">
                         {item.descripcion}
                         {item.valor !== 'presente' && (
-                          <span className="text-slate-500">
+                          <span className="text-slate-700">
                             {' '}
                             | {item.valor}
                             {item.unidades ? ` ${item.unidades}` : ''}
@@ -94,10 +94,10 @@ export function DiagnosisCard({ result }: { result: PatientResult }) {
       {result.enfermedadDiagnosticada ? (
         <>
           <p className="text-2xl font-bold text-[#0b1533]">{result.enfermedadDiagnosticada}</p>
-          <p className="mt-1 text-slate-600">Confirmado por el médico tratante a partir del diagnóstico diferencial.</p>
+          <p className="mt-1 text-slate-800">Confirmado por el médico tratante a partir del diagnóstico diferencial.</p>
         </>
       ) : (
-        <p className="text-slate-600">Aún no hay un diagnóstico confirmado.</p>
+        <p className="text-slate-800">Aún no hay un diagnóstico confirmado.</p>
       )}
       <Link
         href={`/home?paciente=${result.paciente.idPaciente}`}
@@ -138,7 +138,7 @@ export function TreatmentCard({ result, onSaved }: { result: PatientResult; onSa
   return (
     <ResultCard title="Tratamiento" id={`${ids}-treatment`}>
       {result.tratamientos.length === 0 ? (
-        <p className="text-slate-600">Disponible cuando haya un diagnóstico confirmado.</p>
+        <p className="text-slate-800">Disponible cuando haya un diagnóstico confirmado.</p>
       ) : (
         <>
           {/* Impresión: solo el tratamiento indicado. */}
@@ -149,7 +149,7 @@ export function TreatmentCard({ result, onSaved }: { result: PatientResult; onSa
               : ''}
           </p>
           <div className="print:hidden">
-            <p className="text-slate-600">Elige el tratamiento indicado para {result.enfermedadDiagnosticada}.</p>
+            <p className="text-slate-800">Elige el tratamiento indicado para {result.enfermedadDiagnosticada}.</p>
             <ul role="radiogroup" aria-label="Tratamientos de la enfermedad" className="mt-3 max-h-80 space-y-1.5 overflow-y-auto pr-1">
               {result.tratamientos.map((treatment) => {
                 const isChecked = choice === treatment.idTratamiento;
@@ -175,7 +175,7 @@ export function TreatmentCard({ result, onSaved }: { result: PatientResult; onSa
                       </span>
                       <span className="min-w-0 flex-1 text-slate-900">
                         {treatment.descripcion}
-                        {dose && <span className="block text-sm text-slate-500">Dosis: {dose}</span>}
+                        {dose && <span className="block text-sm text-slate-700">Dosis: {dose}</span>}
                       </span>
                       {result.idTratamiento === treatment.idTratamiento && (
                         <span className="shrink-0 rounded-md bg-teal-100 px-1.5 py-0.5 text-xs font-medium text-teal-900">
@@ -257,7 +257,7 @@ export function CarePlanCard({ result, onSaved }: { result: PatientResult; onSav
           <div key={field.key}>
             <label htmlFor={`${ids}-${field.key}`} className="mb-1 flex items-baseline justify-between gap-2">
               <span className="font-medium text-slate-700">{field.label}</span>
-              <span className="text-sm text-slate-500 tabular-nums">
+              <span className="text-sm text-slate-700 tabular-nums">
                 {field.hint} | {plan[field.key].length}/{field.max}
               </span>
             </label>

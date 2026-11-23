@@ -149,6 +149,26 @@ export default function HomeScreen() {
       .flatMap((group) => group.sections)
       .find((section) => section.status === 'in-progress')?.id ?? activeSectionId;
 
+  // Sección a la que lleva "Guardar y continuar" (P-136): la primera sin completar; si ya están todas
+  // completas (se está revisando o corrigiendo), la siguiente en orden. Antes se quedaba en la misma
+  // y parecía que el botón no hacía nada.
+  const nextSectionAfterSave = (completed: ReadonlySet<string>) => {
+    const sections = buildSectionGroups(completed).flatMap((group) => group.sections);
+    const open = sections.find((section) => section.status === 'in-progress');
+    if (open && open.id !== activeSectionId) return open.id;
+    const index = sections.findIndex((section) => section.id === activeSectionId);
+    return sections[index + 1]?.id ?? activeSectionId;
+  };
+
+  // Huella de lo capturado (preexistente y hallazgos con su valor), para saber si un guardado cambió algo.
+  const recordFingerprint = (record: PatientRecord | null) =>
+    record === null
+      ? ''
+      : JSON.stringify([
+          record.idEnfermedadPreexistente,
+          record.hallazgos.map((h) => `${h.tipoHallazgo}|${h.descripcion}|${h.valor}`).sort(),
+        ]);
+
   // Elegir o registrar un paciente: se lee su expediente y se retoma en la primera sección sin datos.
   const startWithPatient = (patient: Patient) => {
     setSelectedPatient(patient);
@@ -169,11 +189,12 @@ export default function HomeScreen() {
   // Se guardó la sección actual: queda completada y se pasa a la siguiente sin completar (P-103).
   const handleSectionSaved = (record: PatientRecord) => {
     const done = new Set(completedSections).add(activeSectionId);
+    // Si ya había un análisis y los hallazgos cambiaron, ya no corresponde a lo guardado. Guardar sin
+    // cambios no lo desactualiza (P-136).
+    if (diagnosis && recordFingerprint(record) !== recordFingerprint(patientRecord)) setIsDiagnosisStale(true);
     setPatientRecord(record);
-    // Si ya había un análisis, ya no corresponde a los hallazgos guardados.
-    if (diagnosis) setIsDiagnosisStale(true);
     setCompletedSections(done);
-    setActiveSectionId(firstOpenSection(done));
+    setActiveSectionId(nextSectionAfterSave(done));
   };
 
   // Diagnóstico confirmado: se anota en el paciente (y en la lista del buscador) para que el panel
