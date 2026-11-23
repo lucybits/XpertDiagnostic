@@ -89,7 +89,7 @@ export default function DiagnosisPanel({
   return (
     <section
       aria-labelledby={`${ids}-title`}
-      className="mx-auto w-full max-w-4xl px-4 pb-2 transition-opacity duration-300 starting:opacity-0 motion-reduce:transition-none sm:px-8"
+      className="mx-auto w-full max-w-4xl px-4 pb-2 transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none sm:px-8"
     >
       <div className="rounded-2xl border-2 border-slate-200 bg-white">
         <header className="flex flex-wrap items-start gap-3 border-b-2 border-slate-100 px-5 pt-4 pb-3">
@@ -153,7 +153,8 @@ export default function DiagnosisPanel({
                 return (
                   <li
                     key={candidate.idEnfermedad}
-                    className={`rounded-xl border-2 px-4 py-3 ${isConfirmed ? 'border-teal-700' : 'border-slate-100'}`}
+                    className={`rounded-xl border-2 px-4 py-3 transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none ${isConfirmed ? 'border-teal-700' : 'border-slate-100'}`}
+                    style={{ transitionDelay: `${Math.min(index * 70, 210)}ms` }}
                   >
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <span className="text-sm font-semibold text-slate-700 tabular-nums">{index + 1}.</span>
@@ -177,14 +178,21 @@ export default function DiagnosisPanel({
                       className="mt-2 flex items-center gap-3"
                     >
                       <span className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                        <span className="block h-full rounded-full bg-[#1e47c5]" style={{ width: `${percent}%` }} />
+                        <span
+                          className="block h-full rounded-full bg-[#1e47c5] transition-[width] duration-700 ease-out starting:w-0 motion-reduce:transition-none"
+                          style={{ width: `${percent}%`, transitionDelay: `${120 + Math.min(index * 70, 210)}ms` }}
+                        />
                       </span>
                       <span className="w-10 text-right text-sm font-medium text-slate-700 tabular-nums">{percent}%</span>
                     </div>
                     {candidate.apoyos.length > 0 && (
                       <ul aria-label="Hallazgos que lo apoyan" className="mt-2 flex flex-wrap gap-1.5">
-                        {candidate.apoyos.map((apoyo) => (
-                          <li key={apoyo} className="rounded-md bg-slate-100 px-2 py-0.5 text-sm text-slate-700">
+                        {candidate.apoyos.map((apoyo, supportIndex) => (
+                          <li
+                            key={apoyo}
+                            className="rounded-md bg-slate-100 px-2 py-0.5 text-sm text-slate-700 transition-[opacity,translate] duration-250 ease-out starting:translate-y-1 starting:opacity-0 motion-reduce:transition-none"
+                            style={{ transitionDelay: `${Math.min(index * 70 + supportIndex * 25, 350)}ms` }}
+                          >
                             {apoyo}
                           </li>
                         ))}

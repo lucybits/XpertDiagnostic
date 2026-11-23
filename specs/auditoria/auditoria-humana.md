@@ -522,3 +522,19 @@ Estas verificaciones las ejecutó el asistente de IA. Son evidencia complementar
 **Corrección (P-137).** Una línea indica pulsar "Analizar expediente". Lección: al recortar texto, conservar lo que dice qué hacer cuando una pantalla todavía no tiene contenido.
 
 ---
+
+### A-27. Panel de administrador con aspecto genérico de IA
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Revisó | Lucía |
+| Prompt | P-140 |
+| Archivo | `frontend/components/admin/AdminPanel.tsx` |
+| Resultado | **Corregido** |
+
+**Hallazgo.** La primera versión del panel usaba los patrones típicos de una interfaz generada por IA: tabla dentro de una tarjeta redondeada, estado en píldora, tres botones con borde e ícono por fila, subtítulo explicativo y botón principal con ícono.
+
+**Corrección (P-140).** Tabla de datos sobria con líneas horizontales, estado y acciones como texto, conteo junto al título. Lección: en vistas administrativas, preferir convenciones de tabla clásicas a componentes decorados.
+
+---

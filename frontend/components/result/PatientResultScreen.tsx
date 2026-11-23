@@ -132,9 +132,6 @@ export default function PatientResultScreen({ patientId }: { patientId: string }
               <DiagnosisCard result={result} />
               <TreatmentCard key={result.idEnfermedadDiagnosticada ?? 'none'} result={result} onSaved={setResult} />
               <CarePlanCard result={result} onSaved={setResult} />
-              <p className="text-center text-xs text-slate-800">
-                Uso exclusivo para médicos. XpertDiagnostic es orientativo; la decisión clínica es del médico tratante.
-              </p>
             </div>
           </>
         )}
