@@ -85,12 +85,12 @@ export default function ProfileMenu({ doctor }: ProfileMenuProps) {
       >
         <div className="border-b-2 border-slate-100 px-3 pt-1.5 pb-2.5">
           <p className="text-base font-medium text-slate-900">{doctor.displayName}</p>
-          <p className="text-base text-slate-500">{doctor.specialty}</p>
+          <p className="text-base text-slate-700">{doctor.specialty}</p>
         </div>
         <ul className="pt-1.5">
           {/* "Mi perfil" y "Configuración" se quitaron: no había pantallas detrás (P-115). */}
           <li className="mt-1.5 border-t-2 border-slate-100 pt-1.5">
-            <button type="button" onClick={handleLogout} className={`${MENU_ITEM} text-red-700 hover:bg-red-50`}>
+            <button type="button" onClick={handleLogout} className={`${MENU_ITEM} text-slate-900 hover:bg-red-50`}>
               <LogOut aria-hidden="true" className="h-4 w-4" />
               Cerrar sesión
             </button>

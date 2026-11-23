@@ -442,3 +442,83 @@ Estas verificaciones las ejecutó el asistente de IA. Son evidencia complementar
 **Corrección (P-111).** El botón aparece solo con un diagnóstico confirmado, junto al nombre de la enfermedad. Antes se muestra una guía con el paso que falta.
 
 ---
+
+### A-22. Patrón Strategy sin respaldo en el plan
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Revisó | Lucía |
+| Prompt | P-103 |
+| Archivo | `specs/bitacora/bitacora-prompts.md` |
+| Resultado | **Corregido** |
+
+**Hallazgo.** En P-103 la IA describió el motor de inferencia como patrón Strategy y citó una sección 4.4 del plan 01 que no existe. El proyecto solo documenta tres patrones: Singleton, Fachada y Estado.
+
+**Corrección (P-122).** Se quitó la mención a Strategy. El proyecto se queda con Estado, Fachada y Singleton.
+
+---
+
+### A-23. El expediente conserva sus colores y banners
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Revisó | Lucía |
+| Prompt | P-126 |
+| Archivo | `frontend/components/home/PatientRecordPanel.tsx` |
+| Resultado | **Revertido** |
+
+**Hallazgo.** Al quitar estilos "hechos por IA", la IA también quitó del expediente los banners que se desenfocan y enfocan al pasar el cursor, y los colores de cada tipo de hallazgo, incluidos los íconos del lomo minimizado. Lucía los considera parte del diseño y no un estilo genérico.
+
+**Corrección.** El expediente vuelve a su versión anterior a P-126. Los demás cambios de P-126 se mantienen.
+
+---
+
+### A-24. No se veía qué diagnóstico estaba confirmado
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Revisó | Lucía |
+| Prompt | P-105, P-111 |
+| Archivo | `frontend/components/assistant/DiagnosisPanel.tsx` |
+| Resultado | **Corregido** |
+
+**Hallazgo.** Después de confirmar un diagnóstico y volver a la pantalla de diagnóstico diferencial, todos los candidatos seguían con "Confirmar este diagnóstico". No se veía cuál estaba confirmado ni que ya estaba guardado en el expediente.
+
+**Corrección (P-135).** Un aviso arriba de la lista dice qué diagnóstico está confirmado y guardado, con acceso al resultado. El candidato confirmado lleva la etiqueta "Confirmado" y los demás ofrecen "Cambiar a este diagnóstico".
+
+---
+
+### A-25. "Guardar y continuar" no avanzaba con todo completo
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Revisó | Lucía |
+| Prompt | P-103 |
+| Archivo | `frontend/components/home/HomeScreen.tsx` |
+| Resultado | **Corregido** |
+
+**Hallazgo.** Al revisar una sección ya completa y pulsar "Guardar y continuar" sin cambios, la pantalla no avanzaba. La IA solo había contemplado el avance hacia secciones pendientes. Además, guardar sin cambios desactualizaba el análisis.
+
+**Corrección (P-136).** Si no quedan secciones pendientes, se pasa a la siguiente en orden. El análisis solo se desactualiza si lo guardado cambió.
+
+---
+
+### A-26. Diagnóstico diferencial vacío tras quitar texto
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Revisó | Lucía |
+| Prompt | P-127 |
+| Archivo | `frontend/components/assistant/DiagnosisPanel.tsx` |
+| Resultado | **Corregido** |
+
+**Hallazgo.** Al reducir textos, la IA quitó la única indicación de la tarjeta antes del primer análisis. Con un paciente nuevo, la tarjeta se veía vacía y parecía que el sistema no daba resultados.
+
+**Corrección (P-137).** Una línea indica pulsar "Analizar expediente". Lección: al recortar texto, conservar lo que dice qué hacer cuando una pantalla todavía no tiene contenido.
+
+---

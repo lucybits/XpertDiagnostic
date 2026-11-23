@@ -63,7 +63,7 @@ function StatusForm({
           {deactivating ? '¿Desactivar la cuenta de ' : '¿Activar de nuevo la cuenta de '}
           <strong className="font-semibold">{doctor.nombreCompleto}</strong> (ID {doctor.idMedico})?
         </p>
-        <p className="rounded-lg bg-slate-100 px-3 py-2.5 text-slate-600">
+        <p className="rounded-lg bg-slate-100 px-3 py-2.5 text-slate-800">
           {deactivating
             ? 'No podrá iniciar sesión y, si tiene una sesión abierta, se cerrará. Sus datos se conservan y puedes volver a activarla cuando quieras.'
             : 'Podrá volver a iniciar sesión con su ID y su contraseña actual.'}

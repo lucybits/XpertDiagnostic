@@ -6,7 +6,7 @@ import LoadingDots from '@/components/ui/LoadingDots';
 
 export const FOCUS_RING = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60';
 const FIELD =
-  'w-full rounded-lg border-2 bg-white px-3 py-2.5 text-base text-slate-900 transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500';
+  'w-full rounded-lg border-2 bg-white px-3 py-2.5 text-base text-slate-900 transition-colors placeholder:text-slate-500 hover:border-slate-300 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500';
 
 type AdminDialogProps = {
   open: boolean;
@@ -66,13 +66,13 @@ export default function AdminDialog({ open, title, description, icon: Icon, tone
               <h2 id={titleId} className="text-xl font-semibold text-slate-900">
                 {title}
               </h2>
-              {description && <p className="mt-0.5 text-slate-500">{description}</p>}
+              {description && <p className="mt-0.5 text-slate-700">{description}</p>}
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label="Cerrar"
-              className={`rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${FOCUS_RING}`}
+              className={`rounded-lg p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-800 ${FOCUS_RING}`}
             >
               <X aria-hidden="true" className="h-5 w-5" />
             </button>
@@ -103,7 +103,7 @@ export function DialogFooter({
       <button
         type="button"
         onClick={onCancel}
-        className={`rounded-lg px-4 py-2.5 font-medium text-slate-600 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
+        className={`rounded-lg px-4 py-2.5 font-medium text-slate-800 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
       >
         Cancelar
       </button>
@@ -192,7 +192,7 @@ export function TextField({
         className={`${FIELD} ${error ? 'border-red-600 focus:border-red-600' : 'border-slate-200 focus:border-[#116ee6]'}`}
       />
       {hint && !error && (
-        <p id={`${id}-hint`} className="mt-1.5 text-sm text-slate-500">
+        <p id={`${id}-hint`} className="mt-1.5 text-sm text-slate-700">
           {hint}
         </p>
       )}

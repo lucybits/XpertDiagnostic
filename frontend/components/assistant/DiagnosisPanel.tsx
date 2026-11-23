@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useId, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CircleAlert, CircleCheck, FlaskConical, Microscope, ShieldCheck } from 'lucide-react';
+import { ArrowRight, CircleAlert, CircleCheck, FileText, Microscope } from 'lucide-react';
 import { analyzePatient } from '@/services/recordService';
 import { confirmDiagnosis } from '@/services/resultService';
 import type { DiagnosisResult } from '@/types/record';
@@ -16,6 +17,8 @@ type DiagnosisPanelProps = {
   onAnalyzed: (result: DiagnosisResult) => void;
   /** El médico confirmó un diagnóstico: HomeScreen lo anota en el paciente (P-111). */
   onConfirmed: (diseaseName: string) => void;
+  /** Diagnóstico ya confirmado y guardado en el expediente (PACIENTES), o null (P-135). */
+  confirmedName: string | null;
 };
 
 /**
@@ -23,7 +26,14 @@ type DiagnosisPanelProps = {
  * el backend y muestra el diagnóstico diferencial. Mientras el motor sea provisional lo dice
  * claramente. El médico confirma uno de los candidatos y pasa a la interfaz de salida (P-105).
  */
-export default function DiagnosisPanel({ patientId, result, isStale, onAnalyzed, onConfirmed }: DiagnosisPanelProps) {
+export default function DiagnosisPanel({
+  patientId,
+  result,
+  isStale,
+  onAnalyzed,
+  onConfirmed,
+  confirmedName,
+}: DiagnosisPanelProps) {
   const ids = useId();
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,9 +97,6 @@ export default function DiagnosisPanel({ patientId, result, isStale, onAnalyzed,
             <h3 id={`${ids}-title`} className="text-lg font-semibold text-[#0b1533]">
               Diagnóstico diferencial
             </h3>
-            <p className="mt-0.5 text-slate-600">
-              Compara los hallazgos guardados con la base de conocimiento y ordena las enfermedades más probables.
-            </p>
           </div>
           {result?.provisional && (
             <span className="rounded-md bg-amber-100 px-2 py-0.5 text-sm font-medium text-amber-900">
@@ -99,30 +106,65 @@ export default function DiagnosisPanel({ patientId, result, isStale, onAnalyzed,
         </header>
 
         <div className="space-y-3 px-5 py-4">
+          {/* Antes del primer análisis se dice qué hacer: sin esto la tarjeta se veía vacía (P-137). */}
+          {result === null && (
+            <p className="flex items-start gap-2 text-slate-900">
+              <Microscope aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
+              <span>
+                Pulsa <span className="font-semibold">Analizar expediente</span> para ver las enfermedades más probables.
+              </span>
+            </p>
+          )}
+          {/* Diagnóstico ya confirmado (P-135): se dice cuál es, que ya está en el expediente y cómo verlo. */}
+          {confirmedName && (
+            <div
+              role="status"
+              className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-slate-100 px-4 py-3"
+            >
+              <p className="flex min-w-0 flex-1 items-start gap-2 text-slate-900">
+                <CircleCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
+                <span>
+                  <span className="font-semibold">{confirmedName}</span> confirmado y guardado en el expediente.
+                </span>
+              </p>
+              <Link
+                href={`/patients/${patientId}/result`}
+                className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-teal-700 px-3.5 py-1.5 font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+              >
+                <FileText aria-hidden="true" className="h-4 w-4" />
+                Ver resultado
+              </Link>
+            </div>
+          )}
           {/* Análisis desactualizado (P-112): no se confirma con datos que ya cambiaron. */}
           {result && isStale && (
             <p role="status" className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-amber-900">
               <CircleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-              Los hallazgos cambiaron después de este análisis. Vuelve a analizar para actualizarlo antes de confirmar
-              un diagnóstico.
+              Los hallazgos cambiaron. Vuelve a analizar antes de confirmar.
             </p>
           )}
-          {result === null ? (
-            <p className="text-slate-600">Cuando termines de capturar, analiza el expediente.</p>
-          ) : result.candidatos.length === 0 ? (
-            <p className="text-slate-600">
-              No hay coincidencias con la base de conocimiento. Revisa que las secciones tengan hallazgos guardados.
-            </p>
+          {result === null ? null : result.candidatos.length === 0 ? (
+            <p className="text-slate-800">Sin coincidencias. Revisa los hallazgos guardados.</p>
           ) : (
             <ol aria-label="Enfermedades candidatas" className="space-y-3">
               {result.candidatos.map((candidate, index) => {
                 const percent = Math.round(candidate.puntaje * 100);
+                const isConfirmed = candidate.nombre === confirmedName;
                 return (
-                  <li key={candidate.idEnfermedad} className="rounded-xl border-2 border-slate-100 px-4 py-3">
+                  <li
+                    key={candidate.idEnfermedad}
+                    className={`rounded-xl border-2 px-4 py-3 ${isConfirmed ? 'border-teal-700' : 'border-slate-100'}`}
+                  >
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="text-sm font-semibold text-slate-500 tabular-nums">{index + 1}.</span>
+                      <span className="text-sm font-semibold text-slate-700 tabular-nums">{index + 1}.</span>
                       <span className="text-lg font-semibold text-slate-900">{candidate.nombre}</span>
-                      <span className="text-sm text-slate-500 tabular-nums">
+                      {isConfirmed && (
+                        <span className="inline-flex items-center gap-1 self-center rounded-md bg-teal-700 px-2 py-0.5 text-sm font-semibold text-white">
+                          <CircleCheck aria-hidden="true" className="h-3.5 w-3.5" />
+                          Confirmado
+                        </span>
+                      )}
+                      <span className="text-sm text-slate-700 tabular-nums">
                         {candidate.coincidencias} de {candidate.totalCriterios} criterios
                       </span>
                     </div>
@@ -148,32 +190,33 @@ export default function DiagnosisPanel({ patientId, result, isStale, onAnalyzed,
                         ))}
                       </ul>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => confirm(candidate.idEnfermedad, candidate.nombre)}
-                      disabled={confirming !== null || isStale}
-                      className="group mt-3 inline-flex items-center gap-2 rounded-lg border-2 border-teal-600 px-3.5 py-1.5 font-semibold text-teal-800 transition-colors hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {confirming === candidate.idEnfermedad ? 'Confirmando…' : 'Confirmar este diagnóstico'}
-                      <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                    </button>
+                    {/* El confirmado no repite el botón; con uno ya confirmado, los demás ofrecen cambiarlo
+                        con un botón secundario para no competir con el confirmado (P-135). */}
+                    {!isConfirmed && (
+                      <button
+                        type="button"
+                        onClick={() => confirm(candidate.idEnfermedad, candidate.nombre)}
+                        disabled={confirming !== null || isStale}
+                        className={`group mt-3 inline-flex items-center gap-2 rounded-lg border-2 px-3.5 py-1.5 font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                          confirmedName
+                            ? 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 hover:bg-slate-50'
+                            : 'border-teal-700 bg-teal-700 text-white hover:border-teal-800 hover:bg-teal-800'
+                        }`}
+                      >
+                        {confirming === candidate.idEnfermedad
+                          ? 'Confirmando…'
+                          : confirmedName
+                            ? 'Cambiar a este diagnóstico'
+                            : 'Confirmar este diagnóstico'}
+                        <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                      </button>
+                    )}
                   </li>
                 );
               })}
             </ol>
           )}
 
-          {result?.provisional && (
-            <p className="flex items-start gap-2 rounded-lg bg-slate-100 px-3 py-2.5 text-sm text-slate-600">
-              <FlaskConical aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-              Resultado de demostración ({result.motor}). Se reemplazará por la máquina de inferencia del equipo sin
-              cambiar esta pantalla.
-            </p>
-          )}
-          <p className="flex items-start gap-2 text-sm text-slate-600">
-            <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
-            Es una orientación; la decisión clínica es del médico tratante.
-          </p>
         </div>
 
         <footer className="flex flex-wrap items-center justify-end gap-3 border-t-2 border-slate-100 px-5 py-3">
@@ -184,11 +227,10 @@ export default function DiagnosisPanel({ patientId, result, isStale, onAnalyzed,
             </p>
           )}
           {!error && isUpToDate && (
-            <p role="status" className="mr-auto flex items-center gap-2 text-slate-600">
+            <p role="status" className="mr-auto flex items-center gap-2 text-slate-800">
               <CircleCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-teal-700" />
-              {justUpdated ? 'Análisis actualizado' : 'Análisis hecho'}
+              {justUpdated ? 'Actualizado' : 'Analizado'}
               {analyzedAt && ` a las ${new Date(analyzedAt).toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit' })}`}
-              {' '}con los hallazgos guardados.
             </p>
           )}
           <button

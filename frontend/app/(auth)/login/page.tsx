@@ -130,7 +130,7 @@ export default function LoginPage() {
         <div
           aria-hidden={!isLoginRevealed}
           inert={!isLoginRevealed}
-          className={`mt-3 grid w-full max-w-4xl grid-cols-1 overflow-hidden rounded-md border border-slate-200 bg-white shadow-xl transition-[opacity,transform] duration-[800ms] delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:grid-cols-2 ${
+          className={`mt-3 grid w-full max-w-4xl grid-cols-1 overflow-hidden rounded-md border-2 border-slate-200 bg-white transition-[opacity,transform] duration-[800ms] delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:grid-cols-2 ${
             isLoginRevealed
               ? 'relative translate-y-0 opacity-100'
               : 'pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 translate-y-6 opacity-0'

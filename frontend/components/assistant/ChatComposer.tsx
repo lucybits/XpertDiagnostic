@@ -65,7 +65,7 @@ export default function ChatComposer({
             onKeyDown={handleKeyDown}
             disabled={!canWrite}
             placeholder={placeholder}
-            className="max-h-40 min-h-11 flex-1 resize-none bg-transparent px-2 py-2.5 text-base text-slate-900 field-sizing-content placeholder:text-slate-600 focus:outline-none disabled:cursor-not-allowed"
+            className="max-h-40 min-h-11 flex-1 resize-none bg-transparent px-2 py-2.5 text-base text-slate-900 field-sizing-content placeholder:text-slate-500 focus:outline-none disabled:cursor-not-allowed"
           />
           {/* El dictado por voz se quitó: el botón no hacía nada (P-115). */}
           {/* Mientras el asistente piensa o escribe, el botón de enviar se vuelve "Detener" (P-83). */}

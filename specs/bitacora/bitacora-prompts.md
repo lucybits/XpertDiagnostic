@@ -3348,7 +3348,7 @@ Si quieres, puedo hacer lo mismo con los campos de **Resultado de la IA** o **Ve
   - `PatientRecordController` con `GET record`, `PUT findings/{seccion}`, `PUT preexisting-disease` y `POST analysis`.
   - `PatientRecordService`: expande cada elección a todos sus IDs equivalentes, valida contra el catálogo, guarda la medición con sus unidades y agrupa al leer.
   - `PatientRecordRepository`: reemplaza los hallazgos de un tipo en una transacción y lee la descripción con una consulta parametrizada.
-  - `IInferenceEngine` con `ProvisionalInferenceEngine` y `DiagnosisService` (patrón Strategy, sección 4.4 del plan 01).
+  - `IInferenceEngine` con `ProvisionalInferenceEngine` y `DiagnosisService`.
 - **Frontend:**
   - Rutas `app/api/patients/[id]/…`, que validan la forma del ID, la sección y los hallazgos antes de llamar a la API.
   - `recordService`, `lib/recordRules.ts` (opciones sin repetir, búsqueda sin acentos, mediciones con coma o punto) y `types/record.ts`.
@@ -3740,7 +3740,7 @@ Si quieres, puedo hacer lo mismo con los campos de **Resultado de la IA** o **Ve
 - Captura ampliada del panel en Edge sin interfaz, tras analizar `PACIE00007` (solo lectura).
 - Sin errores en la consola.
 
-**Revisión humana:** corrección visual pedida por Lucía.
+**Revisión humana:** corrección visual pedida por Lucía; ajustó la primera reducción por quedar demasiado pequeña.
 
 ### P-114. Panel derecho en azul y botón de análisis con estado claro
 
@@ -3825,3 +3825,669 @@ Si quieres, puedo hacer lo mismo con los campos de **Resultado de la IA** o **Ve
 - Sin errores en la consola.
 
 **Revisión humana:** pendiente.
+
+---
+
+## Prompts de Axel: extracción de la base de datos clínica
+
+Registrados el 2026-11-20 a petición de Lucía. Axel los usó antes de crear la base de datos clínica (las tablas de `CreateClinicalTables.sql` y los datos de `SeedClinicalData.sql`, cargados el 2026-11-16), así que van fuera del orden cronológico. No quedó registrada la fecha exacta de cada prompt ni el modelo que se usó. Se numeran a partir de P-117 porque P-116 ya se cita en `especificaciones/10-panel-administrador.md`.
+
+### P-117. Extracción completa de enfermedades del libro a tablas normalizadas
+
+| Campo | Valor |
+|---|---|
+| Fecha | Antes del 2026-11-16 (fecha exacta no registrada) |
+| Autor del prompt | Axel |
+| Herramienta / modelo | Asistente de IA conversacional (modelo no registrado) |
+| Objetivo | Extraer todas las enfermedades y defectos del libro de referencia y llenar las plantillas de Excel como una base de datos normalizada |
+| Especificación / tarea | Base de datos clínica (16 tablas) |
+
+**Prompt**
+
+> Actúa como un arquitecto de bases de datos relacionales y especialista en extracción y normalización de datos.
+>
+> Te adjunto un libro y un archivo de Excel con varias tablas/plantillas. Tu objetivo es extraer TODAS las enfermedades y defectos mencionados en el libro, cruzar esa información con los datos del Excel, y rellenar las tablas exactamente bajo el esquema de una Base de Datos (BD) normalizada.
+>
+> Sigue estas reglas de forma estricta:
+>
+> 1. FUENTE DE INFORMACIÓN Y PRECISIÓN:
+> - Basate exclusivamente en el libro adjunto y el archivo Excel provisto.
+> - No inventes ni asumas datos. Si un campo no tiene información disponible en los archivos, déjalo vacío y repórtalo al final.
+>
+> 2. REGLAS ESTRICTAS DE ESTRUCTURA, IDs Y NORMALIZACIÓN DE BD:
+> - **Nombres de columnas:** Respeta exactamente los nombres de las columnas definidos en las hojas del archivo Excel enviado.
+> - **ID de Enfermedades y Defectos (Tabla principal - 10 caracteres `[5 LETRAS][5 NÚMEROS]`):**
+>   - Las 5 letras deben corresponder a las iniciales o abreviatura en mayúsculas de la zona anatómica o sistema afectado, seguidas de un contador secuencial independiente de 5 dígitos iniciando en `00001` (ej. `HEMAT00001`, `HEMAT00002`, `CARDI00001`, `NEUMO00001`).
+> - **IDs Compuestos de Tablas Asociadas (20 caracteres obligatorios: `[ID_ENFERMEDAD] + [5 LETRAS TABLA] + [5 DÍGITOS CONSECUTIVOS]`):**
+>   - Para cada registro de las tablas asociadas (signos, síntomas, complicaciones, etc.), el ID debe formarse **de ley** concatenando el ID completo de la enfermedad + 5 letras en mayúsculas que identifiquen la tabla + un contador secuencial de 5 dígitos iniciando en `00001` por cada enfermedad:
+>     - En Signos: `HEMAT00001SIGNO00001`, `HEMAT00001SIGNO00002`, etc.
+>     - En Síntomas: `HEMAT00001SINTO00001`, `HEMAT00001SINTO00002`, etc.
+>     - En Complicaciones: `HEMAT00001COMPL00001`, `HEMAT00001COMPL00002`, etc.
+>     - *(Aplica esta misma regla exacta de 5 letras + 5 dígitos consecutivos para el resto de tablas del Excel).*
+> - **Normalización y separación de cadenas (Atomización - 1FN):** Está prohibido llenar una sola celda con listas de texto largas o separadas por comas. Separa cada valor individual en registros atómicos (filas independientes), asignando a cada fila su ID compuesto único según el orden consecutivo (ej. fila 1 `HEMAT00001SINTO00001`: `taquicardia`; fila 2 `HEMAT00001SINTO00002`: `hematoma`).
+>
+> 3. ENTREGABLES:
+> - **Archivo Excel completo (.xlsx):** Genera el archivo Excel descargable con todas las enfermedades y defectos extraídos, manteniendo las tablas normalizadas, las relaciones intactas y sin celdas combinadas ni saltos de línea.
+> - **Documento PDF de Consulta:** Genera un archivo PDF descargable organizado como una guía visual de consulta rápida donde se muestren todas las enfermedades/defectos, sus IDs asignados y sus detalles de forma clara y legible para lectura humana.
+> - **Reporte Final:** Al final de tu respuesta, incluye:
+>   1. El diccionario de prefijos/sufijos de 5 letras que generaste (tanto de zonas anatómicas como de tablas).
+>   2. El listado detallado de qué información o campos quedaron vacíos por cada enfermedad/defecto debido a que no aparecen en el libro ni en el Excel.
+
+**Resultado de la IA:** Axel entregó dos reportes de esta extracción. El libro de referencia es *Harrison. Manual de medicina*, 18.ª ed., y la plantilla es `Tablas.xlsx`.
+
+- **`Reporte_informacion_faltante.md`.** Es una extracción con 814 entidades e IDs `E0001` a `E0814`, que **no siguen** la regla de 10 caracteres del prompt. Muchas entradas son títulos de sección o restos de texto, no enfermedades (por ejemplo "Resultados", "Il-6, tnf).", "4îoespnf 4îoespnf", "T3n0m0 t3n0m0"). Dejó vacías las tablas Paciente, Plan, Hospital, Institución, Doctores, Enfermedad_preexist y Comorbilidades. También señaló que la plantilla de `Estudios_diagdif` no tiene columna para el nombre del estudio, y listó las páginas con figuras ilegibles que omitió.
+- **`Reporte_Final_Libro_Completo.md`.** Es la extracción acumulada de las secciones 1 a 18 del libro, procesada por partes, y **sí sigue** el esquema de IDs. Incluye:
+  - 25 prefijos de zona o sistema (`HIDRO`, `CARDI`, `INFEC`, `NEURO`, etc.), 9 sufijos de tabla (`SINTO`, `SIGNO`, `COMPL`, `ENDEM`, `LABOR`, `DIAGD`, `COMOR`, `TRATA`, `DEFEC`) y prefijos reservados para las tablas administrativas (`PACIE`, `DOCTO`, `HOSPI`, `INSTI`, `PLAN_`, `REGIO`);
+  - la lista de campos vacíos por enfermedad;
+  - una columna Unidades agregada a Síntomas, Signos, Estudios_labs, Estudios_diagdif y Tratamiento;
+  - capítulos omitidos por no describir enfermedades;
+  - 9 enfermedades repetidas entre secciones, que se conservaron;
+  - Enfermedad_endemica y Region_Estado casi vacías (3 registros y 2 regiones).
+
+**Archivos afectados:** ninguno del repositorio directamente. El Excel resultante es la fuente de los CSV con los que se generaron `backend/XpertDiagnostic.Api/Sql/CreateClinicalTables.sql` y `SeedClinicalData.sql`, que usan el esquema de IDs del segundo reporte (`CARDI00017`, `NEUMO00008`, etc.).
+
+**Verificación automática:** no aplica (extracción hecha fuera del repositorio).
+
+**Revisión humana:** revisada por Axel, que comparó los dos reportes y adoptó el esquema de IDs con prefijos. Entre las limitaciones conocidas están los campos vacíos, las entradas duplicadas y Enfermedad_endemica casi vacía.
+
+### P-118. Prueba de validación con una sola enfermedad
+
+| Campo | Valor |
+|---|---|
+| Fecha | Antes del 2026-11-16 (fecha exacta no registrada) |
+| Autor del prompt | Axel |
+| Herramienta / modelo | Asistente de IA conversacional (modelo no registrado) |
+| Objetivo | Revisar el esquema de IDs, los IDs compuestos de 20 caracteres y la atomización con un solo caso antes de procesar todo el libro |
+| Especificación / tarea | Base de datos clínica (16 tablas) |
+
+**Prompt**
+
+> Actúa como un arquitecto de bases de datos relacionales y especialista en extracción y normalización de datos.
+>
+> Te adjunto un libro y un archivo de Excel con varias tablas/plantillas. Antes de procesar todo el documento, quiero hacer una PRUEBA DE VALIDACIÓN extrayendo ÚNICAMENTE UNA (1) enfermedad o defecto del libro, cruzándolo con los datos del Excel y rellenando las tablas bajo el esquema de una Base de Datos (BD) normalizada.
+>
+> Sigue estas reglas de forma estricta:
+>
+> 1. FUENTE DE INFORMACIÓN Y PRECISIÓN:
+> - Elige 1 enfermedad o defecto completo que aparezca en el libro adjunto y crúzalo con la información del Excel.
+> - Basate exclusivamente en los archivos provistos. No inventes ni asumas datos. Si algún campo no tiene información disponible, déjalo vacío y repórtalo al final.
+>
+> 2. REGLAS ESTRICTAS DE ESTRUCTURA, IDs Y NORMALIZACIÓN DE BD:
+> - **Nombres de columnas:** Respeta exactamente los nombres de las columnas definidos en las hojas del archivo Excel enviado.
+> - **ID de Enfermedades y Defectos (Tabla principal - 10 caracteres `[5 LETRAS][5 NÚMEROS]`):**
+>   - Las 5 letras deben corresponder a las iniciales o abreviatura en mayúsculas de la zona anatómica o sistema afectado, seguidas de un contador de 5 dígitos iniciando en `00001` (ej. `HEMAT00001` para sistema hematológico, `CARDI00001` para corazón, `NEUMO00001` para pulmón).
+> - **IDs Compuestos de Tablas Asociadas (20 caracteres obligatorios: `[ID_ENFERMEDAD] + [5 LETRAS TABLA] + [5 DÍGITOS CONSECUTIVOS]`):**
+>   - Para cada registro de las tablas asociadas (signos, síntomas, complicaciones, etc.), el ID debe construirse **de ley** con el ID completo de la enfermedad + 5 letras en mayúsculas de la tabla + un contador consecutivo de 5 dígitos iniciando en `00001` por cada enfermedad:
+>     - En Signos: `HEMAT00001SIGNO00001`, `HEMAT00001SIGNO00002`, etc.
+>     - En Síntomas: `HEMAT00001SINTO00001`, `HEMAT00001SINTO00002`, etc.
+>     - En Complicaciones: `HEMAT00001COMPL00001`, `HEMAT00001COMPL00002`, etc.
+>     - *(Aplica esta misma regla exacta de 5 letras + 5 dígitos consecutivos para cualquier otra tabla del Excel).*
+> - **Normalización y separación de cadenas (Atomización - 1FN):** Está prohibido llenar una sola celda con listas de texto largas o separadas por comas. Separa cada valor individual en registros atómicos (filas independientes), asignando a cada fila su ID compuesto único según el orden consecutivo (ej. fila 1 `HEMAT00001SINTO00001`: `taquicardia`; fila 2 `HEMAT00001SINTO00002`: `hematoma`).
+>
+> 3. ENTREGABLES DE LA PRUEBA:
+> - **Vista previa en texto:** Muéstrame en tu respuesta todas las tablas resultantes de este único caso (en formato Markdown) para que yo pueda revisar cómo quedaron los IDs principales, los IDs compuestos de 20 caracteres y la separación de cadenas.
+> - **Archivo Excel de prueba (.xlsx):** Genera el archivo Excel descargable con este único registro rellenado en tus plantillas.
+> - **Reporte:** Indícame qué prefijos/sufijos de 5 letras usaste y qué campos quedaron vacíos por falta de información en el libro.
+
+**Resultado de la IA:** no se conservó la salida de esta prueba. Su propósito era validar en un solo caso las reglas de P-117: el ID de 10 caracteres, el ID compuesto de 20 caracteres y una fila por valor (1FN). Esas reglas son las que aparecen en el reporte final y en `SeedClinicalData.sql`.
+
+**Archivos afectados:** ninguno del repositorio.
+
+**Verificación automática:** no aplica (prueba hecha fuera del repositorio).
+
+**Revisión humana:** revisada por Axel; la prueba servía justamente para revisar el formato antes de la extracción completa.
+
+### P-119. Título de bienvenida más pequeño
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Reducir el tamaño del título "Te damos la bienvenida a XpertDiagnostic" |
+| Especificación / tarea | Pantalla principal |
+
+**Prompt**
+
+> Puedes reducir un poco más el texto "Te damos la bienvenida a XpertDiagnostic".
+
+> Es decir, que se vea gigante, pero no tanto.
+>
+> Un poquititito más gigante.
+>
+> Pon un poco más pequeño el texto, Te damos la bienvenida a XpertDiagnostic.
+
+**Resultado de la IA:**
+
+- Primero bajó el título un escalón en cada tamaño de pantalla: de `text-4xl`, `sm:text-5xl` y `lg:text-6xl` (36, 48 y 60 px) a `text-3xl`, `sm:text-4xl` y `lg:text-5xl` (30, 36 y 48 px).
+- Lucía aclaró que debía seguir viéndose grande. Pasó a un punto intermedio: `text-4xl`, `sm:text-[2.75rem]` y `lg:text-[3.5rem]` (36, 44 y 56 px).
+- Lucía pidió "un poquititito más gigante". Quedó en `text-[2.375rem]`, `sm:text-[2.875rem]` y `lg:text-[3.625rem]` (38, 46 y 58 px), apenas por debajo del original.
+- Lucía pidió el texto un poco más pequeño. Pasó a `text-4xl`, `sm:text-[2.625rem]` y `lg:text-[3.25rem]` (36, 42 y 52 px).
+- Ya con Geist (P-123), Lucía lo pidió otra vez un poco más pequeño. Quedó en `text-[2rem]`, `sm:text-[2.375rem]` y `lg:text-[2.875rem]` (32, 38 y 46 px).
+- El subtítulo y la portada con paciente no cambian.
+
+**Archivos afectados:** `frontend/components/assistant/ChatIntro.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía; ajustó la primera reducción por quedar demasiado pequeña.
+
+### P-120. Ilustración en "Sin paciente seleccionado"
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Mostrar la imagen `usernofound.png` en el recuadro "Sin paciente seleccionado" del panel derecho |
+| Especificación / tarea | Pantalla principal |
+
+**Prompt**
+
+> Puedes colocar la imagen usernofound.png que está en la carpeta public sin fondo ni bordes ni nada, en el recuadro de "Sin paciente seleccionado" del panel derecho.
+
+> Un poquito más pequeño.
+
+**Resultado de la IA:**
+
+- El ícono `UserRound` dentro del círculo blanco se reemplaza por `/usernofound.png` (`object-contain`), sin fondo, borde ni forma. Es decorativa (`alt=""`), porque el texto de abajo ya explica el estado.
+- Primero midió 96 × 96 px (`h-24 w-24`). A pedido de Lucía bajó a 80 × 80 px (`h-20 w-20`).
+
+**Archivos afectados:** `frontend/components/home/PatientRecordPanel.tsx`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** pedido por Lucía.
+
+### P-121. Cal Sans como fuente principal
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Cambiar la fuente principal de toda la app web de Atkinson Hyperlegible a Cal Sans |
+| Especificación / tarea | Interfaz general |
+
+**Prompt**
+
+> Puedes cambiar la de Atkinson, la fuente principal, por la Cal Sans, en toda la app web.
+
+**Resultado de la IA:**
+
+- `layout.tsx` carga `public/CalSans-Regular.ttf` con `next/font/local` como la variable `--font-cal-sans`, en lugar de `AtkinsonHyperlegible.ttf`.
+- `globals.css` asigna `--font-cal-sans` a `--font-sans` de Tailwind y al `font-family` del `body`, así que el cambio aplica a toda la app.
+- `font-mono` (IDs y cédulas del panel de administrador) no cambia.
+- `AtkinsonHyperlegible.ttf` se queda en `public` por si se quiere volver a ella.
+- Cal Sans solo tiene un peso (Regular). Las clases `font-medium`, `font-semibold` y `font-bold` ya no cambian a un peso real: el navegador engrosa el texto artificialmente.
+
+**Archivos afectados:** `frontend/app/layout.tsx`, `frontend/app/globals.css`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** pedido por Lucía.
+
+### P-122. Solo tres patrones de diseño: Estado, Fachada y Singleton
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Quitar la mención al patrón Strategy y dejar solo los tres patrones del plan 01 |
+| Especificación / tarea | Plan 01 (sección 4) |
+
+**Prompt**
+
+> Elimina Strategy, es que solo usaremos esos 3: Estado, Fachada y Singleton.
+
+**Resultado de la IA:**
+
+- P-103 decía que `IInferenceEngine`, `ProvisionalInferenceEngine` y `DiagnosisService` aplicaban el patrón Strategy y remitía a una "sección 4.4 del plan 01" que no existe. Se quitó esa mención.
+- El código no cambia: `IInferenceEngine` sigue siendo una interfaz con su implementación, igual que las demás capas (inversión de dependencias), pero ya no se presenta como patrón GoF.
+- No quedan otras menciones a Strategy en el repositorio. Los patrones documentados son los tres de la sección 4 del plan 01: Singleton, Fachada y Estado.
+
+**Archivos afectados:** `specs/bitacora/bitacora-prompts.md` (P-103).
+
+**Verificación automática:** búsqueda de "Strategy" y "estrategia" en todo el repositorio, sin resultados.
+
+**Revisión humana:** Lucía detectó la inconsistencia y decidió conservar solo tres patrones (A-22).
+
+### P-123. Geist como fuente principal
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Cambiar la fuente principal de toda la app web de Cal Sans (P-121) a Geist |
+| Especificación / tarea | Interfaz general |
+
+**Prompt**
+
+> Coloca Geist.
+
+**Resultado de la IA:**
+
+- `layout.tsx` carga Geist con `next/font/google` (subconjunto `latin`) como la variable `--font-geist`, en lugar de `CalSans-Regular.ttf`.
+- `globals.css` asigna `--font-geist` a `--font-sans` de Tailwind y al `font-family` del `body`.
+- Geist es una fuente variable con todos los pesos, así que `font-medium`, `font-semibold` y `font-bold` vuelven a usar pesos reales (con Cal Sans el navegador los simulaba).
+- `font-mono` no cambia. `CalSans-Regular.ttf` y `AtkinsonHyperlegible.ttf` se quedan en `public`.
+- `next/font/google` descarga la fuente al compilar y la sirve desde la propia app; el navegador no la pide a Google.
+
+**Archivos afectados:** `frontend/app/layout.tsx`, `frontend/app/globals.css`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores. El servidor de desarrollo sirve la página con la clase de Geist y el CSS con `font-family: var(--font-geist)`.
+
+**Revisión humana:** Lucía eligió Geist entre las fuentes recomendadas.
+
+### P-124. Íconos más grandes en el expediente minimizado
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Agrandar un poco los íconos de hallazgos del lomo del expediente minimizado y separarlos más, sin que dejen de caber |
+| Especificación / tarea | Pantalla principal (panel derecho) |
+
+**Prompt**
+
+> Coloca estos minimizados un poco más grandecitos pero que quepan bien y un poco más de gap entre ellos.
+>
+> Colócales un cursor pointer.
+>
+> Ponles algo hover.
+
+**Resultado de la IA:**
+
+- Los seis círculos de hallazgos pasan de 28 a 32 px (`h-8 w-8`) y sus íconos, de 16 a 18 px.
+- La separación entre ellos pasa de 6 a 10 px (`gap-2.5`).
+- Caben en el lomo de 62 px de ancho, incluido el contador de la esquina. Los 44 px de alto adicionales los absorbe la barra de avance, que es la parte flexible del lomo (P-100).
+- Todo el lomo es el botón que reabre el expediente; se le agregó `cursor-pointer`, así que la mano aparece sobre los íconos y sobre el resto del lomo.
+- Al pasar el cursor, cada ícono crece un poco (`hover:scale-115`, 200 ms, sin animación con "reducir movimiento") y muestra un globo nativo con la sección y su número de hallazgos (por ejemplo, "Síntomas: 0"). El lomo completo conserva su fondo `slate-50` al pasar el cursor.
+
+**Archivos afectados:** `frontend/components/home/PatientRecordPanel.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.
+
+### P-125. Campo de edad más compacto
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Acercar la unidad "años" al número en el campo Edad del alta de paciente |
+| Especificación / tarea | ESP-004 (nuevo paciente) |
+
+**Prompt**
+
+> 30 años se ve muy separado.
+
+**Resultado de la IA:** el campo Edad pasa de 160 a 112 px de ancho (`w-40` → `w-28`). "años" sigue fijo a la derecha, pero ahora queda cerca del número. Caben los tres dígitos del máximo (130) sin chocar con la unidad.
+
+**Archivos afectados:** `frontend/components/home/NewPatientDialog.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.
+
+### P-126. Menos estilos con apariencia de "hecho por IA"
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Quitar estilos que se ven genéricos o generados por IA y reemplazarlos siguiendo principios de UX, con Dribbble como referencia |
+| Especificación / tarea | Interfaz general |
+
+**Prompt**
+
+> Quita algunos estilos que se vean AI-Handmade y reemplázalos. Usa principios UX, busca Dribbble.
+>
+> No, estaba bien lo de los colores de los iconos de la barra minimizada de expediente, eso mantenlo. Y también mantén lo de las imágenes blur y no blur, todo eso del expediente.
+
+**Resultado de la IA:**
+
+La IA revisó referencias de expedientes clínicos en Dribbble y guías sobre los rasgos típicos de las interfaces generadas por IA: colores por categoría sin significado, desenfoques y manchas decorativas, píldoras de colores por todas partes, animaciones que no informan nada y sombras genéricas. Principio aplicado: **el color debe indicar un estado, no decorar**.
+
+- **Encabezado de la sección (`SectionHeader`):**
+  - se quitaron las partículas naranjas animadas y desenfocadas de "En proceso" (P-98) y la etiqueta queda estática, en ámbar (`bg-amber-100 text-amber-900`, el mismo tono de los avisos "provisional" y "desactualizado") y con esquinas `rounded-md` en vez de píldora;
+  - "Paso 1 de 6" deja de ser una píldora azul brillante y pasa a texto gris junto al grupo: "Antecedentes / Paso 1 de 6".
+- **Expediente (`PatientRecordPanel`), revertido:** la IA había quitado los banners con desenfoque, los colores por tipo de hallazgo y "Sin registros", y había puesto el color según hubiera o no registros. Lucía pidió mantener todo eso como estaba, tanto en el panel abierto como en el lomo minimizado, así que el expediente vuelve a su versión anterior (con los ajustes de P-120 y P-124).
+- **Portada del chat (`ChatIntro`):** se quitaron las cruces médicas decorativas del fondo.
+- **Login:** la tarjeta pierde `shadow-xl` y usa un borde de 2 px, como el resto de la app.
+- **CSS:** se borraron las animaciones `status-particle` y `login-float-*`, que ya no se usan.
+
+**Archivos afectados:** `frontend/components/assistant/SectionHeader.tsx`, `frontend/components/assistant/ChatIntro.tsx`, `frontend/app/(auth)/login/page.tsx`, `frontend/app/globals.css`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** Lucía rechazó los cambios del expediente y se revirtieron (A-23). El resto queda pendiente de su revisión visual.
+
+### P-127. Menos texto en la captura de datos
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Quitar mensajes innecesarios de la interfaz de entrada: el médico no tiene tiempo de leer mucho |
+| Especificación / tarea | ESP-004, ESP-005 (interfaz de entrada) |
+
+**Prompt**
+
+> Elimina mensajes que no sean necesarios en la captura de datos o interfaz de entrada, recuerda que es para el médico y este no puede tener tiempo de leer mucho.
+
+**Resultado de la IA:**
+
+Criterio: se quita lo que repite algo visible, lo que explica algo que la interfaz ya muestra y las notas dirigidas al equipo de desarrollo. Se conservan los errores, los estados (cargando, guardando, desactualizado) y el aviso clínico de `ChatNotice`.
+
+- **Portada con paciente (`ChatIntro`):** se quitó. "Empecemos con antecedentes: Enfermedades preexistentes" y su instrucción repetían el encabezado de la sección y el título de la tarjeta (el nombre de la sección salía tres veces). `ChatIntro` queda solo para la bienvenida sin paciente y se eliminó el tipo `ChatIntroMode`.
+- **Tarjeta de captura (`SectionCapture`):**
+  - se quitó la instrucción bajo el título ("Marca los síntomas que presenta el paciente. Si se pueden medir, anota el valor."), porque el campo "Valor" aparece solo cuando aplica;
+  - "Cargando la base de conocimiento…" → "Cargando…";
+  - "No se pudo cargar el catálogo. Revisa tu sesión e inténtalo de nuevo." → "No se pudo cargar el catálogo.";
+  - "Hay N más: escribe para acotar la búsqueda." → "N más. Escribe para filtrar.";
+  - "Aún no marcas síntomas." / "Ninguna: el paciente no tiene enfermedad preexistente." → "Sin selección.";
+  - "Escribe solo un número, p. ej. 38.5" → "Solo números, p. ej. 38.5".
+- **Diagnóstico diferencial (`DiagnosisPanel`):**
+  - se quitó la descripción bajo el título y, antes del primer análisis, "Cuando termines de capturar, analiza el expediente.": el botón "Analizar expediente" basta;
+  - se quitó la nota "Resultado de demostración… Se reemplazará por la máquina de inferencia del equipo…", que era para el equipo; la etiqueta "Motor provisional" se mantiene;
+  - se quitó "Es una orientación; la decisión clínica es del médico tratante.", que repetía el aviso fijo de `ChatNotice`;
+  - desactualizado: "Los hallazgos cambiaron. Vuelve a analizar antes de confirmar.";
+  - sin coincidencias: "Sin coincidencias. Revisa los hallazgos guardados.";
+  - estado del pie: "Analizado a las {hora}" / "Actualizado a las {hora}".
+- **Chat con paciente:** el texto del campo de mensaje pasa de "La conversación con la IA llegará con el motor de inferencia; captura en la tarjeta de arriba." a "Captura los datos en la tarjeta de arriba".
+- **Nuevo paciente (`NewPatientDialog`):** se quitaron "Solo necesitamos su nombre y su edad para abrir el expediente." y la ayuda "De 0 a 130 años.". La validación de RF-31 no cambia: si la edad está fuera de rango, el error aparece junto al campo.
+- **Expediente (panel derecho):** sin cambios, por la decisión de A-23.
+
+**Archivos afectados:** `frontend/components/assistant/AssistantChat.tsx`, `ChatIntro.tsx`, `SectionCapture.tsx`, `DiagnosisPanel.tsx`, `frontend/components/home/NewPatientDialog.tsx`, `frontend/types/assistant.ts`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores. Ninguna prueba depende de los textos quitados.
+
+**Revisión humana:** pendiente de revisión visual de Lucía.
+
+### P-128. "Confirmar este diagnóstico" con fondo verde azulado
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Dar al botón "Confirmar este diagnóstico" fondo verde azulado y texto blanco |
+| Especificación / tarea | ESP-005 (diagnóstico diferencial) |
+
+**Prompt**
+
+> Coloca "Confirmar este diagnóstico" con el fondo así no blanco sino ese verde azulado y el texto blanco.
+
+**Resultado de la IA:** el botón deja de tener solo borde (`border-teal-600`, texto `teal-800`) y pasa a fondo `teal-700` con texto blanco, el mismo tono de "Analizar expediente" y "Guardar y continuar". Al pasar el cursor se oscurece a `teal-800`. Conserva el borde de 2 px (del mismo color), así que no cambia de tamaño. Deshabilitado sigue con opacidad al 50 %.
+
+**Archivos afectados:** `frontend/components/assistant/DiagnosisPanel.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.
+
+### P-129. Texto oscuro en la etiqueta "Completada"
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Poner en negro el texto de la etiqueta "Completada" del encabezado de la sección |
+| Especificación / tarea | Pantalla principal (encabezado de sección) |
+
+**Prompt**
+
+> "Completada" en el encabezado de arriba coloca el texto de color negro o así.
+
+**Resultado de la IA:** la etiqueta "Completada" conserva el fondo `emerald-100` y su texto e ícono pasan de `emerald-700` a `slate-900`.
+
+**Archivos afectados:** `frontend/components/assistant/SectionHeader.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.
+
+### P-130. Primer candidato del expediente con fondo blanco
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Quitar el fondo azul claro del primer candidato del diagnóstico diferencial en el panel derecho |
+| Especificación / tarea | ESP-005 (panel derecho) |
+
+**Prompt**
+
+> Este colócalo con fondo blanco (captura del primer candidato, "Lupus eritematoso sistémico").
+
+**Resultado de la IA:** el primer candidato pasa de `bg-blue-50` a fondo blanco. Conserva el borde azul `#1e47c5`, el círculo con el número y la barra en azul (P-114), así que sigue destacando sobre los demás.
+
+**Archivos afectados:** `frontend/components/home/PatientRecordPanel.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.
+
+### P-131. Píldora del paciente solo con el nombre
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Quitar el ID del expediente y el divisor de la píldora del paciente de la sesión |
+| Especificación / tarea | Pantalla principal (P-101) |
+
+**Prompt**
+
+> Elimina el id y el divisor (captura de la píldora "Hector López Andrade | PACIE00015").
+
+**Resultado de la IA:** `SessionPatientPill` muestra solo el ícono y el nombre completo. Se quitaron el divisor "|" y el ID, también del globo que aparece al pasar el cursor. El ID se sigue viendo en el panel del expediente.
+
+**Archivos afectados:** `frontend/components/assistant/SessionPatientPill.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.
+
+### P-132. "Cerrar sesión" con texto oscuro
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Poner en negro u oscuro el texto de "Cerrar sesión" del menú de cuenta |
+| Especificación / tarea | Pantalla principal (menú de cuenta) |
+
+**Prompt**
+
+> Este colócalo de texto negro o oscuro (captura de "Cerrar sesión").
+
+**Resultado de la IA:** en `ProfileMenu`, el texto y el ícono de "Cerrar sesión" pasan de `red-700` a `slate-900`. Se conserva el fondo rojo muy claro al pasar el cursor (`red-50`), que sigue señalando que es la acción de salida. El botón "Cerrar sesión" del panel de administrador no cambia (va en blanco sobre la barra azul).
+
+**Archivos afectados:** `frontend/components/home/ProfileMenu.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.
+
+### P-133. Textos grises más oscuros en toda la app
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Oscurecer los textos grises para que se lean bien |
+| Especificación / tarea | Interfaz general (accesibilidad, contraste) |
+
+**Prompt**
+
+> Coloca todos los textos que puedas de color oscuro o negro, o sea no tanto grisecito porque luego no se ve correctamente.
+
+**Resultado de la IA:**
+
+- Sobre fondos claros, cada gris baja dos tonos:
+  - `text-slate-400` → `text-slate-600` (íconos de búsqueda, unidades del catálogo, botones de quitar);
+  - `text-slate-500` → `text-slate-700` (textos secundarios, ayudas, fechas, especialidad);
+  - `text-slate-600` → `text-slate-800` (descripciones, encabezados de tabla, subtítulos).
+- Los textos de ejemplo de los campos quedan todos en `placeholder:text-slate-500`, más claros que el texto escrito para no confundirse con un valor.
+- El botón de mostrar contraseña del login queda en `slate-700` y pasa a `slate-900` al pasar el cursor, para que el efecto se siga notando.
+- **No cambian**, a propósito:
+  - la barra lateral (`Sidebar`) y la barra lateral de la interfaz de salida, porque son azul marino: ahí los grises son tonos claros y oscurecerlos los haría ilegibles;
+  - los separadores e íconos decorativos en `slate-300` (la "/" del encabezado, el estetoscopio de "Disponible al analizar el expediente.", la lupa de "sin resultados");
+  - los estados deshabilitados (`disabled:`), que deben seguir viéndose inactivos.
+- 107 clases cambiadas en 18 componentes.
+
+**Archivos afectados:** `frontend/components/admin/` (`AdminDialog`, `AdminPanel`, `StatusDialog`), `frontend/components/assistant/` (`ChatComposer`, `ChatIntro`, `ChatMessages`, `ChatNotice`, `DiagnosisPanel`, `SectionCapture`, `SectionHeader`), `frontend/components/auth/LoginForm.tsx`, `frontend/components/home/` (`HelpMenu`, `NewPatientDialog`, `PatientRecordPanel`, `PatientSearchDialog`, `ProfileMenu`), `frontend/components/result/` (`PatientResultScreen`, `ResultSections`).
+
+**Verificación automática:** `tsc` y `eslint` sin errores. Se revisó que ningún efecto al pasar el cursor quedara con el mismo color que el texto base.
+
+**Revisión humana:** pendiente de revisión visual de Lucía.
+
+### P-134. "Ver resultado del expediente" se rellena al pasar el cursor
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Al pasar el cursor por "Ver resultado del expediente", rellenar el fondo del azul del borde y poner el texto en blanco |
+| Especificación / tarea | ESP-005 (panel derecho) |
+
+**Prompt**
+
+> Al hacer hover en este, pon que se coloque el fondo de ese color de azul como el borde, y textos blancos.
+
+**Resultado de la IA:** el enlace del panel derecho cambia el `hover:bg-blue-50` por `hover:bg-[#1e47c5] hover:text-white`. Al pasar el cursor, el fondo toma el azul del borde, y el texto y los dos íconos (documento y flecha) se ponen blancos. Sin el cursor sigue igual: borde y texto azules sobre blanco.
+
+**Archivos afectados:** `frontend/components/home/PatientRecordPanel.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.
+
+### P-135. El diagnóstico diferencial muestra cuál está confirmado
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Que la pantalla de diagnóstico diferencial diga qué candidato está confirmado y que ya se guardó en el expediente |
+| Especificación / tarea | ESP-005 (RF-41, RF-42), P-111 |
+
+**Prompt**
+
+> En la pantalla de diagnóstico diferencial, en la parte de la interfaz de entrada, se ve un poco confuso porque no sale cuál está confirmado, o no le avisa que se confirmó ya en el expediente en el panel derecho.
+>
+> Elimina el borde aquí y el fondo colócalo como un gris tenue.
+
+**Resultado de la IA:**
+
+- **Causa:** al confirmar, la app abre la interfaz de salida. Al volver, los tres candidatos se veían iguales, todos con "Confirmar este diagnóstico", porque `DiagnosisPanel` no recibía el diagnóstico ya guardado.
+- `DiagnosisPanel` recibe `confirmedName` (el `diagnosis` del paciente, que viene de `PACIENTES` y persiste al recargar).
+- **Aviso arriba de la lista:** recuadro con "{enfermedad} confirmado y guardado en el expediente." y el botón "Ver resultado". Aparece aunque el diagnóstico confirmado ya no esté entre los candidatos de un análisis nuevo.
+  - Primero tenía borde y fondo verde azulado. Lucía pidió quitar el borde y usar un gris tenue: queda en `bg-slate-100`, sin borde, con el ícono de palomita y el botón "Ver resultado" en verde azulado.
+- **Candidato confirmado:** borde verde azulado, etiqueta "Confirmado" junto al nombre y sin botón de confirmar.
+- **Los demás candidatos:** con un diagnóstico ya confirmado, el botón pasa a "Cambiar a este diagnóstico", con borde gris y fondo blanco, para no competir con el confirmado. Sin confirmado sigue "Confirmar este diagnóstico" relleno (P-128).
+- El backend ya permitía cambiar el diagnóstico (`ConfirmarDiagnosticoAsync` lo reemplaza y quita el tratamiento si la enfermedad cambia), así que no hubo cambios en la API.
+
+**Archivos afectados:** `frontend/components/assistant/DiagnosisPanel.tsx`, `frontend/components/assistant/AssistantChat.tsx`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** Lucía detectó la confusión (A-24). Pendiente de su revisión visual.
+
+### P-136. "Guardar y continuar" avanza aunque todas las secciones estén completas
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Que "Guardar y continuar" siempre lleve a la siguiente sección, aunque no se haya modificado nada |
+| Especificación / tarea | ESP-005 (captura por secciones), P-103 |
+
+**Prompt**
+
+> ¿Por qué cuando voy a un paso, por ejemplo el de Comorbilidades, y no modifico nada y le doy en "Guardar y continuar", no pasa nada? ¿Cómo lo soluciono?
+
+**Resultado de la IA:**
+
+- **Causa:** tras guardar, `HomeScreen` saltaba a la primera sección sin completar. Con las seis completas (6/6) no había ninguna y se quedaba en la misma sección. El guardado sí ocurría, pero en pantalla no cambiaba nada.
+- **Corrección:** `nextSectionAfterSave` lleva a la primera sección sin completar y, si ya están todas completas (el médico está revisando o corrigiendo), a la siguiente en orden. Por ejemplo, de Comorbilidades pasa a Síntomas.
+- **Segundo problema encontrado:** guardar sin cambios marcaba el análisis como desactualizado ("Los hallazgos cambiaron. Vuelve a analizar…"). Ahora se compara lo guardado antes y después (enfermedad preexistente y hallazgos con su valor) y solo se desactualiza si algo cambió.
+
+**Archivos afectados:** `frontend/components/home/HomeScreen.tsx`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** Lucía detectó el problema (A-25). Pendiente de que lo pruebe.
+
+### P-137. Indicación para analizar en el diagnóstico diferencial vacío
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Que la pantalla de diagnóstico diferencial no se vea vacía antes del primer análisis |
+| Especificación / tarea | ESP-005, P-127 |
+
+**Prompt**
+
+> Creé un nuevo paciente, ¿me puedes explicar por qué aquí no sale nada? Ya llené todo los datos que se necesitan, gracias.
+
+**Resultado de la IA:**
+
+- **Causa:** el diagnóstico diferencial aparece después de pulsar "Analizar expediente". En P-127 la IA quitó el texto "Cuando termines de capturar, analiza el expediente." y ocultó el cuerpo de la tarjeta antes del primer análisis, así que la tarjeta quedaba vacía y no indicaba qué hacer.
+- La tarjeta vuelve a tener cuerpo antes del análisis, con una sola línea: "Pulsa **Analizar expediente** para ver las enfermedades más probables.", junto al ícono del microscopio.
+- En este paso, el texto del campo de mensaje dice "Analiza el expediente en la tarjeta de arriba" en lugar de "Captura los datos en la tarjeta de arriba".
+
+**Archivos afectados:** `frontend/components/assistant/DiagnosisPanel.tsx`, `frontend/components/assistant/AssistantChat.tsx`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** Lucía detectó la pantalla vacía (A-26).
+
+### P-138. Sin campo de chat en la interfaz de entrada
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Quitar el campo de mensaje del chat durante la captura del expediente y conservarlo en la introducción |
+| Especificación / tarea | ESP-003 (introducción), ESP-005 (interfaz de entrada) |
+
+**Prompt**
+
+> Vamos a quitar este, porque no tendremos un LLM o IA formal, ya que el motor de inferencia será de nuestra propiedad. Quitaremos lo del chat, pero solo para la interfaz de entrada; para la introducción no.
+
+**Resultado de la IA:**
+
+- `AssistantChat` muestra `ChatComposer` solo sin paciente seleccionado, es decir, en la introducción guiada (ESP-003). Con paciente, en la captura y el diagnóstico diferencial, ya no aparece el campo de mensaje: todo se hace en las tarjetas.
+- Se quitaron los textos del campo de mensaje que solo se usaban con paciente ("Captura los datos en la tarjeta de arriba" y "Analiza el expediente en la tarjeta de arriba", de P-127 y P-137).
+- La introducción (bienvenida, recorrido y su campo de mensaje) no cambia.
+
+**Archivos afectados:** `frontend/components/assistant/AssistantChat.tsx`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** decisión de Lucía: el motor de inferencia es propio y no habrá un LLM en la captura.
+
+### P-139. El desenfoque del banner ya no cubre los hallazgos
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Mantener borroso el banner de cada tipo de hallazgo sin que el desenfoque se extienda sobre la lista de hallazgos |
+| Especificación / tarea | Panel derecho (expediente) |
+
+**Prompt**
+
+> ¿Puedes arreglar eso de que se ve borroso y se lleva el texto de paso? O sea, mantenlo borroso pero sin afectar lo de abajo.
+
+**Resultado de la IA:**
+
+- **Causa:** el banner se dibuja ampliado (`scale-150`) y con desenfoque de 24 px, y su franja no recortaba lo que sobresalía. El color se extendía hacia abajo, sobre los primeros hallazgos ("Albúmina", "BUN aumentado"), y los dejaba deslavados.
+- La franja del banner lleva `overflow-hidden`: el desenfoque y el efecto al pasar el cursor siguen igual, pero quedan dentro de la franja. Los hallazgos de abajo se ven sobre fondo blanco.
+
+**Archivos afectados:** `frontend/components/home/PatientRecordPanel.tsx`.
+
+**Verificación automática:** `eslint` sin errores.
+
+**Revisión humana:** corrección visual pedida por Lucía.

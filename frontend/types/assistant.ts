@@ -45,5 +45,3 @@ export type WelcomeStep = {
 /** Posición en el guion: paso y burbuja dentro del paso. */
 export type TourPosition = { step: number; bubble: number };
 
-/** Variante de la portada del chat vacío. */
-export type ChatIntroMode = 'welcome' | 'patient';

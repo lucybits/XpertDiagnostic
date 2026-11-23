@@ -11,7 +11,7 @@ import type { Patient } from '@/types/patient';
 export default function SessionPatientPill({ patient, hidden }: { patient: Patient; hidden: boolean }) {
   return (
     <p
-      title={`${patient.fullName} | ${patient.recordNumber}`}
+      title={patient.fullName}
       // Se esconde al bajar y vuelve al subir (P-104); oculta, no recibe clics ni lectores de pantalla.
       aria-hidden={hidden || undefined}
       className={`absolute top-3 left-4 z-10 flex max-w-[min(30rem,calc(100%-14rem))] min-w-0 items-center gap-2 rounded-full bg-[#0b1533] py-1 pr-4 pl-1 transition-[translate,opacity] duration-300 ease-out starting:opacity-0 motion-reduce:transition-none sm:left-8 ${
@@ -23,10 +23,6 @@ export default function SessionPatientPill({ patient, hidden }: { patient: Patie
       </span>
       <span className="sr-only">Paciente de la sesión: </span>
       <span className="truncate font-semibold text-white">{patient.fullName}</span>
-      <span aria-hidden="true" className="shrink-0 text-slate-500">
-        |
-      </span>
-      <span className="shrink-0 text-sm text-slate-300 tabular-nums">{patient.recordNumber}</span>
     </p>
   );
 }

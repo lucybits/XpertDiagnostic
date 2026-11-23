@@ -71,12 +71,12 @@ export default function HelpMenu({ buttonClassName }: { buttonClassName: string 
               </span>
               <span className="min-w-0">
                 <span className="block font-medium">{step.title}</span>
-                <span className="block text-sm text-slate-600">{step.detail}</span>
+                <span className="block text-sm text-slate-800">{step.detail}</span>
               </span>
             </li>
           ))}
         </ol>
-        <p className="mt-3 border-t-2 border-slate-100 pt-3 text-sm text-slate-600">
+        <p className="mt-3 border-t-2 border-slate-100 pt-3 text-sm text-slate-800">
           El diagnóstico es orientativo y el motor actual es provisional; la decisión clínica es del médico.
         </p>
       </div>

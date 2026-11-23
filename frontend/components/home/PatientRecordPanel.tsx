@@ -145,7 +145,7 @@ export default function PatientRecordPanel({
             aria-label="Plegar expediente"
             aria-expanded={!collapsed}
             aria-controls={PANEL_ID}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60"
+            className="rounded-lg p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60"
           >
             <PanelRightClose aria-hidden="true" className="h-5 w-5" />
           </button>
@@ -155,7 +155,7 @@ export default function PatientRecordPanel({
             type="button"
             onClick={onClose}
             aria-label="Cerrar expediente"
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60"
+            className="rounded-lg p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60"
           >
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
@@ -166,16 +166,16 @@ export default function PatientRecordPanel({
         {/* Ficha del paciente */}
         {patient ? (
           <section aria-label="Paciente" className="flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700">
               <UserRound aria-hidden="true" className="h-5 w-5" />
             </span>
             <div className="min-w-0">
               <p className="truncate font-semibold">{patient.fullName}</p>
-              <p className="text-slate-500">
+              <p className="text-slate-700">
                 {patient.recordNumber} | {patient.age} años
               </p>
-              <p className="mt-0.5 text-slate-600">
-                <span className="text-slate-500">Preexistente: </span>
+              <p className="mt-0.5 text-slate-800">
+                <span className="text-slate-700">Preexistente: </span>
                 {preexistingDisease ?? 'ninguna registrada'}
               </p>
             </div>
@@ -185,11 +185,15 @@ export default function PatientRecordPanel({
             aria-label="Paciente"
             className="flex flex-col items-center gap-2 rounded-xl bg-slate-100 px-4 py-6 text-center text-slate-800"
           >
-            <span className="mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-white">
-              <UserRound aria-hidden="true" className="h-6 w-6 text-slate-500" />
-            </span>
+            <Image
+              src="/usernofound.png"
+              alt=""
+              width={80}
+              height={80}
+              className="mb-1 h-20 w-20 object-contain"
+            />
             <p className="font-medium">Sin paciente seleccionado</p>
-            <p className="text-slate-600">Selecciona un paciente para ver su expediente.</p>
+            <p className="text-slate-800">Selecciona un paciente para ver su expediente.</p>
           </section>
         )}
 
@@ -199,7 +203,7 @@ export default function PatientRecordPanel({
             <h3 id={`${ids}-record-progress-title`} className="font-semibold">
               Avance de la captura
             </h3>
-            <span className="text-slate-500">
+            <span className="text-slate-700">
               {completed} de {sections.length}
             </span>
           </div>
@@ -229,7 +233,7 @@ export default function PatientRecordPanel({
               return (
                 <li key={type} className="group overflow-hidden rounded-xl border-2 border-slate-100 bg-white">
                   {/* Franja con el banner: el texto va a la izquierda, sobre la zona libre de la ilustración. */}
-                  <div className="relative isolate flex min-h-24 flex-col justify-center px-3.5 py-3">
+                  <div className="relative isolate flex min-h-24 flex-col justify-center overflow-hidden px-3.5 py-3">
                     <Image
                       src={banner}
                       alt=""
@@ -262,7 +266,7 @@ export default function PatientRecordPanel({
                         <li key={item.id} className="rounded-md border-2 border-slate-200 px-2 py-0.5 text-slate-700">
                           {item.description}
                           {item.value !== 'presente' && (
-                            <span className="text-slate-500">
+                            <span className="text-slate-700">
                               {' '}
                               | {item.value}
                               {item.unit ? ` ${item.unit}` : ''}
@@ -304,7 +308,7 @@ export default function PatientRecordPanel({
                   <li
                     key={candidate.idEnfermedad}
                     className={`flex items-start gap-3 rounded-xl border-2 px-3.5 py-3 ${
-                      isFirst ? 'border-[#1e47c5] bg-blue-50' : 'border-slate-100 bg-white'
+                      isFirst ? 'border-[#1e47c5] bg-white' : 'border-slate-100 bg-white'
                     }`}
                   >
                     <span
@@ -341,7 +345,7 @@ export default function PatientRecordPanel({
                         </span>
                         <span className="w-10 text-right text-sm font-bold text-slate-900 tabular-nums">{percent}%</span>
                       </div>
-                      <p className="mt-0.5 text-sm text-slate-600 tabular-nums">
+                      <p className="mt-0.5 text-sm text-slate-800 tabular-nums">
                         {candidate.coincidencias} de {candidate.totalCriterios} criterios
                       </p>
                     </div>
@@ -350,7 +354,7 @@ export default function PatientRecordPanel({
               })}
             </ol>
           ) : (
-            <div className="flex items-start gap-3 rounded-xl border-2 border-dashed border-slate-200 px-4 py-4 text-slate-500">
+            <div className="flex items-start gap-3 rounded-xl border-2 border-dashed border-slate-200 px-4 py-4 text-slate-700">
               <Stethoscope aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-slate-300" />
               <p>{diagnosis ? 'Sin coincidencias con la base de conocimiento.' : 'Disponible al analizar el expediente.'}</p>
             </div>
@@ -365,12 +369,12 @@ export default function PatientRecordPanel({
           {patient?.diagnosis ? (
             <>
               <p className="mt-3 text-slate-700">
-                <span className="text-slate-500">Diagnóstico confirmado: </span>
+                <span className="text-slate-700">Diagnóstico confirmado: </span>
                 <span className="font-semibold text-slate-900">{patient.diagnosis}</span>
               </p>
               <Link
                 href={`/patients/${patient.id}/result`}
-                className="group mt-3 flex items-center justify-center gap-2 rounded-xl border-2 border-[#1e47c5] px-4 py-2.5 font-semibold text-[#1e47c5] transition-colors hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1e47c5] focus-visible:ring-offset-2"
+                className="group mt-3 flex items-center justify-center gap-2 rounded-xl border-2 border-[#1e47c5] px-4 py-2.5 font-semibold text-[#1e47c5] transition-colors hover:bg-[#1e47c5] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1e47c5] focus-visible:ring-offset-2"
               >
                 <FileText aria-hidden="true" className="h-4 w-4" />
                 Ver resultado del expediente
@@ -379,7 +383,7 @@ export default function PatientRecordPanel({
             </>
           ) : (
             patient && (
-              <p className="mt-3 text-sm text-slate-500">
+              <p className="mt-3 text-sm text-slate-700">
                 {diagnosis && diagnosis.candidatos.length > 0
                   ? 'Confirma uno de los candidatos para generar el resultado del expediente.'
                   : 'Al analizar y confirmar un diagnóstico podrás ver el resultado del expediente.'}
@@ -403,7 +407,7 @@ export default function PatientRecordPanel({
         aria-controls={PANEL_ID}
         tabIndex={collapsed ? 0 : -1}
         aria-hidden={!collapsed}
-        className={`absolute inset-y-0 left-0 flex w-[calc(4rem-2px)] flex-col items-center gap-3 overflow-hidden py-4 transition-[opacity,background-color] duration-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60 focus-visible:ring-inset motion-reduce:transition-none ${
+        className={`absolute inset-y-0 left-0 flex w-[calc(4rem-2px)] cursor-pointer flex-col items-center gap-3 overflow-hidden py-4 transition-[opacity,background-color] duration-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60 focus-visible:ring-inset motion-reduce:transition-none ${
           collapsed ? 'opacity-100 delay-150' : 'pointer-events-none opacity-0'
         }`}
       >
@@ -423,13 +427,17 @@ export default function PatientRecordPanel({
           Expediente
         </span>
         {/* Los seis íconos siempre completos: no se encogen (P-100); lo que se adapta al alto es la barra de avance. */}
-        <span aria-hidden="true" className="flex shrink-0 flex-col items-center gap-1.5">
-          {FINDING_GROUPS.map(({ type, icon: Icon, iconClassName }) => {
+        <span aria-hidden="true" className="flex shrink-0 flex-col items-center gap-2.5">
+          {FINDING_GROUPS.map(({ type, label, icon: Icon, iconClassName }) => {
             const count = findings[type]?.length ?? 0;
             return (
-              <span key={type} className="relative shrink-0">
-                <span className={`flex h-7 w-7 items-center justify-center rounded-full text-white ${iconClassName}`}>
-                  <Icon className="h-4 w-4" />
+              <span
+                key={type}
+                title={`${label}: ${count}`}
+                className="relative shrink-0 transition-transform duration-200 ease-out hover:scale-115 motion-reduce:transition-none"
+              >
+                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-white ${iconClassName}`}>
+                  <Icon className="h-[18px] w-[18px]" />
                 </span>
                 {count > 0 && (
                   <span className="absolute -top-1 -right-1.5 min-w-4.5 rounded-full border-2 border-white bg-[#0b1533] px-1 text-center text-xs leading-4 font-medium text-white tabular-nums">
@@ -448,7 +456,7 @@ export default function PatientRecordPanel({
               style={{ height: `${percent}%` }}
             />
           </span>
-          <span className="text-sm text-slate-500 tabular-nums">
+          <span className="text-sm text-slate-700 tabular-nums">
             {completed}/{sections.length}
           </span>
         </span>

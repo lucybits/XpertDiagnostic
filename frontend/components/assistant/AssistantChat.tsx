@@ -280,9 +280,7 @@ export default function AssistantChat({
       ? 'XpertDiagnostic está escribiendo…'
       : canReplyToWelcome || resumeFrom !== null
         ? 'Escribe tu respuesta para continuar…'
-        : patient !== null
-          ? 'La conversación con la IA llegará con el motor de inferencia; captura en la tarjeta de arriba.'
-          : 'Selecciona un paciente para comenzar';
+        : 'Selecciona un paciente para comenzar';
 
   return (
     <section aria-label="Asistente XpertDiagnostic" className="flex h-full min-h-0 flex-col bg-white">
@@ -301,18 +299,11 @@ export default function AssistantChat({
         {patient && <SessionPatientPill patient={patient} hidden={isPillHidden} />}
         {isHeaderCollapsed && <ShowSectionHeaderButton sectionLabel={section.label} onShow={onToggleHeader} />}
         <div onScroll={handleConversationScroll} className="relative flex h-full flex-col overflow-y-auto scrollbar-thin">
-          {isEmpty && (
-            <ChatIntro
-              name={doctorName}
-              mode={patient !== null ? 'patient' : 'welcome'}
-              groupLabel={groupLabel}
-              position={position}
-              sectionLabel={section.label}
-            />
-          )}
+          {/* Con paciente no hay portada: el encabezado ya dice grupo, paso y sección (P-127). */}
+          {isEmpty && patient === null && <ChatIntro name={doctorName} />}
           {/* Captura estructurada de la sección (P-103): elegir del catálogo y guardar; al final, analizar. */}
           {patient && (
-            <div className={isEmpty ? '' : 'pt-16'}>
+            <div className="pt-16">
               {section.capture.kind === 'analysis' ? (
                 <DiagnosisPanel
                   patientId={patient.id}
@@ -320,6 +311,7 @@ export default function AssistantChat({
                   isStale={isDiagnosisStale}
                   onAnalyzed={onAnalyzed}
                   onConfirmed={onDiagnosisConfirmed}
+                  confirmedName={patient.diagnosis}
                 />
               ) : (
                 <SectionCapture
@@ -368,17 +360,21 @@ export default function AssistantChat({
         </div>
       </div>
 
-      <ChatComposer
-        draft={draft}
-        onDraftChange={setDraft}
-        onSend={send}
-        onStop={stop}
-        canWrite={canWrite}
-        isAssistantBusy={assistantBusy}
-        placeholder={placeholder}
-        autoFocus={awaitingWelcome}
-        textareaRef={draftRef}
-      />
+      {/* El chat solo existe en la introducción, sin paciente. En la interfaz de entrada se captura en
+          las tarjetas: el motor de inferencia es propio y no hay conversación con una IA (P-138). */}
+      {patient === null && (
+        <ChatComposer
+          draft={draft}
+          onDraftChange={setDraft}
+          onSend={send}
+          onStop={stop}
+          canWrite={canWrite}
+          isAssistantBusy={assistantBusy}
+          placeholder={placeholder}
+          autoFocus={awaitingWelcome}
+          textareaRef={draftRef}
+        />
+      )}
     </section>
   );
 }

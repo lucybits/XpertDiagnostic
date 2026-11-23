@@ -217,7 +217,7 @@ export default function AdminPanel() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900">Médicos</h1>
-            <p className="mt-1 text-slate-500">
+            <p className="mt-1 text-slate-700">
               Registra médicos con su cédula profesional y administra sus cuentas de acceso.
             </p>
           </div>
@@ -259,7 +259,7 @@ export default function AdminPanel() {
             <label htmlFor="admin-search" className="sr-only">
               Buscar médico
             </label>
-            <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-500" />
+            <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-700" />
             <input
               id="admin-search"
               type="search"
@@ -272,7 +272,7 @@ export default function AdminPanel() {
             />
           </div>
           {list.status === 'ready' && (
-            <p className="text-slate-600" aria-live="polite">
+            <p className="text-slate-800" aria-live="polite">
               {doctors.length} {doctors.length === 1 ? 'médico' : 'médicos'} | {activeCount} {activeCount === 1 ? 'activo' : 'activos'}
             </p>
           )}
@@ -304,7 +304,7 @@ export default function AdminPanel() {
           )}
 
           {list.status === 'ready' && doctors.length === 0 && (
-            <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-12 text-center text-slate-500">
+            <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-12 text-center text-slate-700">
               {query.trim()
                 ? `Ningún médico coincide con «${query.trim()}».`
                 : 'Aún no hay médicos registrados. Usa «Registrar médico» para crear la primera cuenta.'}
@@ -318,21 +318,21 @@ export default function AdminPanel() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium text-slate-900">{doctor.nombreCompleto}</p>
-                      <p className="text-slate-500">{doctor.especialidad}</p>
+                      <p className="text-slate-700">{doctor.especialidad}</p>
                     </div>
                     <StatusBadge activo={doctor.activo} />
                   </div>
                   <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
                     <div>
-                      <dt className="text-slate-500">ID</dt>
+                      <dt className="text-slate-700">ID</dt>
                       <dd className="font-mono text-slate-800">{doctor.idMedico}</dd>
                     </div>
                     <div>
-                      <dt className="text-slate-500">Cédula</dt>
+                      <dt className="text-slate-700">Cédula</dt>
                       <dd className="font-mono text-slate-800">{doctor.cedulaProfesional}</dd>
                     </div>
                     <div>
-                      <dt className="text-slate-500">Alta</dt>
+                      <dt className="text-slate-700">Alta</dt>
                       <dd className="text-slate-800">{dateFormatter.format(new Date(doctor.fechaRegistro))}</dd>
                     </div>
                   </dl>
@@ -347,7 +347,7 @@ export default function AdminPanel() {
           {list.status === 'ready' && doctors.length > 0 && (
             <div className="hidden overflow-x-auto rounded-xl border-2 border-slate-200 md:block">
               <table className="w-full min-w-208 border-collapse text-left">
-                <thead className="bg-slate-50 text-slate-600">
+                <thead className="bg-slate-50 text-slate-800">
                   <tr>
                     <th scope="col" className="px-4 py-3 font-semibold">ID</th>
                     <th scope="col" className="px-4 py-3 font-semibold">Médico</th>
@@ -363,10 +363,10 @@ export default function AdminPanel() {
                       <td className="px-4 py-3 font-mono text-slate-700">{doctor.idMedico}</td>
                       <td className="px-4 py-3">
                         <p className="font-medium text-slate-900">{doctor.nombreCompleto}</p>
-                        <p className="text-slate-500">{doctor.especialidad}</p>
+                        <p className="text-slate-700">{doctor.especialidad}</p>
                       </td>
                       <td className="px-4 py-3 font-mono text-slate-700">{doctor.cedulaProfesional}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-slate-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-800">
                         {dateFormatter.format(new Date(doctor.fechaRegistro))}
                       </td>
                       <td className="px-4 py-3">

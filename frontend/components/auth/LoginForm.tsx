@@ -215,7 +215,7 @@ export default function LoginForm() {
           </label>
           <IdCard
             aria-hidden="true"
-            className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
+            className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-700"
           />
           <input
             id="login-usuario-id"
@@ -252,7 +252,7 @@ export default function LoginForm() {
           </label>
           <LockKeyhole
             aria-hidden="true"
-            className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
+            className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-700"
           />
           <input
             id="login-password"
@@ -284,7 +284,7 @@ export default function LoginForm() {
             aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             aria-pressed={showPassword}
             aria-controls="login-password"
-            className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-600 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
+            className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-700 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
           >
             {showPassword ? (
               <EyeOff aria-hidden="true" className="h-5 w-5" />

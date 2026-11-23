@@ -8,38 +8,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-atkinson-hyperlegible);
+  --font-sans: var(--font-geist);
 }
 
 @theme {
-  --animate-login-float-one: login-float-one 7s ease-in-out infinite;
-  --animate-login-float-two: login-float-two 8s ease-in-out infinite;
-  --animate-login-float-three: login-float-three 6s ease-in-out infinite;
   --animate-splash-letter: splash-letter 1.25s cubic-bezier(0.2, 1.08, 0.2, 1) both;
-  /* Etiqueta "Pendiente": figuras naranjas que se dispersan sin parar (P-98). Solo anima transform y
-     opacity; cada figura define su rumbo con --dx y --dy (ver SectionHeader). */
-  --animate-status-particle: status-particle 3s ease-out infinite;
-
-  @keyframes status-particle {
-    0% { transform: translate(0, 0) scale(0.4); opacity: 0; }
-    25% { opacity: 0.85; }
-    100% { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0; }
-  }
-
-  @keyframes login-float-one {
-    0%, 100% { transform: translate3d(0, 0, 0); }
-    50% { transform: translate3d(0, -10px, 0); }
-  }
-
-  @keyframes login-float-two {
-    0%, 100% { transform: translate3d(0, 0, 0); }
-    50% { transform: translate3d(0, -13px, 0); }
-  }
-
-  @keyframes login-float-three {
-    0%, 100% { transform: translate3d(0, 0, 0); }
-    50% { transform: translate3d(0, -8px, 0); }
-  }
 
   @keyframes splash-letter {
     0% {
@@ -99,7 +72,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-atkinson-hyperlegible), sans-serif;
+  font-family: var(--font-geist), sans-serif;
 }
 
 .login-password-input::-ms-reveal,

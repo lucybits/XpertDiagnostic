@@ -69,7 +69,7 @@ function MessageMeta({
   const hasTime = Number.isFinite(sentAt);
   if (!hasTime && !note) return null;
   return (
-    <p className={`mt-1.5 text-sm text-slate-500 ${align === 'end' ? 'text-right' : ''}`}>
+    <p className={`mt-1.5 text-sm text-slate-700 ${align === 'end' ? 'text-right' : ''}`}>
       {hasTime && <time dateTime={new Date(sentAt).toISOString()}>{TIME_FORMAT.format(sentAt)}</time>}
       {note && (
         <span className="italic">
@@ -203,7 +203,7 @@ export function AssistantMessage({
           />
         ) : (
           message.stopped && (
-            <p className="mt-1.5 text-sm text-slate-500">
+            <p className="mt-1.5 text-sm text-slate-700">
               <span className="italic">Respuesta detenida</span>
               {onRetry && <RetryButton onRetry={onRetry} />}
             </p>
