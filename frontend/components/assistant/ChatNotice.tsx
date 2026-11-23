@@ -14,8 +14,6 @@ export default function ChatNotice() {
   return (
     <div className="mx-auto w-full max-w-4xl shrink-0 px-4 pt-6 pb-5 text-center text-xs text-slate-700 sm:px-8">
       <p>
-        Uso exclusivo para médicos. La IA es orientativa y puede equivocarse; la decisión clínica es del médico
-        tratante.{' '}
         <button
           type="button"
           onClick={() => setIsOpen((open) => !open)}
