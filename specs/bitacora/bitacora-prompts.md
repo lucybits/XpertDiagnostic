@@ -4491,3 +4491,31 @@ Criterio: se quita lo que repite algo visible, lo que explica algo que la interf
 **Verificación automática:** `eslint` sin errores.
 
 **Revisión humana:** corrección visual pedida por Lucía.
+
+### P-140. Panel de administrador con aspecto menos "hecho por IA"
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-22 |
+| Autor del prompt | Lucía |
+| Objetivo | Rediseñar la vista de médicos del panel de administrador para que no parezca generada por IA |
+| Especificación / tarea | ESP-007 (panel de administración) |
+
+**Prompt**
+
+> Cambia el panel de administrador, que no se vea tan AI-handmade, se ve muy hecho por AI y no buscamos eso.
+
+**Resultado de la IA:**
+
+- La tabla ya no va dentro de una tarjeta redondeada: es una tabla de datos con líneas horizontales y encabezados en texto normal. La columna "Médico" pasa al principio y "Alta" se llama "Fecha de alta".
+- El estado es texto plano ("Activa" en verde, "Desactivada" en gris oscuro), sin píldora.
+- Las acciones de cada fila son enlaces de texto (Editar, Contraseña, Desactivar/Activar) sin borde ni ícono.
+- Se quitó el subtítulo explicativo; el conteo ("1 registrado, 1 activo") va junto al título, que lleva una línea inferior.
+- El botón "Registrar médico" es azul marino (`blue-900`, como la barra superior), sin ícono. El buscador tiene etiqueta visible y ancho limitado, sin lupa.
+- Los avisos y errores son recuadros con borde, sin íconos. En móvil, la lista es una lista con separadores, no tarjetas.
+
+**Archivos afectados:** `frontend/components/admin/AdminPanel.tsx`.
+
+**Verificación automática:** `tsc --noEmit` y `eslint` sin errores.
+
+**Revisión humana:** pendiente de revisión visual por Lucía.
