@@ -2,11 +2,12 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { CircleAlert, Hash, UserPlus, X } from 'lucide-react';
-import { validateNewPatient, type NewPatientFieldErrors } from '@/lib/newPatient';
+import { ageFromBirthDate, toIsoDate, validateNewPatient, type NewPatientFieldErrors } from '@/lib/newPatient';
 import {
   EMPTY_NON_PATHOLOGICAL_HISTORY,
   NON_PATHOLOGICAL_QUESTIONS,
   PATIENT_LIMITS,
+  SEX_OPTIONS,
   type NewPatient,
   type NonPathologicalHistory,
   type NonPathologicalKey,
@@ -27,7 +28,8 @@ const FIELD =
   'w-full rounded-lg border-2 bg-white px-3 py-2.5 text-base text-slate-900 transition-colors hover:border-slate-300 focus:outline-none';
 
 /**
- * Ventana para registrar un paciente nuevo (ESP-004). Pide nombre completo y edad (tabla PACIENTES)
+ * Ventana para registrar un paciente nuevo (ESP-004). Pide nombre completo, sexo y fecha de nacimiento
+ * (tabla PACIENTES; la edad se calcula de la fecha)
  * y los antecedentes no patológicos como casillas sí/no (IO_AntecNoPatolPacientes). El ID se asigna
  * solo, y el resto del expediente se captura en el chat.
  * Usa <dialog> nativo, como el buscador: atrapa el foco, se cierra con Escape y el fondo queda inerte.
@@ -72,24 +74,33 @@ export default function NewPatientDialog({ open, onClose, onCreate }: NewPatient
 function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogProps, 'open'> & { titleId: string }) {
   const ids = useId();
   const [fullName, setFullName] = useState('');
-  const [age, setAge] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [sex, setSex] = useState('');
   const [history, setHistory] = useState<NonPathologicalHistory>(EMPTY_NON_PATHOLOGICAL_HISTORY);
   const [errors, setErrors] = useState<NewPatientFieldErrors>({});
   // Guardando en el servidor; y el error del servidor, si lo hubo (P-102).
   const [isSaving, setIsSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
-  const ageRef = useRef<HTMLInputElement>(null);
+  const birthDateRef = useRef<HTMLInputElement>(null);
+  const sexRef = useRef<HTMLInputElement>(null);
+  // Hoy y el límite de edad, para acotar el calendario y mostrar la edad calculada.
+  const today = toIsoDate(new Date());
+  const oldest = new Date();
+  oldest.setFullYear(oldest.getFullYear() - PATIENT_LIMITS.ageMax - 1);
+  oldest.setDate(oldest.getDate() + 1);
+  const minBirthDate = toIsoDate(oldest);
+  const age = birthDate ? ageFromBirthDate(birthDate, today) : null;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSaving) return;
     setServerError(null);
-    const result = validateNewPatient({ fullName, age, history });
+    const result = validateNewPatient({ fullName, birthDate, sex, history }, today);
     if (!result.ok) {
       setErrors(result.errors);
       // El foco va al primer campo con error, para corregirlo de inmediato.
-      (result.errors.fullName ? nameRef : ageRef).current?.focus();
+      (result.errors.fullName ? nameRef : result.errors.sex ? sexRef : birthDateRef).current?.focus();
       return;
     }
     setIsSaving(true);
@@ -157,33 +168,61 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
           {errors.fullName && <FieldError id={`${ids}-name-error`} message={errors.fullName} />}
         </div>
 
+        <fieldset aria-describedby={errors.sex ? `${ids}-sex-error` : undefined}>
+          <legend className="mb-1.5 font-medium text-slate-700">Sexo</legend>
+          <div className="flex flex-wrap gap-2">
+            {SEX_OPTIONS.map(({ value, label }, index) => (
+              <label
+                key={value}
+                className={`flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border-2 px-4 py-2 transition-colors hover:border-slate-300 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#116ee6]/60 ${
+                  sex === value ? 'border-teal-700 bg-teal-50 text-slate-900' : errors.sex ? 'border-red-600' : 'border-slate-200 text-slate-800'
+                }`}
+              >
+                <input
+                  ref={index === 0 ? sexRef : undefined}
+                  type="radio"
+                  name={`${ids}-sex`}
+                  value={value}
+                  checked={sex === value}
+                  onChange={() => {
+                    setSex(value);
+                    clearError('sex');
+                  }}
+                  className="h-5 w-5 shrink-0 cursor-pointer accent-teal-700 focus:outline-none"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          {errors.sex && <FieldError id={`${ids}-sex-error`} message={errors.sex} />}
+        </fieldset>
+
         <div>
-          <label htmlFor={`${ids}-age`} className="mb-1.5 block font-medium text-slate-700">
-            Edad
+          <label htmlFor={`${ids}-birth-date`} className="mb-1.5 block font-medium text-slate-700">
+            Fecha de nacimiento
           </label>
-          <div className="relative w-28">
+          <div className="flex flex-wrap items-center gap-3">
             <input
-              id={`${ids}-age`}
-              ref={ageRef}
-              type="text"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={3}
-              value={age}
+              id={`${ids}-birth-date`}
+              ref={birthDateRef}
+              type="date"
+              min={minBirthDate}
+              max={today}
+              value={birthDate}
               onChange={(event) => {
-                setAge(event.target.value);
-                clearError('age');
+                setBirthDate(event.target.value);
+                clearError('birthDate');
               }}
-              aria-invalid={errors.age ? true : undefined}
-              aria-describedby={errors.age ? `${ids}-age-error` : undefined}
-              placeholder="0"
-              className={`${FIELD} pr-14 ${fieldBorder(Boolean(errors.age))}`}
+              aria-invalid={errors.birthDate ? true : undefined}
+              aria-describedby={[`${ids}-age`, errors.birthDate ? `${ids}-birth-date-error` : ''].join(' ').trim()}
+              className={`${FIELD} w-auto ${fieldBorder(Boolean(errors.birthDate))}`}
             />
-            <span aria-hidden="true" className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-slate-700">
-              años
+            {/* Edad calculada, para que el médico confirme la fecha de un vistazo. */}
+            <span id={`${ids}-age`} aria-live="polite" className="text-slate-700">
+              {age !== null && age >= 0 ? `${age} ${age === 1 ? 'año' : 'años'}` : ''}
             </span>
           </div>
-          {errors.age && <FieldError id={`${ids}-age-error`} message={errors.age} />}
+          {errors.birthDate && <FieldError id={`${ids}-birth-date-error`} message={errors.birthDate} />}
         </div>
 
         <fieldset>

@@ -47,7 +47,8 @@ export async function registerPatient(data: NewPatient): Promise<RegisterPatient
   try {
     const response = await postJson<BackendPatient>('/api/patients', {
       fullName: data.fullName,
-      age: data.age,
+      birthDate: data.birthDate,
+      sex: data.sex,
       history: data.history,
     });
     if (response.ok && response.data) return { ok: true, patient: toPatient(response.data) };
@@ -55,7 +56,7 @@ export async function registerPatient(data: NewPatient): Promise<RegisterPatient
       case 401:
         return { ok: false, message: 'Tu sesión terminó. Vuelve a iniciar sesión para registrar al paciente.' };
       case 400:
-        return { ok: false, message: 'Revisa el nombre y la edad e inténtalo de nuevo.' };
+        return { ok: false, message: 'Revisa el nombre, la fecha de nacimiento y el sexo e inténtalo de nuevo.' };
       default:
         return { ok: false, message: 'No se pudo registrar al paciente. Inténtalo de nuevo en un momento.' };
     }

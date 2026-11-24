@@ -5,12 +5,14 @@ namespace XpertDiagnostic.Api.Models.Entities;
 
 /// <summary>
 /// Paciente de la tabla <c>PACIENTES</c>. Es una tabla de entrada y salida (ESP-004, P-102):
-/// el médico captura el paciente (nombre y edad) y sus hallazgos; la máquina de inferencia llena
+/// el médico captura el paciente (nombre, sexo y fecha de nacimiento) y sus hallazgos; la máquina de inferencia llena
 /// la enfermedad diagnosticada, el tratamiento y el plan.
 /// </summary>
 /// <remarks>
 /// @inv Id tiene el formato PACIE + 5 dígitos (VARCHAR(10)).
-/// @inv NombreCompleto de 3 a 150 caracteres; Edad entre 0 y 130 (CK_PACIENTES_EDAD).
+/// @inv NombreCompleto de 3 a 150 caracteres.
+/// @inv Edad la calcula SQL Server: años cumplidos de FechaNacimiento a la fecha actual (columna calculada).
+/// @inv Sexo es exactamente "F" o "M", en mayúscula y nunca vacío (CK_PACIENTES_SEXO).
 /// </remarks>
 [Table("PACIENTES")]
 public class Patient
@@ -22,7 +24,15 @@ public class Patient
     [StringLength(150)]
     public string NombreCompleto { get; set; } = string.Empty;
 
+    public DateOnly FechaNacimiento { get; set; }
+
+    /// <summary>Columna calculada en la base; EF Core no la escribe, solo la lee.</summary>
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public int Edad { get; set; }
+
+    [Column(TypeName = "char(1)")]
+    [Required, StringLength(1, MinimumLength = 1)]
+    public string Sexo { get; set; } = string.Empty;
 
     // ── Salida de la máquina de inferencia (null hasta que exista un diagnóstico) ──
     [Column(TypeName = "varchar(10)")]

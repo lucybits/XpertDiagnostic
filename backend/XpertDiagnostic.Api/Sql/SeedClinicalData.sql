@@ -678,17 +678,17 @@ INSERT INTO dbo.PLANES (IdPlan, PlanIndicado, Pronostico, Seguimiento) VALUES
     (N'PLAN_00010', N'Tratamiento indicado: Penicilina G IV c/4 h por 4 semanas (estreptococo sensible, millones U); Ceftriaxona IV al día por 4 semanas (g); Vancomicina IV c/12 h (mg/kg)', N'Reservado; depende de la respuesta al tratamiento (dato ficticio)', N'Control médico periódico (dato ficticio)');
 
 -- PACIENTES: 10 filas
-INSERT INTO dbo.PACIENTES (IdPaciente, NombreCompleto, Edad, IdEnfermedadDiagnosticada, IdComorbilidad, IdTratamiento, IdPlan) VALUES
-    (N'PACIE00001', N'Ernesto Valenzuela Acosta (ficticio)', 57, N'CARDI00017', N'CARDI00017COMOR00007', N'CARDI00017TRATA00001', N'PLAN_00001'),
-    (N'PACIE00002', N'Lucía Montaño Félix (ficticio)', 33, N'ENDOC00015', N'ENDOC00015COMOR00003', N'ENDOC00015TRATA00001', N'PLAN_00002'),
-    (N'PACIE00003', N'Javier Duarte Leyva (ficticio)', 24, N'NEUMO00008', N'NEUMO00008COMOR00008', N'NEUMO00008TRATA00001', N'PLAN_00003'),
-    (N'PACIE00004', N'Patricia Rendón Salazar (ficticio)', 48, N'NEUMO00025', N'NEUMO00025COMOR00010', N'NEUMO00025TRATA00001', N'PLAN_00004'),
-    (N'PACIE00005', N'Hugo Tapia Urías (ficticio)', 63, N'RENAL00008', N'RENAL00008COMOR00011', N'RENAL00008TRATA00001', N'PLAN_00005'),
-    (N'PACIE00006', N'Karla Verdugo Zamora (ficticio)', 29, N'MUSCU00004', N'MUSCU00004COMOR00002', N'MUSCU00004TRATA00001', N'PLAN_00006'),
-    (N'PACIE00007', N'Raúl Bórquez Cázares (ficticio)', 19, N'NEURO00085', N'NEURO00085COMOR00012', N'NEURO00085TRATA00001', N'PLAN_00007'),
-    (N'PACIE00008', N'Alma Beltrán Ibarra (ficticio)', 71, N'DIGES00017', N'DIGES00017COMOR00001', N'DIGES00017TRATA00001', N'PLAN_00008'),
-    (N'PACIE00009', N'Sergio Camacho Quijada (ficticio)', 66, N'ONCOL00014', N'ONCOL00014COMOR00002', N'ONCOL00014TRATA00001', N'PLAN_00009'),
-    (N'PACIE00010', N'Gabriela Contreras Moreno (ficticio)', 38, N'INFEC00033', N'INFEC00033COMOR00007', N'INFEC00033TRATA00001', N'PLAN_00010');
+INSERT INTO dbo.PACIENTES (IdPaciente, NombreCompleto, FechaNacimiento, Sexo, IdEnfermedadDiagnosticada, IdComorbilidad, IdTratamiento, IdPlan) VALUES
+    (N'PACIE00001', N'Ernesto Valenzuela Acosta (ficticio)', '1969-10-17', N'M', N'CARDI00017', N'CARDI00017COMOR00007', N'CARDI00017TRATA00001', N'PLAN_00001'),
+    (N'PACIE00002', N'Lucía Montaño Félix (ficticio)', '1993-09-10', N'F', N'ENDOC00015', N'ENDOC00015COMOR00003', N'ENDOC00015TRATA00001', N'PLAN_00002'),
+    (N'PACIE00003', N'Javier Duarte Leyva (ficticio)', '2002-08-04', N'M', N'NEUMO00008', N'NEUMO00008COMOR00008', N'NEUMO00008TRATA00001', N'PLAN_00003'),
+    (N'PACIE00004', N'Patricia Rendón Salazar (ficticio)', '1978-06-28', N'F', N'NEUMO00025', N'NEUMO00025COMOR00010', N'NEUMO00025TRATA00001', N'PLAN_00004'),
+    (N'PACIE00005', N'Hugo Tapia Urías (ficticio)', '1963-05-22', N'M', N'RENAL00008', N'RENAL00008COMOR00011', N'RENAL00008TRATA00001', N'PLAN_00005'),
+    (N'PACIE00006', N'Karla Verdugo Zamora (ficticio)', '1997-04-15', N'F', N'MUSCU00004', N'MUSCU00004COMOR00002', N'MUSCU00004TRATA00001', N'PLAN_00006'),
+    (N'PACIE00007', N'Raúl Bórquez Cázares (ficticio)', '2007-03-09', N'M', N'NEURO00085', N'NEURO00085COMOR00012', N'NEURO00085TRATA00001', N'PLAN_00007'),
+    (N'PACIE00008', N'Alma Beltrán Ibarra (ficticio)', '1955-01-31', N'F', N'DIGES00017', N'DIGES00017COMOR00001', N'DIGES00017TRATA00001', N'PLAN_00008'),
+    (N'PACIE00009', N'Sergio Camacho Quijada (ficticio)', '1960-10-21', N'M', N'ONCOL00014', N'ONCOL00014COMOR00002', N'ONCOL00014TRATA00001', N'PLAN_00009'),
+    (N'PACIE00010', N'Gabriela Contreras Moreno (ficticio)', '1988-09-14', N'F', N'INFEC00033', N'INFEC00033COMOR00007', N'INFEC00033TRATA00001', N'PLAN_00010');
 
 -- HALLAZGOS_PACIENTE: 212 filas
 INSERT INTO dbo.HALLAZGOS_PACIENTE (IdPaciente, TipoHallazgo, IdRegistro, Valor, Unidades) VALUES

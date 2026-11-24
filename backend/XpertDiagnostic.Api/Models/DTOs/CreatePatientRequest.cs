@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using XpertDiagnostic.Api.Models;
 
 namespace XpertDiagnostic.Api.Models.DTOs;
 
@@ -8,16 +9,27 @@ namespace XpertDiagnostic.Api.Models.DTOs;
 /// </summary>
 /// <remarks>
 /// @inv NombreCompleto de 3 a 150 caracteres, con al menos una letra y sin dígitos (RF-31).
-/// @inv Edad entre 0 y 130 (CK_PACIENTES_EDAD).
+/// @inv FechaNacimiento no es futura y da una edad de 0 a 130 años (CK_PACIENTES_EDAD).
+/// @inv Sexo es exactamente "F" (mujer) o "M" (hombre): un carácter, en mayúscula, nunca vacío (CK_PACIENTES_SEXO).
 /// </remarks>
-public class CreatePatientRequest
+public class CreatePatientRequest : IValidatableObject
 {
     [Required, StringLength(150, MinimumLength = 3)]
     [RegularExpression(@"^(?=.*\p{L})[^\d]+$")]
     public string NombreCompleto { get; set; } = string.Empty;
 
-    [Range(0, 130)]
-    public int Edad { get; set; }
+    /// <summary>Fecha de nacimiento (JSON "AAAA-MM-DD"); la edad se calcula a partir de ella.</summary>
+    public DateOnly FechaNacimiento { get; set; }
+
+    /// <summary>"F" = mujer, "M" = hombre. Se convierte a mayúscula al recibirlo ("f" → "F").</summary>
+    [Required, StringLength(1, MinimumLength = 1), RegularExpression("^[FM]$")]
+    public string Sexo
+    {
+        get => _sexo;
+        set => _sexo = value?.Trim().ToUpperInvariant() ?? string.Empty;
+    }
+
+    private string _sexo = string.Empty;
 
     // ── Antecedentes no patológicos (IO_AntecNoPatolPacientes): casillas sí/no; sin marcar = no ──
 
@@ -41,4 +53,15 @@ public class CreatePatientRequest
 
     /// <summary>¿Ha recibido transfusiones? → Transfusio.</summary>
     public bool Transfusiones { get; set; }
+
+    /// <summary>La fecha de nacimiento debe dar una edad válida hoy (usa el TimeProvider del servidor si lo hay).</summary>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var reloj = validationContext.GetService(typeof(TimeProvider)) as TimeProvider ?? TimeProvider.System;
+        var edad = EdadPaciente.Calcular(FechaNacimiento, EdadPaciente.Hoy(reloj));
+        if (edad < 0 || edad > EdadPaciente.Maxima)
+            yield return new ValidationResult(
+                $"La fecha de nacimiento debe dar una edad de 0 a {EdadPaciente.Maxima} años.",
+                [nameof(FechaNacimiento)]);
+    }
 }

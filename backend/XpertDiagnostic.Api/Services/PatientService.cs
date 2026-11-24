@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using XpertDiagnostic.Api.Models;
 using XpertDiagnostic.Api.Models.DTOs;
 using XpertDiagnostic.Api.Models.Entities;
 using XpertDiagnostic.Api.Models.Results;
@@ -12,8 +13,8 @@ namespace XpertDiagnostic.Api.Services;
 /// Consulta y alta de pacientes. Depende solo de <see cref="IPatientRepository"/> (D de SOLID),
 /// así que se prueba con un doble en memoria.
 /// </summary>
-/// <remarks>@inv La dependencia no es null durante toda la vida del objeto.</remarks>
-public sealed partial class PatientService(IPatientRepository pacientes) : IPatientService
+/// <remarks>@inv Las dependencias no son null durante toda la vida del objeto.</remarks>
+public sealed partial class PatientService(IPatientRepository pacientes, TimeProvider reloj) : IPatientService
 {
     public const string PrefijoId = "PACIE";
     private const int DigitosId = 5;
@@ -21,6 +22,7 @@ public sealed partial class PatientService(IPatientRepository pacientes) : IPati
     private const int IntentosMaximos = 3;
 
     private readonly IPatientRepository _pacientes = pacientes ?? throw new ArgumentNullException(nameof(pacientes));
+    private readonly TimeProvider _reloj = reloj ?? throw new ArgumentNullException(nameof(reloj));
 
     public Task<IReadOnlyList<PatientSummary>> ListarAsync(CancellationToken cancellationToken = default) =>
         _pacientes.ListarAsync(cancellationToken);
@@ -30,15 +32,25 @@ public sealed partial class PatientService(IPatientRepository pacientes) : IPati
         // @pre
         ArgumentNullException.ThrowIfNull(solicitud);
         ArgumentException.ThrowIfNullOrWhiteSpace(solicitud.NombreCompleto);
-        ArgumentOutOfRangeException.ThrowIfNegative(solicitud.Edad);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(solicitud.Edad, 130);
+        if (solicitud.Sexo is not ("F" or "M"))
+            throw new ArgumentException("El sexo debe ser F o M.", nameof(solicitud));
+        // La edad no se guarda (PACIENTES.Edad es calculada); aquí solo se valida y se devuelve.
+        var edad = EdadPaciente.Calcular(solicitud.FechaNacimiento, EdadPaciente.Hoy(_reloj));
+        ArgumentOutOfRangeException.ThrowIfNegative(edad);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(edad, EdadPaciente.Maxima);
 
         var nombre = Limpiar(solicitud.NombreCompleto);
 
         for (var intento = 0; intento < IntentosMaximos; intento++)
         {
             var id = SiguienteId(await _pacientes.ObtenerUltimoIdAsync(cancellationToken));
-            var paciente = new Patient { Id = id, NombreCompleto = nombre, Edad = solicitud.Edad };
+            var paciente = new Patient
+            {
+                Id = id,
+                NombreCompleto = nombre,
+                FechaNacimiento = solicitud.FechaNacimiento,
+                Sexo = solicitud.Sexo,
+            };
             var antecedentes = new NonPathologicalHistory
             {
                 IdPaciente = id,
@@ -52,7 +64,7 @@ public sealed partial class PatientService(IPatientRepository pacientes) : IPati
             };
 
             if (await _pacientes.CrearAsync(paciente, antecedentes, cancellationToken))
-                return new PatientSummary(id, nombre, solicitud.Edad, Diagnostico: null);
+                return new PatientSummary(id, nombre, edad, Diagnostico: null);
         }
 
         throw new InvalidOperationException("No se pudo asignar un número de expediente libre.");

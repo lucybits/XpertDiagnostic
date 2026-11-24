@@ -36,6 +36,7 @@ export const DIAGNOSIS_NONE = 'none';
 /**
  * Límites del alta de paciente, iguales a la tabla PACIENTES (ESP-004):
  * NombreCompleto NVARCHAR(150) NOT NULL y Edad INT con CHECK (Edad BETWEEN 0 AND 130).
+ * La edad ya no se escribe: se calcula de la fecha de nacimiento y debe quedar entre ageMin y ageMax.
  */
 export const PATIENT_LIMITS = {
   nameMin: 15,
@@ -43,6 +44,18 @@ export const PATIENT_LIMITS = {
   ageMin: 0,
   ageMax: 100,
 } as const;
+
+/** Sexo del paciente (PACIENTES.Sexo, CHAR(1) con CHECK 'F'/'M'). */
+export const SEX_OPTIONS = [
+  { value: 'F', label: 'Mujer' },
+  { value: 'M', label: 'Hombre' },
+] as const;
+
+export type Sex = (typeof SEX_OPTIONS)[number]['value'];
+
+export function isSex(value: string): value is Sex {
+  return SEX_OPTIONS.some((option) => option.value === value);
+}
 
 /**
  * Preguntas sí/no de antecedentes no patológicos que se hacen al registrar al paciente.
@@ -78,9 +91,11 @@ export const EMPTY_NON_PATHOLOGICAL_HISTORY: NonPathologicalHistory = {
 /** Datos del alta de un paciente ya validados. */
 export interface NewPatient {
   fullName: string;
-  age: number;
+  /** Fecha de nacimiento "AAAA-MM-DD"; el backend calcula y guarda la edad a partir de ella. */
+  birthDate: string;
+  sex: Sex;
   history: NonPathologicalHistory;
 }
 
-/** Campos de texto del alta que pueden tener error (las casillas no fallan). */
-export type NewPatientField = 'fullName' | 'age';
+/** Campos del alta que pueden tener error (las casillas no fallan). */
+export type NewPatientField = 'fullName' | 'birthDate' | 'sex';

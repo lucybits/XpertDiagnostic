@@ -25,7 +25,7 @@ public class PatientsController(IPatientService pacientes) : ControllerBase
     public async Task<ActionResult<IReadOnlyList<PatientSummary>>> List(CancellationToken cancellationToken) =>
         Ok(await pacientes.ListarAsync(cancellationToken));
 
-    /// <summary>Registra un paciente con nombre y edad; el servidor asigna el IdPaciente.</summary>
+    /// <summary>Registra un paciente con nombre, sexo y fecha de nacimiento; el servidor calcula la edad y asigna el IdPaciente.</summary>
     /// <remarks>
     /// @pre request cumple las reglas de <see cref="CreatePatientRequest"/> (lo garantiza la validación del modelo).
     /// @post 201 con el paciente creado; 400 si los datos no cumplen las reglas.

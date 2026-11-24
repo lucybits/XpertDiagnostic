@@ -121,12 +121,19 @@ CREATE TABLE dbo.PLANES (
     Seguimiento NVARCHAR(300)  NULL
 );
 
-/* El número de expediente que muestra el buscador es IdPaciente. */
+/* El número de expediente que muestra el buscador es IdPaciente.
+   Edad no se guarda: es una columna calculada con los años cumplidos de FechaNacimiento a la fecha
+   actual, así que siempre está al día. Sexo es obligatorio: un solo carácter, 'F' o 'M' en
+   mayúscula (la comparación es binaria porque la collation de la base no distingue mayúsculas). */
 IF OBJECT_ID(N'dbo.PACIENTES', N'U') IS NULL
 CREATE TABLE dbo.PACIENTES (
     IdPaciente                VARCHAR(10)   NOT NULL CONSTRAINT PK_PACIENTES PRIMARY KEY,
     NombreCompleto            NVARCHAR(150) NOT NULL,
-    Edad                      INT           NOT NULL CONSTRAINT CK_PACIENTES_EDAD CHECK (Edad BETWEEN 0 AND 130),
+    FechaNacimiento           DATE          NOT NULL,
+    Edad                      AS (DATEDIFF(YEAR, FechaNacimiento, CAST(GETDATE() AS DATE))
+                                  - CASE WHEN DATEADD(YEAR, DATEDIFF(YEAR, FechaNacimiento, CAST(GETDATE() AS DATE)), FechaNacimiento)
+                                              > CAST(GETDATE() AS DATE) THEN 1 ELSE 0 END),
+    Sexo                      CHAR(1)       NOT NULL CONSTRAINT CK_PACIENTES_SEXO CHECK (Sexo COLLATE Latin1_General_BIN2 IN ('F', 'M')),
     IdEnfermedadDiagnosticada VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_ENFERMEDAD_DIAG REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
     IdComorbilidad            VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_COMORBILIDADES REFERENCES dbo.COMORBILIDADES (IdComorbilidad),
     IdTratamiento             VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_TRATAMIENTOS REFERENCES dbo.TRATAMIENTOS (IdTratamiento),
