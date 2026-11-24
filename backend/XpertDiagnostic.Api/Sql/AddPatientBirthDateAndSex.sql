@@ -37,7 +37,7 @@ IF EXISTS (SELECT 1 FROM sys.columns
 BEGIN
     BEGIN TRANSACTION;
     EXEC (N'UPDATE dbo.PACIENTES
-            SET FechaNacimiento = DATEADD(DAY, -(ABS(CHECKSUM(IdPaciente)) % 300 + 1),
+            SET FechaNacimiento = DATEADD(DAY, -(ABS(CHECKSUM(Id_Paciente)) % 300 + 1),
                                           DATEADD(YEAR, -Edad, CAST(GETDATE() AS DATE)))
             WHERE FechaNacimiento IS NULL;');
     IF OBJECT_ID(N'dbo.CK_PACIENTES_EDAD', N'C') IS NOT NULL

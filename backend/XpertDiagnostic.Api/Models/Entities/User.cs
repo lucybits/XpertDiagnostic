@@ -19,7 +19,7 @@ namespace XpertDiagnostic.Api.Models.Entities;
 public class User
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
-    [Column("IdUSUARIO")]
+    [Column("Id_Usuario")]
     public int Id { get; set; }
 
     [StringLength(60)]
@@ -29,11 +29,11 @@ public class User
     [Column("ROL")]
     public string Rol { get; set; } = string.Empty;
 
-    [Column("IdMEDICO")]
+    [Column("Id_Medico")]
     public int? IdMedico { get; set; }
 
     /// <summary>Área de trabajo heredada del esquema anterior; opcional y sin tabla asociada.</summary>
-    [Column("IdAREA")]
+    [Column("Id_Area")]
     public int? IdArea { get; set; }
 
     /// <summary>true cuando el usuario ya completó la bienvenida guiada del asistente (ESP-003).</summary>

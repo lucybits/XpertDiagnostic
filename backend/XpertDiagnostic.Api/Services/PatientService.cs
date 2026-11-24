@@ -57,7 +57,7 @@ public sealed partial class PatientService(IPatientRepository pacientes, TimePro
                 Tabaquismo = solicitud.Tabaquismo,
                 Alcoholism = solicitud.Alcoholismo,
                 Toxicomans = solicitud.Toxicomanias,
-                Biomasa = solicitud.Biomasa ? 1 : 0,
+                Biomasa = solicitud.Biomasa,
                 TatuajPerf = solicitud.TatuajesPerforaciones,
                 Herbolaria = solicitud.Herbolaria,
                 Transfusio = solicitud.Transfusiones,

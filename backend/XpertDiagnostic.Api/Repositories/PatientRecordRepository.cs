@@ -16,19 +16,19 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
         CancellationToken cancellationToken = default) =>
         // Interpolación de FormattableString: EF Core envía idPaciente como parámetro, no como texto.
         await db.Database.SqlQuery<FindingView>($"""
-            SELECT h.TipoHallazgo, h.IdRegistro,
+            SELECT h.TipoHallazgo, h.Id_Registro AS IdRegistro,
                    COALESCE(s.Descripcion, g.Descripcion, l.Descripcion, c.Descripcion,
-                            d.Descripcion, x.Complicac, h.IdRegistro) AS Descripcion,
+                            d.Descripcion, x.Complicac, h.Id_Registro) AS Descripcion,
                    h.Valor, h.Unidades
             FROM dbo.HALLAZGOS_PACIENTE h
-            LEFT JOIN dbo.SINTOMAS s ON h.TipoHallazgo = 'Sintoma' AND s.IdSintoma = h.IdRegistro
-            LEFT JOIN dbo.SIGNOS g ON h.TipoHallazgo = 'Signo' AND g.IdSigno = h.IdRegistro
-            LEFT JOIN dbo.ESTUDIOS_LABORATORIO l ON h.TipoHallazgo = 'Estudio_lab' AND l.IdEstudio = h.IdRegistro
-            LEFT JOIN dbo.COMORBILIDADES c ON h.TipoHallazgo = 'Comorbilidad' AND c.IdComorbilidad = h.IdRegistro
-            LEFT JOIN dbo.ESTUDIOS_DIAGNOSTICO_DIFERENCIAL d ON h.TipoHallazgo = 'Estudio_diagdif' AND d.IdEstudio = h.IdRegistro
-            LEFT JOIN dbo.IO_Complicaciones x ON h.TipoHallazgo = 'Complicacion' AND x.Id_Complic = h.IdRegistro
-            WHERE h.IdPaciente = {idPaciente}
-            ORDER BY h.TipoHallazgo, h.IdRegistro
+            LEFT JOIN dbo.SINTOMAS s ON h.TipoHallazgo = 'Sintoma' AND s.Id_Sintoma = h.Id_Registro
+            LEFT JOIN dbo.SIGNOS g ON h.TipoHallazgo = 'Signo' AND g.Id_Signo = h.Id_Registro
+            LEFT JOIN dbo.ESTUDIOS_LABORATORIO l ON h.TipoHallazgo = 'Estudio_lab' AND l.Id_Estudio = h.Id_Registro
+            LEFT JOIN dbo.COMORBILIDADES c ON h.TipoHallazgo = 'Comorbilidad' AND c.Id_Comorbilidad = h.Id_Registro
+            LEFT JOIN dbo.ESTUDIOS_DIAGNOSTICO_DIFERENCIAL d ON h.TipoHallazgo = 'Estudio_diagdif' AND d.Id_Estudio = h.Id_Registro
+            LEFT JOIN dbo.IO_Complicaciones x ON h.TipoHallazgo = 'Complicacion' AND x.Id_Complic = h.Id_Registro
+            WHERE h.Id_Paciente = {idPaciente}
+            ORDER BY h.TipoHallazgo, h.Id_Registro
             """).ToListAsync(cancellationToken);
 
     public async Task ReemplazarHallazgosAsync(

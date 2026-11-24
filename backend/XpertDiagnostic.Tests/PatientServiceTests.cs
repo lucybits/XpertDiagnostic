@@ -83,7 +83,7 @@ public class PatientServiceTests
         var antecedentes = Assert.Single(repositorio.Antecedentes);
         Assert.Equal(creado.IdPaciente, antecedentes.IdPaciente);
         Assert.True(antecedentes.Tabaquismo);
-        Assert.Equal(1, antecedentes.Biomasa);
+        Assert.True(antecedentes.Biomasa);
         Assert.True(antecedentes.Transfusio);
         Assert.False(antecedentes.Alcoholism);
         Assert.False(antecedentes.Toxicomans);

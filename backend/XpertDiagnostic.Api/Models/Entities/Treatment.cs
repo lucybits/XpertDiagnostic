@@ -12,10 +12,10 @@ namespace XpertDiagnostic.Api.Models.Entities;
 public class Treatment
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
-    [Column("IdTratamiento", TypeName = "varchar(20)")]
+    [Column("Id_Tratamiento", TypeName = "varchar(20)")]
     public string Id { get; set; } = string.Empty;
 
-    [Column(TypeName = "varchar(10)")]
+    [Column("Id_Enfermedad", TypeName = "varchar(10)")]
     public string IdEnfermedad { get; set; } = string.Empty;
 
     [StringLength(300)]
@@ -40,7 +40,7 @@ public class Treatment
 public class CarePlan
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
-    [Column("IdPlan", TypeName = "varchar(10)")]
+    [Column("Id_Plan", TypeName = "varchar(10)")]
     public string Id { get; set; } = string.Empty;
 
     [StringLength(1000)]

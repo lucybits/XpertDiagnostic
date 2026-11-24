@@ -18,7 +18,7 @@ namespace XpertDiagnostic.Api.Models.Entities;
 public class Patient
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
-    [Column("IdPaciente", TypeName = "varchar(10)")]
+    [Column("Id_Paciente", TypeName = "varchar(10)")]
     public string Id { get; set; } = string.Empty;
 
     [StringLength(150)]
@@ -35,17 +35,17 @@ public class Patient
     public string Sexo { get; set; } = string.Empty;
 
     // ── Salida de la máquina de inferencia (null hasta que exista un diagnóstico) ──
-    [Column(TypeName = "varchar(10)")]
+    [Column("Id_EnfermedadDiagnosticada", TypeName = "varchar(10)")]
     public string? IdEnfermedadDiagnosticada { get; set; }
 
     // ── Entrada que se captura en el chat ──
-    [Column(TypeName = "varchar(20)")]
+    [Column("Id_Comorbilidad", TypeName = "varchar(20)")]
     public string? IdComorbilidad { get; set; }
 
     // ── Salida de la máquina de inferencia ──
-    [Column(TypeName = "varchar(20)")]
+    [Column("Id_Tratamiento", TypeName = "varchar(20)")]
     public string? IdTratamiento { get; set; }
 
-    [Column(TypeName = "varchar(10)")]
+    [Column("Id_Plan", TypeName = "varchar(10)")]
     public string? IdPlan { get; set; }
 }
