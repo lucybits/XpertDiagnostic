@@ -81,9 +81,9 @@ export default function DiagnosisPanel({
   const analyzeLabel = isRunning
     ? 'Analizando…'
     : result === null
-      ? 'Analizar expediente'
+      ? 'Generar diagnóstico y tratamiento'
       : isStale
-        ? 'Volver a analizar'
+        ? 'Guardar'
         : 'Análisis al día';
 
   return (
@@ -106,27 +106,25 @@ export default function DiagnosisPanel({
         </header>
 
         <div className="space-y-3 px-5 py-4">
-          {/* Antes del primer análisis se dice qué hacer: sin esto la tarjeta se veía vacía (P-137). */}
-          {result === null && (
-            <p className="flex items-start gap-2 text-slate-900">
-              <Microscope aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
-              <span>
-                Pulsa <span className="font-semibold">Analizar expediente</span> para ver las enfermedades más probables.
-              </span>
-            </p>
-          )}
           {/* Diagnóstico ya confirmado (P-135): se dice cuál es, que ya está en el expediente y cómo verlo. */}
           {confirmedName && (
             <div
               role="status"
               className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-slate-100 px-4 py-3"
             >
-              <p className="flex min-w-0 flex-1 items-start gap-2 text-slate-900">
+              <div className="flex min-w-0 flex-1 items-start gap-2 text-slate-900">
                 <CircleCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
-                <span>
-                  <span className="font-semibold">{confirmedName}</span> confirmado y guardado en el expediente.
-                </span>
-              </p>
+                <div className="space-y-0.5">
+                  <p>
+                    <span className="font-semibold">{confirmedName}</span>: enviado a validación por el médico
+                    internista.
+                  </p>
+                  {/* SIMULADO: todavía no existe la validación del comité; el texto se muestra siempre. */}
+                  <p className="text-sm text-slate-700">
+                    Con diagnóstico validado por el Comité de Interconsulta de Especialidad.
+                  </p>
+                </div>
+              </div>
               <Link
                 href={`/patients/${patientId}/result`}
                 className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-teal-700 px-3.5 py-1.5 font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
@@ -140,7 +138,7 @@ export default function DiagnosisPanel({
           {result && isStale && (
             <p role="status" className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-amber-900">
               <CircleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-              Los hallazgos cambiaron. Vuelve a analizar antes de confirmar.
+              Los hallazgos cambiaron. Actualiza el expediente antes de confirmar.
             </p>
           )}
           {result === null ? null : result.candidatos.length === 0 ? (
