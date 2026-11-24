@@ -32,7 +32,7 @@ Permitir que los usuarios autorizados (médicos y administradores) accedan a Xpe
 | RF-03 | El sistema verifica la contraseña contra el hash guardado en `USUARIOS.PASS`. | HU-01, HU-05 |
 | RF-04 | Si las credenciales son correctas, el sistema emite un token de sesión con el ID y el rol del usuario, con una vigencia limitada (120 minutos). | HU-01 |
 | RF-05 | Si una contraseña sigue guardada en texto plano y es correcta, el sistema la reemplaza por su hash BCrypt. | HU-05 |
-| RF-06 | La pantalla permite elegir el apartado Médico (tratante o internista) o Administrador. Ambos roles médicos usan el mismo apartado; el token conserva el rol de la cuenta (`T` o `I`). | HU-02 |
+| RF-06 | La pantalla permite elegir el apartado Médico (tratante o internista) o Administrador. Ambos roles médicos usan el mismo apartado; el token conserva el rol de la cuenta (`T` o `I`), y con él se decide la pantalla: el tratante va a `/home` y el internista a `/internista` (P-140). | HU-02 |
 | RF-07 | La pantalla valida los campos antes de enviarlos y explica qué falta corregir. | HU-03 |
 | RF-08 | La pantalla muestra un estado de carga mientras espera la respuesta e impide enviar dos veces. | HU-03 |
 | RF-09 | La opción "Recuérdame" conserva la sesión al cerrar el navegador, hasta que expire el token. | HU-01 |

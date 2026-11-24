@@ -45,7 +45,7 @@ Cuenta de administrador de prueba (`SeedAdminAccount.sql`): **ID 654321, contras
 |---|---|
 | RF-50 | El login envía el apartado elegido (`T` para Médico o `A` para Administrador). El apartado Médico acepta cuentas `T` e `I`; el JWT conserva el rol real. Si la contraseña es correcta pero la cuenta es de otro grupo, responde 403 con el apartado correcto. Con contraseña incorrecta siempre responde el 401 genérico (no se revela el rol ni el estado). |
 | RF-51 | Una cuenta desactivada no puede entrar (403 "Tu cuenta está desactivada…", solo con la contraseña correcta). |
-| RF-52 | Tras iniciar sesión, el médico va a `/home` y el administrador a `/admin`. |
+| RF-52 | Tras iniciar sesión, cada rol va a su pantalla (`HOME_ROUTE_BY_ROLE`): el médico tratante (`T`) a `/home`, el médico internista (`I`) a `/internista` y el administrador (`A`) a `/admin`. El contenido de `/internista` está aplazado; por ahora muestra un aviso de "en preparación" y permite cerrar sesión (P-140). |
 | RF-53 | `/admin` lista a los médicos (cuentas de rol `T` o `I`) con ID, nombre, especialidad, cédula, fecha de alta y estado, y busca por nombre, especialidad, ID o cédula. |
 | RF-54 | Registrar médico: ID (será su usuario), cédula de 7 u 8 dígitos única, nombre, especialidad y contraseña inicial de 8 a 72 caracteres (con confirmación). Médico y cuenta se guardan en una sola transacción; un ID o cédula repetidos responden 409 sin guardar nada. |
 | RF-55 | Editar nombre, especialidad y cédula (el ID no cambia). Una cédula de otro médico responde 409. |
@@ -57,7 +57,7 @@ Cuenta de administrador de prueba (`SeedAdminAccount.sql`): **ID 654321, contras
 ## 5. Seguridad y protección de rutas
 
 - **Backend (autoridad):** `api/admin/doctors/*` exige rol `A`; pacientes y catálogos exigen rol `T` o `I`. Además, en cada petición autenticada `SessionValidator` comprueba en `USUARIOS` que la cuenta del token exista, esté activa y conserve su rol; si no, 401. Así desactivar una cuenta cierra sus sesiones al instante.
-- **Frontend:** `proxy.ts` (el middleware de Next.js 16) redirige sin sesión a `/login`, al administrador fuera de `/home` y `/patients`, y al médico fuera de `/admin`. Lee el token sin verificar la firma (la clave solo la tiene el backend), así que es una comprobación optimista; los datos siempre los protege el backend.
+- **Frontend:** `proxy.ts` (el middleware de Next.js 16) redirige sin sesión a `/login` y deja a cada rol solo en sus pantallas: `/home` y `/patients` para el tratante, `/internista` para el internista y `/admin` para el administrador. Quien abre una pantalla de otro rol va a la de inicio del suyo. Lee el token sin verificar la firma (la clave solo la tiene el backend), así que es una comprobación optimista; los datos siempre los protege el backend.
 - Cuando el backend responde 401, la ruta de Next borra la cookie `xd_session`, y la pantalla vuelve al login.
 - Las rutas `/api/admin/*` de Next validan los datos con las mismas reglas que el backend antes de reenviarlos.
 
@@ -124,8 +124,8 @@ Barra superior `bg-blue-900` (logo, "Panel de administración · ID", Cambiar mi
 #### PT94. Cuenta internista de prueba
 
 - **Given** la cuenta internista creada por `SeedInternistAccount.sql` (ID `654322`, contraseña inicial `admin`).
-- **When** inicia sesión desde el apartado Médico y abre `/home` y una ruta de pacientes.
-- **Then** entra correctamente con rol `I`, puede usar endpoints médicos, y no puede abrir `/admin`.
+- **When** inicia sesión desde el apartado Médico y luego escribe a mano `/home`, una ruta de pacientes y `/admin`.
+- **Then** entra con rol `I` y llega a `/internista`; `/home`, `/patients` y `/admin` lo regresan a `/internista` (P-140). El backend sigue aceptando al internista en los endpoints médicos.
 
 ### Verificación de extremo a extremo hecha por la IA (P-116)
 
