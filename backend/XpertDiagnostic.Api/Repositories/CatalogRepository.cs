@@ -13,16 +13,16 @@ public sealed class CatalogRepository(AppDbContext db) : ICatalogRepository
     private static readonly IReadOnlyDictionary<CatalogType, string> Consultas = new Dictionary<CatalogType, string>
     {
         [CatalogType.Sintomas] =
-            "SELECT IdSintoma AS Id, Descripcion, IdEnfermedad, Unidades, LimiteInferior, LimiteSuperior FROM dbo.SINTOMAS",
+            "SELECT Id_Sintoma AS Id, Descripcion, Id_Enfermedad AS IdEnfermedad, Unidades, LimiteInferior, LimiteSuperior FROM dbo.SINTOMAS",
         [CatalogType.Signos] =
-            "SELECT IdSigno AS Id, Descripcion, IdEnfermedad, Unidades, LimiteInferior, LimiteSuperior FROM dbo.SIGNOS",
+            "SELECT Id_Signo AS Id, Descripcion, Id_Enfermedad AS IdEnfermedad, Unidades, LimiteInferior, LimiteSuperior FROM dbo.SIGNOS",
         [CatalogType.EstudiosLaboratorio] =
-            "SELECT IdEstudio AS Id, Descripcion, IdEnfermedad, Unidades, LimiteInferior, LimiteSuperior FROM dbo.ESTUDIOS_LABORATORIO",
+            "SELECT Id_Estudio AS Id, Descripcion, Id_Enfermedad AS IdEnfermedad, Unidades, LimiteInferior, LimiteSuperior FROM dbo.ESTUDIOS_LABORATORIO",
         [CatalogType.Comorbilidades] =
-            "SELECT IdComorbilidad AS Id, Descripcion, IdEnfermedad, CAST(NULL AS NVARCHAR(30)) AS Unidades, " +
+            "SELECT Id_Comorbilidad AS Id, Descripcion, Id_Enfermedad AS IdEnfermedad, CAST(NULL AS NVARCHAR(30)) AS Unidades, " +
             "CAST(NULL AS DECIMAL(12,2)) AS LimiteInferior, CAST(NULL AS DECIMAL(12,2)) AS LimiteSuperior FROM dbo.COMORBILIDADES",
         [CatalogType.Enfermedades] =
-            "SELECT IdEnfermedad AS Id, Nombre AS Descripcion, CAST(NULL AS VARCHAR(10)) AS IdEnfermedad, " +
+            "SELECT Id_Enfermedad AS Id, Nombre AS Descripcion, CAST(NULL AS VARCHAR(10)) AS IdEnfermedad, " +
             "CAST(NULL AS NVARCHAR(30)) AS Unidades, CAST(NULL AS DECIMAL(12,2)) AS LimiteInferior, " +
             "CAST(NULL AS DECIMAL(12,2)) AS LimiteSuperior FROM dbo.ENFERMEDADES",
     };

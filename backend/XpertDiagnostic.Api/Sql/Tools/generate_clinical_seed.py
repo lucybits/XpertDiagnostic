@@ -24,6 +24,11 @@ OUTPUT = SQL_DIR / "SeedClinicalData.sql"
 SOURCE_ENCODING = "cp1252"
 # Año contra el que se convierte la edad del CSV en fecha de nacimiento (P-144).
 ANIO_REFERENCIA = 2026
+# IO_Pacientes.csv no trae el sexo: se inventa según el nombre (ficticio) de cada paciente de prueba.
+SEED_PATIENT_SEX = {
+    "PACIE00001": "M", "PACIE00002": "F", "PACIE00003": "M", "PACIE00004": "F", "PACIE00005": "M",
+    "PACIE00006": "F", "PACIE00007": "M", "PACIE00008": "F", "PACIE00009": "M", "PACIE00010": "F",
+}
 
 # Correcciones de caracteres perdidos. Solo las que no admiten otra lectura.
 CHARACTER_FIXES = [
@@ -135,7 +140,7 @@ def main() -> int:
 
     diseases = read("Enfermedades")
     disease_ids = unique(diseases, "Id_Enferme", "ENFERMEDADES")
-    tables["ENFERMEDADES"] = (["IdEnfermedad", "Nombre"], [[d["Id_Enferme"], d["Enfermedad"]] for d in diseases])
+    tables["ENFERMEDADES"] = (["Id_Enfermedad", "Nombre"], [[d["Id_Enferme"], d["Enfermedad"]] for d in diseases])
 
     def require_disease(disease_id: str, where: str) -> None:
         if disease_id not in disease_ids:
@@ -162,14 +167,14 @@ def main() -> int:
             ])
         return values
 
-    range_columns = ["IdEnfermedad", "Descripcion", "LimiteInferior", "LimiteSuperior", "Unidades"]
-    tables["SINTOMAS"] = (["IdSintoma", *range_columns],
+    range_columns = ["Id_Enfermedad", "Descripcion", "LimiteInferior", "LimiteSuperior", "Unidades"]
+    tables["SINTOMAS"] = (["Id_Sintoma", *range_columns],
                           ranged_catalog("SINTOMAS", "Sintomas", "Id_Sintoma", "Sintomas", "Limite_Inf", "Limite_Sup", "Id_Enferme"))
-    tables["SIGNOS"] = (["IdSigno", *range_columns],
+    tables["SIGNOS"] = (["Id_Signo", *range_columns],
                         ranged_catalog("SIGNOS", "Signos", "Id_Signos", "Signos", "Limite_Inf", "Limite_Sup", "Id_Enferme"))
-    tables["ESTUDIOS_LABORATORIO"] = (["IdEstudio", *range_columns],
+    tables["ESTUDIOS_LABORATORIO"] = (["Id_Estudio", *range_columns],
                                       ranged_catalog("ESTUDIOS_LABORATORIO", "Labs", "Id_labs", "Estudio_lab", "Lim_Inf", "Lim_Sup"))
-    tables["ESTUDIOS_DIAGNOSTICO_DIFERENCIAL"] = (["IdEstudio", *range_columns],
+    tables["ESTUDIOS_DIAGNOSTICO_DIFERENCIAL"] = (["Id_Estudio", *range_columns],
                                                   ranged_catalog("ESTUDIOS_DIAGNOSTICO_DIFERENCIAL", "LabsDiagDif", "Id_Estudio", "Nombre", "Lim_Inf", "Lim_Sup", "Id_Enferme"))
 
     def simple_catalog(table, csv_name, id_col, text_col, id_name, explicit_disease_col=None):
@@ -183,11 +188,11 @@ def main() -> int:
             require_disease(disease, f"{table} {r[id_col]}")
             catalog_text[r[id_col]] = r[text_col]
             values.append([r[id_col], disease, r[text_col]])
-        tables[table] = ([id_name, "IdEnfermedad", "Descripcion"], values)
+        tables[table] = ([id_name, "Id_Enfermedad", "Descripcion"], values)
         return rows
 
-    simple_catalog("COMORBILIDADES", "Comorbilidades", "Id_comorb", "Comorbilid", "IdComorbilidad")
-    simple_catalog("DEFECTOS_CONGENITOS", "DefsCongenitos", "Id_Defecto", "Defecto", "IdDefecto", "Id_Enferme")
+    simple_catalog("COMORBILIDADES", "Comorbilidades", "Id_comorb", "Comorbilid", "Id_Comorbilidad")
+    simple_catalog("DEFECTOS_CONGENITOS", "DefsCongenitos", "Id_Defecto", "Defecto", "Id_Defecto", "Id_Enferme")
 
     treatments = read("Tratamientos")
     catalog_ids["TRATAMIENTOS"] = unique(treatments, "Id_Tratam", "TRATAMIENTOS")
@@ -200,7 +205,7 @@ def main() -> int:
         if low is not None and high is not None and low > high:
             errors.append(f"TRATAMIENTOS {t['Id_Tratam']}: dosis mínima mayor que la máxima")
         treatment_values.append([t["Id_Tratam"], disease, t["Tratamient"], low, high, t["Unidades"]])
-    tables["TRATAMIENTOS"] = (["IdTratamiento", "IdEnfermedad", "Descripcion", "DosisMinima", "DosisMaxima", "Unidades"], treatment_values)
+    tables["TRATAMIENTOS"] = (["Id_Tratamiento", "Id_Enfermedad", "Descripcion", "DosisMinima", "DosisMaxima", "Unidades"], treatment_values)
 
     endemic = read("EnfermedadesEndemicas")
     regions: dict[str, str] = {}
@@ -208,14 +213,14 @@ def main() -> int:
         if regions.setdefault(e["Id_Region"], e["Region"]) != e["Region"]:
             errors.append(f"REGIONES {e['Id_Region']}: nombre inconsistente")
     unique(endemic, "Id_Endemic", "ENFERMEDADES_ENDEMICAS")
-    tables["REGIONES"] = (["IdRegion", "Nombre"], [[k, v] for k, v in regions.items()])
-    tables["ENFERMEDADES_ENDEMICAS"] = (["IdEndemica", "IdRegion", "IdEnfermedad", "Descripcion"],
+    tables["REGIONES"] = (["Id_Region", "Nombre"], [[k, v] for k, v in regions.items()])
+    tables["ENFERMEDADES_ENDEMICAS"] = (["Id_Endemica", "Id_Region", "Id_Enfermedad", "Descripcion"],
                                         [[e["Id_Endemic"], e["Id_Region"], disease_of(e["Id_Endemic"]), e["Endemica"]] for e in endemic])
     orphan_endemic = sorted({disease_of(e["Id_Endemic"]) for e in endemic} - disease_ids)
 
     plans = read("Planes")
     plan_ids = unique(plans, "Id_Plan", "PLANES")
-    tables["PLANES"] = (["IdPlan", "PlanIndicado", "Pronostico", "Seguimiento"],
+    tables["PLANES"] = (["Id_Plan", "PlanIndicado", "Pronostico", "Seguimiento"],
                         [[p["Id_Plan"], p["Plan"], p["Pronostico"], p["Seguimiento"]] for p in plans])
 
     patients = read("Pacientes")
@@ -242,11 +247,14 @@ def main() -> int:
             errors.append(f"{where}: el nombre '{p['Nombre']}' no tiene nombre(s) y dos apellidos")
         nombres, paterno, materno = (" ".join(palabras[:-2]), palabras[-2], palabras[-1]) if len(palabras) >= 3 else (None, None, None)
         nacimiento = f"{ANIO_REFERENCIA - int(p['Edad'])}-01-01" if p["Edad"].isdigit() else None
-        patient_values.append([p["Id_Pacient"], p["Nombre"], nombres, paterno, materno, nacimiento,
+        sexo = SEED_PATIENT_SEX.get(p["Id_Pacient"])
+        if sexo is None:
+            errors.append(f"{where}: falta su sexo en SEED_PATIENT_SEX")
+        patient_values.append([p["Id_Pacient"], p["Nombre"], nombres, paterno, materno, nacimiento, sexo,
                                p["Id_Enferme"], p["Id_comorb"], p["Id_Tratam"], p["Id_Plan"]])
-    tables["PACIENTES"] = (["IdPaciente", "NombreCompleto", "Nombres", "ApellidoPaterno", "ApellidoMaterno",
-                            "FechaNacimiento", "IdEnfermedadDiagnosticada",
-                            "IdComorbilidad", "IdTratamiento", "IdPlan"], patient_values)
+    tables["PACIENTES"] = (["Id_Paciente", "NombreCompleto", "Nombres", "ApellidoPaterno", "ApellidoMaterno",
+                            "FechaNacimiento", "Sexo", "Id_EnfermedadDiagnosticada",
+                            "Id_Comorbilidad", "Id_Tratamiento", "Id_Plan"], patient_values)
 
     # IO_Complicaciones: catálogo por enfermedad que además marca al paciente de prueba (va después de PACIENTES).
     complications = read("Complicaciones")
@@ -262,7 +270,7 @@ def main() -> int:
             errors.append(f"{where}: paciente {c['Id_Pacient']} inexistente")
         catalog_text[c["Id_Complic"]] = c["Complicac"]
         complication_values.append([c["Id_Complic"], c["Complicac"], disease, c["Id_Pacient"]])
-    tables["IO_Complicaciones"] = (["Id_Complic", "Complicac", "IdEnfermedad", "IdPaciente"], complication_values)
+    tables["IO_Complicaciones"] = (["Id_Complic", "Complicac", "Id_Enfermedad", "Id_Paciente"], complication_values)
 
     findings = read("HallazgosPacientes")
     finding_keys: set[tuple[str, str]] = set()
@@ -283,7 +291,7 @@ def main() -> int:
         elif catalog_text[f["Id_Registro"]] != f["Descripcion"]:
             errors.append(f"{where}: la descripción no coincide con el catálogo")
         finding_values.append([f["Id_Pacient"], f["Tipo"], f["Id_Registro"], f["Valor_Paciente"], f["Unidades"]])
-    tables["HALLAZGOS_PACIENTE"] = (["IdPaciente", "TipoHallazgo", "IdRegistro", "Valor", "Unidades"], finding_values)
+    tables["HALLAZGOS_PACIENTE"] = (["Id_Paciente", "TipoHallazgo", "Id_Registro", "Valor", "Unidades"], finding_values)
 
     # Los catálogos repiten Id_Pacient; debe coincidir con HALLAZGOS_PACIENTE (que es la fuente que se carga).
     for csv_name, id_col in (("Sintomas", "Id_Sintoma"), ("Signos", "Id_Signos"), ("Labs", "Id_labs"),
@@ -296,7 +304,7 @@ def main() -> int:
     for v in visits:
         if v["Id_Pacient"] not in patient_ids:
             errors.append(f"ATENCIONES_PACIENTE: paciente {v['Id_Pacient']} inexistente")
-    tables["ATENCIONES_PACIENTE"] = (["IdPaciente", "IdDoctor", "IdHospital", "Motivo"],
+    tables["ATENCIONES_PACIENTE"] = (["Id_Paciente", "Id_Doctor", "Id_Hospital", "Motivo"],
                                      [[v["Id_Pacient"], v["Id_Doctor"], v["Id_Hospita"], v["Motivo"]] for v in visits])
 
     expected = read("ResultadosEsperados")
@@ -304,7 +312,7 @@ def main() -> int:
         if e["Id_Pacient"] not in patient_ids:
             errors.append(f"IO_ResultadosEsperados: paciente {e['Id_Pacient']} inexistente")
         require_disease(e["Id_Enferme_Esperado"], f"IO_ResultadosEsperados {e['Id_Pacient']}")
-    tables["IO_ResultadosEsperados"] = (["IdPaciente", "IdEnfermedad", "Enfeespera"],
+    tables["IO_ResultadosEsperados"] = (["Id_Paciente", "Id_Enfermedad", "Enfeespera"],
                                         [[e["Id_Pacient"], e["Id_Enferme_Esperado"], e["Enfermedad_Esperada"]] for e in expected])
 
     if errors:

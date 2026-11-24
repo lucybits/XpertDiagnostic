@@ -17,8 +17,8 @@ BEGIN
     BEGIN TRANSACTION;
     DROP TABLE dbo.IO_AntecParaClinicPacientes;
     CREATE TABLE dbo.IO_AntecParaClinicPacientes (
-        IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecParaClinic PRIMARY KEY
-                                 CONSTRAINT FK_IO_AntecParaClinic_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+        Id_Paciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecParaClinic PRIMARY KEY
+                                 CONSTRAINT FK_IO_AntecParaClinic_Pacientes REFERENCES dbo.PACIENTES (Id_Paciente),
         Consciente NVARCHAR(100) NULL,
         Alerta     NVARCHAR(100) NULL,
         Cavidoral  NVARCHAR(150) NULL,

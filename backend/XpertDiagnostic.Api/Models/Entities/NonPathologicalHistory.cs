@@ -13,7 +13,7 @@ namespace XpertDiagnostic.Api.Models.Entities;
 public class NonPathologicalHistory
 {
     [Key]
-    [Column(TypeName = "varchar(10)")]
+    [Column("Id_Paciente", TypeName = "varchar(10)")]
     public string IdPaciente { get; set; } = string.Empty;
 
     /// <summary>¿Fuma?</summary>
@@ -24,8 +24,8 @@ public class NonPathologicalHistory
 
     public bool? Toxicomans { get; set; }
 
-    /// <summary>Exposición a humo de leña o biomasa: 1 sí, 0 no (la columna es INT).</summary>
-    public int? Biomasa { get; set; }
+    /// <summary>¿Exposición a humo de leña o biomasa?</summary>
+    public bool? Biomasa { get; set; }
 
     public bool? TatuajPerf { get; set; }
 

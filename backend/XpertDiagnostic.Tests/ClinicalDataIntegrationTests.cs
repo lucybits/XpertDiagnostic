@@ -97,7 +97,7 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
         await using var db = CrearContexto();
         var diagnosticos = new DiagnosisService(new PatientRecordRepository(db), new ProvisionalInferenceEngine(new CatalogRepository(db)));
         var esperados = await db.Database
-            .SqlQuery<EsperadoFila>($"SELECT IdPaciente, IdEnfermedad AS IdEnfermedadEsperada FROM dbo.IO_ResultadosEsperados")
+            .SqlQuery<EsperadoFila>($"SELECT Id_Paciente AS IdPaciente, Id_Enfermedad AS IdEnfermedadEsperada FROM dbo.IO_ResultadosEsperados")
             .ToListAsync();
 
         // When se analiza cada paciente

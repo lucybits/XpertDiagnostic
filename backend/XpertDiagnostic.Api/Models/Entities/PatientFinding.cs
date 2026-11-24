@@ -15,13 +15,13 @@ namespace XpertDiagnostic.Api.Models.Entities;
 [Table("HALLAZGOS_PACIENTE")]
 public class PatientFinding
 {
-    [Column(TypeName = "varchar(10)")]
+    [Column("Id_Paciente", TypeName = "varchar(10)")]
     public string IdPaciente { get; set; } = string.Empty;
 
     [Column(TypeName = "varchar(20)")]
     public string TipoHallazgo { get; set; } = string.Empty;
 
-    [Column(TypeName = "varchar(20)")]
+    [Column("Id_Registro", TypeName = "varchar(20)")]
     public string IdRegistro { get; set; } = string.Empty;
 
     [StringLength(50)]
