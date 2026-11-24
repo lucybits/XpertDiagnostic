@@ -4492,30 +4492,97 @@ Criterio: se quita lo que repite algo visible, lo que explica algo que la interf
 
 **Revisión humana:** corrección visual pedida por Lucía.
 
-### P-140. Panel de administrador con aspecto menos "hecho por IA"
+### P-140. Textos y botones del panel de diagnóstico diferencial
 
 | Campo | Valor |
 |---|---|
-| Fecha | 2026-11-22 |
-| Autor del prompt | Lucía |
-| Objetivo | Rediseñar la vista de médicos del panel de administrador para que no parezca generada por IA |
-| Especificación / tarea | ESP-007 (panel de administración) |
+| Fecha | 2026-11-23 |
+| Autor del prompt | Antonio Castañeda |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Cambiar los textos de los botones y mensajes del panel de diagnóstico diferencial |
+| Especificación / tarea | ESP-005 (captura y análisis), ESP-006 (interfaz de salida), P-114, P-135, P-137 |
 
 **Prompt**
 
-> Cambia el panel de administrador, que no se vea tan AI-handmade, se ve muy hecho por AI y no buscamos eso.
+> Ayúdame a realizar los siguientes cambios de textos y botones. Son cambios pequeños y no dependen de nadie. En el panel de diagnóstico diferencial (`DiagnosisPanel.tsx`):
+>
+> - El botón "Analizar expediente" cambia a "Generar diagnóstico y tratamiento".
+> - El botón "Volver a analizar" cambia a "Guardar".
+> - Borra el mensaje "Pulsa Analizar expediente para ver las enfermedades más probables" y sus referencias.
+> - El mensaje "…confirmado y guardado en el expediente" cambia a "Revisado por médico internista".
+>
+> Esto por ahora.
 
 **Resultado de la IA:**
 
-- La tabla ya no va dentro de una tarjeta redondeada: es una tabla de datos con líneas horizontales y encabezados en texto normal. La columna "Médico" pasa al principio y "Alta" se llama "Fecha de alta".
-- El estado es texto plano ("Activa" en verde, "Desactivada" en gris oscuro), sin píldora.
-- Las acciones de cada fila son enlaces de texto (Editar, Contraseña, Desactivar/Activar) sin borde ni ícono.
-- Se quitó el subtítulo explicativo; el conteo ("1 registrado, 1 activo") va junto al título, que lleva una línea inferior.
-- El botón "Registrar médico" es azul marino (`blue-900`, como la barra superior), sin ícono. El buscador tiene etiqueta visible y ancho limitado, sin lupa.
-- Los avisos y errores son recuadros con borde, sin íconos. En móvil, la lista es una lista con separadores, no tarjetas.
+- Etiqueta del botón del análisis: sin análisis dice "Generar diagnóstico y tratamiento"; con el análisis desactualizado dice "Guardar". El estado "Análisis al día" no cambia.
+- Se quitó la línea que se mostraba antes del primer análisis (P-137), junto con su ícono. El ícono del microscopio se sigue usando en el botón.
+- El aviso del diagnóstico confirmado dice "{enfermedad} revisado por médico internista." Más adelante lo reemplaza P-141.
 
-**Archivos afectados:** `frontend/components/admin/AdminPanel.tsx`.
+**Archivos afectados:** `frontend/components/assistant/DiagnosisPanel.tsx`.
 
-**Verificación automática:** `tsc --noEmit` y `eslint` sin errores.
+**Verificación automática:** no se ejecutaron `tsc` ni `eslint`: las dependencias del frontend no estaban instaladas en ese momento.
 
-**Revisión humana:** pendiente de revisión visual por Lucía.
+**Revisión humana:** Pendiente de revisión visual.
+
+### P-141. Envío a validación del médico internista y validación del comité (simulada)
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Antonio Castañeda |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Dejar claro que el diagnóstico confirmado lo valida el médico internista y mostrar la validación del comité, por ahora simulada |
+| Especificación / tarea | ESP-006 (interfaz de salida), P-112, P-140 |
+
+**Prompt**
+
+> Ahora vamos a hacer otra rama para estos cambios:
+>
+> - El mensaje "Los hallazgos cambiaron. Vuelve a analizar antes de confirmar" cambia a "Los hallazgos cambiaron. Actualiza el expediente antes de confirmar".
+> - Agrega el mensaje "Con diagnóstico validado por el Comité Interconsulta Especialidad". Por ahora este mensaje será simulado, pero debe estar agregado.
+> - Agrega también un mensaje como "Ha sido enviado a validación por el médico internista". Me refiero a la parte de confirmar los diagnósticos: eso lo debe validar el médico internista, no nosotros. Nosotros solo recibiremos el diagnóstico diferencial confirmado por el médico internista.
+>
+> Por ahora solo es ese texto.
+
+**Resultado de la IA:**
+
+- Aviso de análisis desactualizado: "Los hallazgos cambiaron. Actualiza el expediente antes de confirmar."
+- El recuadro del diagnóstico confirmado dice "{enfermedad}: enviado a validación por el médico internista." y, debajo, "Con diagnóstico validado por el Comité de Interconsulta de Especialidad."
+- La línea del comité es **simulada**: se muestra siempre y está marcada con un comentario `SIMULADO` en el código.
+- Se quitó "revisado por médico internista" (P-140), porque contradecía que el diagnóstico apenas se envía a validación.
+- La lógica no cambió: el médico sigue confirmando en la aplicación; solo cambian los textos.
+
+**Archivos afectados:** `frontend/components/assistant/DiagnosisPanel.tsx`.
+
+**Verificación automática:** no se ejecutaron `tsc` ni `eslint`.
+
+**Revisión humana:** Pendiente de revisión visual. La validación real del médico internista y del comité queda por definir.
+
+### P-142. Textos del expediente y de la interfaz de salida
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Antonio Castañeda |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Alinear el aviso del expediente con el nuevo texto del panel y quitar la frase del médico tratante en la interfaz de salida |
+| Especificación / tarea | ESP-005 (panel del expediente), ESP-006 (interfaz de salida), P-141 |
+
+**Prompt**
+
+> Vamos con este cambio ahora:
+>
+> - En el expediente (`PatientRecordPanel.tsx`): "Vuelve a analizar en Diagnóstico diferencial" cambia a "Actualiza el expediente en Diagnóstico diferencial".
+> - En la interfaz de salida (`ResultSections.tsx`), en la sección de Diagnóstico: quita "Confirmado por el médico tratante a partir del diagnóstico diferencial".
+
+**Resultado de la IA:**
+
+- El aviso del expediente dice "Los hallazgos cambiaron: actualiza el expediente en «Diagnóstico diferencial»."
+- La sección Diagnóstico de la interfaz de salida muestra solo el nombre de la enfermedad, sin la línea del médico tratante.
+
+**Archivos afectados:** `frontend/components/home/PatientRecordPanel.tsx`, `frontend/components/result/ResultSections.tsx`.
+
+**Verificación automática:** no se ejecutaron `tsc` ni `eslint`.
+
+**Revisión humana:** Pendiente de revisión visual.
