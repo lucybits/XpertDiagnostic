@@ -239,17 +239,20 @@ CREATE TABLE dbo.IO_AntecQuiruAnestesPacientes (
     Medicament NVARCHAR(255) NOT NULL
 );
 
-/* PENDIENTE de confirmar: las columnas son las mismas que en perinatales. */
 IF OBJECT_ID(N'dbo.IO_AntecParaClinicPacientes', N'U') IS NULL
 CREATE TABLE dbo.IO_AntecParaClinicPacientes (
     IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecParaClinic PRIMARY KEY
                              CONSTRAINT FK_IO_AntecParaClinic_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
-    ProductEmb NVARCHAR(255) NULL,
-    PartCesare NVARCHAR(255) NULL,
-    PesoNacer  INT           NULL,
-    TallaNacer DECIMAL(5,2)  NULL,
-    CrecYDesar NVARCHAR(255) NULL,
-    Vacunacion NVARCHAR(255) NULL
+    Consciente NVARCHAR(100) NULL,
+    Alerta     NVARCHAR(100) NULL,
+    Cavidoral  NVARCHAR(150) NULL,
+    AperturaOr NVARCHAR(100) NULL,
+    DentadComp NVARCHAR(150) NULL,
+    Traquea    NVARCHAR(150) NULL,
+    Pulmovent  NVARCHAR(255) NULL,
+    RuidosCard NVARCHAR(255) NULL,
+    Abdombland NVARCHAR(255) NULL,
+    Miembpelvi NVARCHAR(255) NULL
 );
 
 PRINT 'Tablas clínicas listas.';
