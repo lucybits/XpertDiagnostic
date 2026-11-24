@@ -11,19 +11,6 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
     public Task<bool> ExistePacienteAsync(string idPaciente, CancellationToken cancellationToken = default) =>
         db.Pacientes.AnyAsync(p => p.Id == idPaciente, cancellationToken);
 
-    public async Task<(string? Id, string? Nombre)> ObtenerPreexistenteAsync(
-        string idPaciente,
-        CancellationToken cancellationToken = default)
-    {
-        var fila = await (from p in db.Pacientes.AsNoTracking()
-                          join e in db.Enfermedades on p.IdEnfermedadPreexistente equals e.Id into enfermedades
-                          from e in enfermedades.DefaultIfEmpty()
-                          where p.Id == idPaciente
-                          select new { p.IdEnfermedadPreexistente, Nombre = e == null ? null : e.Nombre })
-            .FirstOrDefaultAsync(cancellationToken);
-        return (fila?.IdEnfermedadPreexistente, fila?.Nombre);
-    }
-
     public async Task<IReadOnlyList<FindingView>> ListarHallazgosAsync(
         string idPaciente,
         CancellationToken cancellationToken = default) =>
@@ -31,7 +18,7 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
         await db.Database.SqlQuery<FindingView>($"""
             SELECT h.TipoHallazgo, h.IdRegistro,
                    COALESCE(s.Descripcion, g.Descripcion, l.Descripcion, c.Descripcion,
-                            d.Descripcion, x.Descripcion, h.IdRegistro) AS Descripcion,
+                            d.Descripcion, x.Complicac, h.IdRegistro) AS Descripcion,
                    h.Valor, h.Unidades
             FROM dbo.HALLAZGOS_PACIENTE h
             LEFT JOIN dbo.SINTOMAS s ON h.TipoHallazgo = 'Sintoma' AND s.IdSintoma = h.IdRegistro
@@ -39,7 +26,7 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
             LEFT JOIN dbo.ESTUDIOS_LABORATORIO l ON h.TipoHallazgo = 'Estudio_lab' AND l.IdEstudio = h.IdRegistro
             LEFT JOIN dbo.COMORBILIDADES c ON h.TipoHallazgo = 'Comorbilidad' AND c.IdComorbilidad = h.IdRegistro
             LEFT JOIN dbo.ESTUDIOS_DIAGNOSTICO_DIFERENCIAL d ON h.TipoHallazgo = 'Estudio_diagdif' AND d.IdEstudio = h.IdRegistro
-            LEFT JOIN dbo.COMPLICACIONES x ON h.TipoHallazgo = 'Complicacion' AND x.IdComplicacion = h.IdRegistro
+            LEFT JOIN dbo.IO_Complicaciones x ON h.TipoHallazgo = 'Complicacion' AND x.Id_Complic = h.IdRegistro
             WHERE h.IdPaciente = {idPaciente}
             ORDER BY h.TipoHallazgo, h.IdRegistro
             """).ToListAsync(cancellationToken);
@@ -61,9 +48,4 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
         await transaccion.CommitAsync(cancellationToken);
         db.ChangeTracker.Clear();
     }
-
-    public Task AsignarPreexistenteAsync(string idPaciente, string? idEnfermedad, CancellationToken cancellationToken = default) =>
-        db.Pacientes
-            .Where(p => p.Id == idPaciente)
-            .ExecuteUpdateAsync(set => set.SetProperty(p => p.IdEnfermedadPreexistente, idEnfermedad), cancellationToken);
 }

@@ -8,7 +8,7 @@ using XpertDiagnostic.Api.Services.Interfaces;
 namespace XpertDiagnostic.Api.Controllers;
 
 /// <summary>
-/// Captura del expediente de un paciente (P-103): hallazgos por sección y enfermedad preexistente.
+/// Captura del expediente de un paciente (P-103): hallazgos por sección.
 /// Solo traduce HTTP ↔ servicio; exige token.
 /// </summary>
 [ApiController]
@@ -17,7 +17,7 @@ namespace XpertDiagnostic.Api.Controllers;
 [Authorize(Roles = UserRoles.RolesMedicos)]
 public class PatientRecordController(IPatientRecordService expedientes, IDiagnosisService diagnosticos) : ControllerBase
 {
-    /// <summary>Expediente capturado: enfermedad preexistente y hallazgos.</summary>
+    /// <summary>Expediente capturado: hallazgos.</summary>
     /// <remarks>@post 200 con el expediente; 404 si el paciente no existe.</remarks>
     [HttpGet("record")]
     [ProducesResponseType<PatientRecord>(StatusCodes.Status200OK)]
@@ -50,22 +50,6 @@ public class PatientRecordController(IPatientRecordService expedientes, IDiagnos
             return NotFound(new ErrorResponse("No existe esa sección."));
 
         var estado = await expedientes.GuardarHallazgosAsync(idPaciente, catalogo, request.Hallazgos, cancellationToken);
-        return await Responder(idPaciente, estado, cancellationToken);
-    }
-
-    /// <summary>Asigna o quita la enfermedad preexistente.</summary>
-    /// <remarks>@post 200 con el expediente; 400 si la enfermedad no existe; 404 si el paciente no existe.</remarks>
-    [HttpPut("preexisting-disease")]
-    [ProducesResponseType<PatientRecord>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PatientRecord>> SetPreexisting(
-        string idPaciente,
-        [FromBody] SetPreexistingDiseaseRequest request,
-        CancellationToken cancellationToken)
-    {
-        var estado = await expedientes.AsignarPreexistenteAsync(idPaciente, request.IdEnfermedad, cancellationToken);
         return await Responder(idPaciente, estado, cancellationToken);
     }
 

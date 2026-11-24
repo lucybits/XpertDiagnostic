@@ -51,6 +51,35 @@ public class PatientServiceTests
     }
 
     [Fact]
+    public async Task RegistrarAsync_ConCasillasDeAntecedentes_LasGuardaConElPaciente()
+    {
+        // Given un médico que marca fuma, biomasa y transfusiones, y deja el resto sin marcar
+        var repositorio = new RepositorioPacientesFalso();
+        var servicio = new PatientService(repositorio);
+
+        // When registra al paciente
+        var creado = await servicio.RegistrarAsync(new CreatePatientRequest
+        {
+            NombreCompleto = "Luis Peña",
+            Edad = 61,
+            Tabaquismo = true,
+            Biomasa = true,
+            Transfusiones = true,
+        });
+
+        // Then sus antecedentes no patológicos quedan guardados con el mismo ID: marcadas = sí, el resto = no
+        var antecedentes = Assert.Single(repositorio.Antecedentes);
+        Assert.Equal(creado.IdPaciente, antecedentes.IdPaciente);
+        Assert.True(antecedentes.Tabaquismo);
+        Assert.Equal(1, antecedentes.Biomasa);
+        Assert.True(antecedentes.Transfusio);
+        Assert.False(antecedentes.Alcoholism);
+        Assert.False(antecedentes.Toxicomans);
+        Assert.False(antecedentes.TatuajPerf);
+        Assert.False(antecedentes.Herbolaria);
+    }
+
+    [Fact]
     public async Task RegistrarAsync_OtroMedicoTomoElId_ReintentaConElSiguiente() // PT44
     {
         // Given que entre la consulta y el guardado otro médico ocupó PACIE00001
@@ -109,6 +138,7 @@ public class PatientServiceTests
     private sealed class RepositorioPacientesFalso : IPatientRepository
     {
         public List<Patient> Pacientes { get; } = [];
+        public List<NonPathologicalHistory> Antecedentes { get; } = [];
 
         /// <summary>Cuántas veces simular que otro médico guardó el mismo ID justo antes.</summary>
         public int ChoquesSimulados { get; set; }
@@ -120,7 +150,7 @@ public class PatientServiceTests
         public Task<string?> ObtenerUltimoIdAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(Pacientes.Select(p => p.Id).Where(id => id.StartsWith("PACIE")).Order().LastOrDefault());
 
-        public Task<bool> CrearAsync(Patient paciente, CancellationToken cancellationToken = default)
+        public Task<bool> CrearAsync(Patient paciente, NonPathologicalHistory antecedentes, CancellationToken cancellationToken = default)
         {
             if (ChoquesSimulados > 0)
             {
@@ -130,6 +160,7 @@ public class PatientServiceTests
             }
             if (Pacientes.Any(p => p.Id == paciente.Id)) return Task.FromResult(false);
             Pacientes.Add(paciente);
+            Antecedentes.Add(antecedentes);
             return Task.FromResult(true);
         }
     }

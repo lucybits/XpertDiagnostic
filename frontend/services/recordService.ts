@@ -56,21 +56,6 @@ export async function saveFindings(
   }
 }
 
-/** Asigna (o quita, con null) la enfermedad preexistente. @post Nunca lanza. */
-export async function setPreexistingDisease(
-  patientId: string,
-  diseaseId: string | null,
-): Promise<RecordResult<PatientRecord>> {
-  try {
-    const response = await putJson<PatientRecord>(`/api/patients/${patientId}/preexisting-disease`, {
-      idEnfermedad: diseaseId,
-    });
-    return response.ok && response.data ? { ok: true, data: response.data } : fail(response.status);
-  } catch {
-    return offline();
-  }
-}
-
 /** Analiza los hallazgos guardados con la máquina de inferencia del backend. @post Nunca lanza. */
 export async function analyzePatient(patientId: string): Promise<RecordResult<DiagnosisResult>> {
   try {

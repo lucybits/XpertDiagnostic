@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PatientFinding> Hallazgos => Set<PatientFinding>();
     public DbSet<Treatment> Tratamientos => Set<Treatment>();
     public DbSet<CarePlan> Planes => Set<CarePlan>();
+    public DbSet<NonPathologicalHistory> AntecedentesNoPatologicos => Set<NonPathologicalHistory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,5 +35,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         // HALLAZGOS_PACIENTE: llave compuesta (PK_HALLAZGOS_PACIENTE).
         modelBuilder.Entity<PatientFinding>().HasKey(h => new { h.IdPaciente, h.IdRegistro });
+
+        // IO_AntecNoPatolPacientes.IdPaciente -> PACIENTES (uno a uno). Declararlo hace que EF inserte
+        // primero al paciente cuando se guardan juntos.
+        modelBuilder.Entity<NonPathologicalHistory>()
+            .HasOne<Patient>()
+            .WithOne()
+            .HasForeignKey<NonPathologicalHistory>(a => a.IdPaciente)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

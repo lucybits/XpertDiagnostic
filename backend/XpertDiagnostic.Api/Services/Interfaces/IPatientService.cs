@@ -14,7 +14,8 @@ public interface IPatientService
     /// <remarks>
     /// @pre solicitud cumple las reglas de <see cref="CreatePatientRequest"/>.
     /// @post Devuelve el paciente creado: ID nuevo, nombre limpio, sin diagnóstico.
-    ///       Solo se guardan nombre y edad; las columnas de salida quedan en null.
+    ///       Se guardan nombre y edad; las columnas de salida quedan en null. Las casillas de
+    ///       antecedentes no patológicos se guardan en IO_AntecNoPatolPacientes junto con el paciente.
     /// </remarks>
     Task<PatientSummary> RegistrarAsync(CreatePatientRequest solicitud, CancellationToken cancellationToken = default);
 }

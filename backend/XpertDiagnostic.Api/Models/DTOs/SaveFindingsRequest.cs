@@ -26,10 +26,3 @@ public class FindingInput
     [RegularExpression(@"^-?\d{1,9}(\.\d{1,3})?$")]
     public string? Valor { get; set; }
 }
-
-/// <summary>Enfermedad preexistente del paciente (una sola, columna de PACIENTES), o null para quitarla.</summary>
-public class SetPreexistingDiseaseRequest
-{
-    [StringLength(10, MinimumLength = 1)]
-    public string? IdEnfermedad { get; set; }
-}

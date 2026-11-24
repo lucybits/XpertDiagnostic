@@ -45,7 +45,11 @@ export type RegisterPatientResult = { ok: true; patient: Patient } | { ok: false
  */
 export async function registerPatient(data: NewPatient): Promise<RegisterPatientResult> {
   try {
-    const response = await postJson<BackendPatient>('/api/patients', { fullName: data.fullName, age: data.age });
+    const response = await postJson<BackendPatient>('/api/patients', {
+      fullName: data.fullName,
+      age: data.age,
+      history: data.history,
+    });
     if (response.ok && response.data) return { ok: true, patient: toPatient(response.data) };
     switch (response.status) {
       case 401:

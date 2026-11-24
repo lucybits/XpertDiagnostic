@@ -19,8 +19,6 @@ export interface FindingView {
 /** Entradas de la máquina de inferencia ya guardadas. */
 export interface PatientRecord {
   idPaciente: string;
-  idEnfermedadPreexistente: string | null;
-  enfermedadPreexistente: string | null;
   hallazgos: FindingView[];
 }
 

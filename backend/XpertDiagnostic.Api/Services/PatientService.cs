@@ -39,8 +39,19 @@ public sealed partial class PatientService(IPatientRepository pacientes) : IPati
         {
             var id = SiguienteId(await _pacientes.ObtenerUltimoIdAsync(cancellationToken));
             var paciente = new Patient { Id = id, NombreCompleto = nombre, Edad = solicitud.Edad };
+            var antecedentes = new NonPathologicalHistory
+            {
+                IdPaciente = id,
+                Tabaquismo = solicitud.Tabaquismo,
+                Alcoholism = solicitud.Alcoholismo,
+                Toxicomans = solicitud.Toxicomanias,
+                Biomasa = solicitud.Biomasa ? 1 : 0,
+                TatuajPerf = solicitud.TatuajesPerforaciones,
+                Herbolaria = solicitud.Herbolaria,
+                Transfusio = solicitud.Transfusiones,
+            };
 
-            if (await _pacientes.CrearAsync(paciente, cancellationToken))
+            if (await _pacientes.CrearAsync(paciente, antecedentes, cancellationToken))
                 return new PatientSummary(id, nombre, solicitud.Edad, Diagnostico: null);
         }
 

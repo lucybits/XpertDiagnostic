@@ -25,28 +25,19 @@ export const WELCOME_STEPS: readonly WelcomeStep[] = [
     bubbles: [
       {
         text: () =>
-          'Te explico cómo vamos a trabajar. El expediente se divide en **dos etapas** y avanzaremos por ellas **en orden, una sección a la vez**.',
+          'Te explico cómo vamos a trabajar. Capturaremos el expediente **en orden, una sección a la vez**.',
         thinkingMs: 1800,
         wordDelayMs: 95,
       },
       {
         text: () =>
           [
-            '**1. Antecedentes**',
-            '- Enfermedades preexistentes',
+            '**Evaluación clínica**',
+            '- Signos de la exploración física',
+            '- Síntomas que presenta o siente el paciente',
+            '- Resultados de estudios y laboratorios',
             '- Comorbilidades',
             'En cada sección **eliges de la base de conocimiento** lo que presenta el paciente; así puedo compararlo con precisión.',
-          ].join('\n'),
-        thinkingMs: 1200,
-        wordDelayMs: 80,
-      },
-      {
-        text: () =>
-          [
-            '**2. Evaluación clínica**',
-            '- Síntomas que refiere el paciente',
-            '- Signos',
-            '- Estudios de laboratorio',
             'Si tienes valores medidos, anótalos; ya muestro **las unidades** de cada uno para compararlos con los rangos de referencia.',
           ].join('\n'),
         thinkingMs: 1500,

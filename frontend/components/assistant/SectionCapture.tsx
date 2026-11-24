@@ -6,7 +6,7 @@ import LoadingDots from '@/components/ui/LoadingDots';
 import type { SectionCapture as SectionCaptureConfig } from '@/components/home/clinicalSections';
 import { filterOptions, normalizeMeasure, toCatalogOptions, type CatalogOption } from '@/lib/recordRules';
 import { getCatalog } from '@/services/catalogService';
-import { saveFindings, setPreexistingDisease } from '@/services/recordService';
+import { saveFindings } from '@/services/recordService';
 import type { PatientRecord } from '@/types/record';
 import { FOCUS_RING } from './styles';
 
@@ -38,7 +38,6 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
   const [selected, setSelected] = useState<ReadonlyMap<string, string>>(new Map());
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isSingle = capture.kind === 'preexisting';
 
   // Carga el catálogo y marca lo que ya estaba guardado.
   useEffect(() => {
@@ -53,14 +52,9 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
       setOptions(loaded);
       if (!record) return;
       const initial = new Map<string, string>();
-      if (capture.kind === 'preexisting') {
-        const match = loaded.find((o) => o.id === record.idEnfermedadPreexistente);
-        if (match) initial.set(match.id, '');
-      } else {
-        for (const finding of record.hallazgos.filter((h) => h.tipoHallazgo === capture.findingType)) {
-          const match = loaded.find((o) => o.label.toLowerCase() === finding.descripcion.trim().toLowerCase());
-          if (match) initial.set(match.id, finding.valor === 'presente' ? '' : finding.valor);
-        }
+      for (const finding of record.hallazgos.filter((h) => h.tipoHallazgo === capture.findingType)) {
+        const match = loaded.find((o) => o.label.toLowerCase() === finding.descripcion.trim().toLowerCase());
+        if (match) initial.set(match.id, finding.valor === 'presente' ? '' : finding.valor);
       }
       setSelected(initial);
     });
@@ -78,7 +72,6 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
   const toggle = (option: CatalogOption) => {
     setError(null);
     setSelected((current) => {
-      if (isSingle) return current.has(option.id) ? new Map() : new Map([[option.id, '']]);
       const next = new Map(current);
       if (next.has(option.id)) next.delete(option.id);
       else next.set(option.id, '');
@@ -93,26 +86,18 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
     if (isSaving || invalidMeasures.length > 0) return;
     setIsSaving(true);
     setError(null);
-    const result =
-      capture.kind === 'preexisting'
-        ? await setPreexistingDisease(patientId, [...selected.keys()][0] ?? null)
-        : await saveFindings(
-            patientId,
-            capture.section,
-            [...selected].map(([idRegistro, value]) => ({ idRegistro, valor: normalizeMeasure(value) ?? null })),
-          );
+    const result = await saveFindings(
+      patientId,
+      capture.section,
+      [...selected].map(([idRegistro, value]) => ({ idRegistro, valor: normalizeMeasure(value) ?? null })),
+    );
     setIsSaving(false);
     if (result.ok) onSaved(result.data);
     else setError(result.message);
   };
 
-  const noun = capture.kind === 'preexisting' ? 'enfermedad preexistente' : capture.noun;
-  const saveLabel =
-    selected.size === 0
-      ? capture.kind === 'preexisting'
-        ? 'Continuar sin enfermedad preexistente'
-        : `Continuar sin ${capture.noun}`
-      : 'Guardar y continuar';
+  const noun = capture.noun;
+  const saveLabel = selected.size === 0 ? `Continuar sin ${capture.noun}` : 'Guardar y continuar';
 
   return (
     <section
@@ -169,7 +154,7 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
                     <li key={option.id}>
                       <button
                         type="button"
-                        role={isSingle ? 'radio' : 'checkbox'}
+                        role="checkbox"
                         aria-checked={isChecked}
                         onClick={() => toggle(option)}
                         className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${
@@ -178,9 +163,7 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
                       >
                         <span
                           aria-hidden="true"
-                          className={`flex h-5 w-5 shrink-0 items-center justify-center border-2 ${
-                            isSingle ? 'rounded-full' : 'rounded-md'
-                          } ${isChecked ? 'border-teal-600 bg-teal-600 text-white' : 'border-slate-300 bg-white'}`}
+                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 ${isChecked ? 'border-teal-600 bg-teal-600 text-white' : 'border-slate-300 bg-white'}`}
                         >
                           {isChecked && <Check className="h-3.5 w-3.5" />}
                         </span>
@@ -202,7 +185,7 @@ export default function SectionCapture({ patientId, sectionLabel, capture, recor
             {/* Elegidos */}
             <div className="border-t-2 border-slate-100 p-4 md:border-t-0">
               <p className="font-medium text-slate-700">
-                {isSingle ? 'Seleccionada' : `Seleccionados (${selected.size})`}
+                Seleccionados ({selected.size})
               </p>
               {selected.size === 0 ? (
                 <p className="mt-2 text-slate-700">Sin selección.</p>

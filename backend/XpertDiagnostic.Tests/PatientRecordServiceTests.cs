@@ -96,19 +96,6 @@ public class PatientRecordServiceTests
     }
 
     [Fact]
-    public async Task AsignarPreexistente_EnfermedadInexistente_SeRechaza() // PT53
-    {
-        var (servicio, expedientes) = Crear();
-
-        var invalida = await servicio.AsignarPreexistenteAsync("PACIE00001", "XXXXX00000");
-        var valida = await servicio.AsignarPreexistenteAsync("PACIE00001", "NEUMO00008");
-
-        Assert.Equal(SaveFindingsStatus.RegistroInvalido, invalida);
-        Assert.Equal(SaveFindingsStatus.Guardado, valida);
-        Assert.Equal("NEUMO00008", expedientes.Preexistente);
-    }
-
-    [Fact]
     public async Task Obtener_HallazgosEquivalentes_SeMuestranUnaVez() // PT54
     {
         // Given "Disnea" guardada con sus dos IDs
@@ -170,13 +157,9 @@ public class PatientRecordServiceTests
     private sealed class ExpedientesFalsos : IPatientRecordRepository
     {
         public List<PatientFinding> Hallazgos { get; } = [];
-        public string? Preexistente { get; private set; }
 
         public Task<bool> ExistePacienteAsync(string idPaciente, CancellationToken cancellationToken = default) =>
             Task.FromResult(idPaciente == "PACIE00001");
-
-        public Task<(string? Id, string? Nombre)> ObtenerPreexistenteAsync(string idPaciente, CancellationToken cancellationToken = default) =>
-            Task.FromResult<(string?, string?)>((Preexistente, null));
 
         public Task<IReadOnlyList<FindingView>> ListarHallazgosAsync(string idPaciente, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<FindingView>>(Hallazgos
@@ -188,12 +171,6 @@ public class PatientRecordServiceTests
         {
             Hallazgos.RemoveAll(h => h.IdPaciente == idPaciente && h.TipoHallazgo == tipoHallazgo);
             Hallazgos.AddRange(hallazgos);
-            return Task.CompletedTask;
-        }
-
-        public Task AsignarPreexistenteAsync(string idPaciente, string? idEnfermedad, CancellationToken cancellationToken = default)
-        {
-            Preexistente = idEnfermedad;
             return Task.CompletedTask;
         }
     }
