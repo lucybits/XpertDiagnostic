@@ -93,11 +93,11 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
     [Fact]
     public async Task PT57_MotorProvisional_EvaluadoContraResultadosEsperados()
     {
-        // Given los pacientes de prueba y su respuesta correcta (RESULTADOS_ESPERADOS, solo para evaluar)
+        // Given los pacientes de prueba y su respuesta correcta (IO_ResultadosEsperados, solo para evaluar)
         await using var db = CrearContexto();
         var diagnosticos = new DiagnosisService(new PatientRecordRepository(db), new ProvisionalInferenceEngine(new CatalogRepository(db)));
         var esperados = await db.Database
-            .SqlQuery<EsperadoFila>($"SELECT IdPaciente, IdEnfermedadEsperada FROM dbo.RESULTADOS_ESPERADOS")
+            .SqlQuery<EsperadoFila>($"SELECT IdPaciente, IdEnfermedad AS IdEnfermedadEsperada FROM dbo.IO_ResultadosEsperados")
             .ToListAsync();
 
         // When se analiza cada paciente

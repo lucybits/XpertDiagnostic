@@ -1,4 +1,4 @@
-Id_Complic,Complicaciones,Id_Enferme,Id_Pacient
+Id_Complic,Complicac,Id_Enferme,Id_Pacient
 DIGES00017COMPL00001,Choque,DIGES00017,
 DIGES00017COMPL00002,Hemorragia recidivante,DIGES00017,PACIE00008
 DIGES00017COMPL00003,Muerte,DIGES00017,PACIE00008

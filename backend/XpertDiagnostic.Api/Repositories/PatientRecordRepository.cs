@@ -18,7 +18,7 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
         await db.Database.SqlQuery<FindingView>($"""
             SELECT h.TipoHallazgo, h.IdRegistro,
                    COALESCE(s.Descripcion, g.Descripcion, l.Descripcion, c.Descripcion,
-                            d.Descripcion, x.Descripcion, h.IdRegistro) AS Descripcion,
+                            d.Descripcion, x.Complicac, h.IdRegistro) AS Descripcion,
                    h.Valor, h.Unidades
             FROM dbo.HALLAZGOS_PACIENTE h
             LEFT JOIN dbo.SINTOMAS s ON h.TipoHallazgo = 'Sintoma' AND s.IdSintoma = h.IdRegistro
@@ -26,7 +26,7 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
             LEFT JOIN dbo.ESTUDIOS_LABORATORIO l ON h.TipoHallazgo = 'Estudio_lab' AND l.IdEstudio = h.IdRegistro
             LEFT JOIN dbo.COMORBILIDADES c ON h.TipoHallazgo = 'Comorbilidad' AND c.IdComorbilidad = h.IdRegistro
             LEFT JOIN dbo.ESTUDIOS_DIAGNOSTICO_DIFERENCIAL d ON h.TipoHallazgo = 'Estudio_diagdif' AND d.IdEstudio = h.IdRegistro
-            LEFT JOIN dbo.COMPLICACIONES x ON h.TipoHallazgo = 'Complicacion' AND x.IdComplicacion = h.IdRegistro
+            LEFT JOIN dbo.IO_Complicaciones x ON h.TipoHallazgo = 'Complicacion' AND x.Id_Complic = h.IdRegistro
             WHERE h.IdPaciente = {idPaciente}
             ORDER BY h.TipoHallazgo, h.IdRegistro
             """).ToListAsync(cancellationToken);

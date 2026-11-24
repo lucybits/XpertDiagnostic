@@ -40,15 +40,26 @@ CHARACTER_FIXES = [
 FINDING_CATALOGS = {
     "Sintoma": "SINTOMAS",
     "Signo": "SIGNOS",
-    "Complicacion": "COMPLICACIONES",
+    "Complicacion": "IO_Complicaciones",
     "Estudio_lab": "ESTUDIOS_LABORATORIO",
     "Estudio_diagdif": "ESTUDIOS_DIAGNOSTICO_DIFERENCIAL",
     "Comorbilidad": "COMORBILIDADES",
 }
 
+# Tablas que se vacían pero aún no tienen CSV (el interrogatorio de antecedentes se captura en la app).
+DELETE_ONLY = {
+    "IO_AntecNoPatolPacientes",
+    "IO_AntecPatolPacientes",
+    "IO_AntecPerinatPacientes",
+    "IO_AntecQuiruAnestesPacientes",
+    "IO_AntecParaClinicPacientes",
+}
+
 # Orden de borrado (hijos primero). La carga usa el orden inverso.
 DELETE_ORDER = [
-    "RESULTADOS_ESPERADOS",
+    *sorted(DELETE_ONLY),
+    "IO_ResultadosEsperados",
+    "IO_Complicaciones",
     "ATENCIONES_PACIENTE",
     "HALLAZGOS_PACIENTE",
     "PACIENTES",
@@ -57,7 +68,6 @@ DELETE_ORDER = [
     "REGIONES",
     "TRATAMIENTOS",
     "DEFECTOS_CONGENITOS",
-    "COMPLICACIONES",
     "COMORBILIDADES",
     "ESTUDIOS_DIAGNOSTICO_DIFERENCIAL",
     "ESTUDIOS_LABORATORIO",
@@ -175,7 +185,6 @@ def main() -> int:
         return rows
 
     simple_catalog("COMORBILIDADES", "Comorbilidades", "Id_comorb", "Comorbilid", "IdComorbilidad")
-    simple_catalog("COMPLICACIONES", "Complicaciones", "Id_Complic", "Complicaciones", "IdComplicacion", "Id_Enferme")
     simple_catalog("DEFECTOS_CONGENITOS", "DefsCongenitos", "Id_Defecto", "Defecto", "IdDefecto", "Id_Enferme")
 
     treatments = read("Tratamientos")
@@ -228,6 +237,22 @@ def main() -> int:
     tables["PACIENTES"] = (["IdPaciente", "NombreCompleto", "Edad", "IdEnfermedadDiagnosticada",
                             "IdComorbilidad", "IdTratamiento", "IdPlan"], patient_values)
 
+    # IO_Complicaciones: catálogo por enfermedad que además marca al paciente de prueba (va después de PACIENTES).
+    complications = read("Complicaciones")
+    catalog_ids["IO_Complicaciones"] = unique(complications, "Id_Complic", "IO_Complicaciones")
+    complication_values = []
+    for c in complications:
+        where = f"IO_Complicaciones {c['Id_Complic']}"
+        disease = disease_of(c["Id_Complic"])
+        if c["Id_Enferme"] != disease:
+            errors.append(f"{where}: Id_Enferme {c['Id_Enferme']} no coincide con el prefijo")
+        require_disease(disease, where)
+        if c["Id_Pacient"] and c["Id_Pacient"] not in patient_ids:
+            errors.append(f"{where}: paciente {c['Id_Pacient']} inexistente")
+        catalog_text[c["Id_Complic"]] = c["Complicac"]
+        complication_values.append([c["Id_Complic"], c["Complicac"], disease, c["Id_Pacient"]])
+    tables["IO_Complicaciones"] = (["Id_Complic", "Complicac", "IdEnfermedad", "IdPaciente"], complication_values)
+
     findings = read("HallazgosPacientes")
     finding_keys: set[tuple[str, str]] = set()
     finding_values = []
@@ -266,10 +291,10 @@ def main() -> int:
     expected = read("ResultadosEsperados")
     for e in expected:
         if e["Id_Pacient"] not in patient_ids:
-            errors.append(f"RESULTADOS_ESPERADOS: paciente {e['Id_Pacient']} inexistente")
-        require_disease(e["Id_Enferme_Esperado"], f"RESULTADOS_ESPERADOS {e['Id_Pacient']}")
-    tables["RESULTADOS_ESPERADOS"] = (["IdPaciente", "IdEnfermedadEsperada"],
-                                      [[e["Id_Pacient"], e["Id_Enferme_Esperado"]] for e in expected])
+            errors.append(f"IO_ResultadosEsperados: paciente {e['Id_Pacient']} inexistente")
+        require_disease(e["Id_Enferme_Esperado"], f"IO_ResultadosEsperados {e['Id_Pacient']}")
+    tables["IO_ResultadosEsperados"] = (["IdPaciente", "IdEnfermedad", "Enfeespera"],
+                                        [[e["Id_Pacient"], e["Id_Enferme_Esperado"], e["Enfermedad_Esperada"]] for e in expected])
 
     if errors:
         print("No se generó el script. Errores en los CSV:", file=sys.stderr)
@@ -299,6 +324,8 @@ def main() -> int:
     lines.append("")
 
     for table in reversed(DELETE_ORDER):
+        if table in DELETE_ONLY:
+            continue
         columns, rows = tables[table]
         lines.append(f"-- {table}: {len(rows)} filas")
         header = f"INSERT INTO dbo.{table} ({', '.join(columns)}) VALUES"

@@ -14,7 +14,13 @@ IF DB_NAME() IN (N'master', N'model', N'msdb', N'tempdb')
 
 BEGIN TRANSACTION;
 
-DELETE FROM dbo.RESULTADOS_ESPERADOS;
+DELETE FROM dbo.IO_AntecNoPatolPacientes;
+DELETE FROM dbo.IO_AntecParaClinicPacientes;
+DELETE FROM dbo.IO_AntecPatolPacientes;
+DELETE FROM dbo.IO_AntecPerinatPacientes;
+DELETE FROM dbo.IO_AntecQuiruAnestesPacientes;
+DELETE FROM dbo.IO_ResultadosEsperados;
+DELETE FROM dbo.IO_Complicaciones;
 DELETE FROM dbo.ATENCIONES_PACIENTE;
 DELETE FROM dbo.HALLAZGOS_PACIENTE;
 DELETE FROM dbo.PACIENTES;
@@ -23,7 +29,6 @@ DELETE FROM dbo.ENFERMEDADES_ENDEMICAS;
 DELETE FROM dbo.REGIONES;
 DELETE FROM dbo.TRATAMIENTOS;
 DELETE FROM dbo.DEFECTOS_CONGENITOS;
-DELETE FROM dbo.COMPLICACIONES;
 DELETE FROM dbo.COMORBILIDADES;
 DELETE FROM dbo.ESTUDIOS_DIAGNOSTICO_DIFERENCIAL;
 DELETE FROM dbo.ESTUDIOS_LABORATORIO;
@@ -464,65 +469,6 @@ INSERT INTO dbo.COMORBILIDADES (IdComorbilidad, IdEnfermedad, Descripcion) VALUE
     (N'NEURO00085COMOR00012', N'NEURO00085', N'Diabetes'),
     (N'NEURO00085COMOR00013', N'NEURO00085', N'Traumatismo craneal con fuga de LCR');
 
--- COMPLICACIONES: 56 filas
-INSERT INTO dbo.COMPLICACIONES (IdComplicacion, IdEnfermedad, Descripcion) VALUES
-    (N'DIGES00017COMPL00001', N'DIGES00017', N'Choque'),
-    (N'DIGES00017COMPL00002', N'DIGES00017', N'Hemorragia recidivante'),
-    (N'DIGES00017COMPL00003', N'DIGES00017', N'Muerte'),
-    (N'ONCOL00014COMPL00001', N'ONCOL00014', N'Metástasis cerebrales'),
-    (N'ONCOL00014COMPL00002', N'ONCOL00014', N'Fracturas patológicas'),
-    (N'ONCOL00014COMPL00003', N'ONCOL00014', N'Invasión hepática'),
-    (N'ONCOL00014COMPL00004', N'ONCOL00014', N'Compresión de médula espinal'),
-    (N'ONCOL00014COMPL00005', N'ONCOL00014', N'Obstrucción traqueal'),
-    (N'INFEC00033COMPL00001', N'INFEC00033', N'Insuficiencia cardiaca congestiva (30 a 40%)'),
-    (N'INFEC00033COMPL00002', N'INFEC00033', N'Absceso perivalvular y fístulas intracardiacas'),
-    (N'INFEC00033COMPL00003', N'INFEC00033', N'Embolias cerebrovasculares (15 a 35%)'),
-    (N'INFEC00033COMPL00004', N'INFEC00033', N'Aneurisma micótico'),
-    (N'INFEC00033COMPL00005', N'INFEC00033', N'Glomerulonefritis'),
-    (N'INFEC00033COMPL00006', N'INFEC00033', N'Meningitis'),
-    (N'INFEC00033COMPL00007', N'INFEC00033', N'Interrupción del sistema de conducción'),
-    (N'CARDI00017COMPL00001', N'CARDI00017', N'Insuficiencia cardiaca congestiva'),
-    (N'CARDI00017COMPL00002', N'CARDI00017', N'Taquiarritmias'),
-    (N'CARDI00017COMPL00003', N'CARDI00017', N'Embolias periféricas por trombo mural en el ventrículo izquierdo'),
-    (N'NEUMO00008COMPL00001', N'NEUMO00008', N'Neumotórax en exacerbaciones agudas'),
-    (N'NEUMO00008COMPL00002', N'NEUMO00008', N'Insuficiencia respiratoria'),
-    (N'NEUMO00008COMPL00003', N'NEUMO00008', N'Hospitalización'),
-    (N'NEUMO00008COMPL00004', N'NEUMO00008', N'Disminución más rápida de la función pulmonar en fumadores'),
-    (N'NEUMO00025COMPL00001', N'NEUMO00025', N'Insuficiencia ventricular derecha progresiva'),
-    (N'NEUMO00025COMPL00002', N'NEUMO00025', N'Muerte'),
-    (N'NEUMO00025COMPL00003', N'NEUMO00025', N'Infarto pulmonar'),
-    (N'NEUMO00025COMPL00004', N'NEUMO00025', N'Hipertensión pulmonar tromboembólica crónica'),
-    (N'NEUMO00025COMPL00005', N'NEUMO00025', N'Síndrome posflebítico'),
-    (N'NEUMO00025COMPL00006', N'NEUMO00025', N'Úlcera cutánea'),
-    (N'RENAL00008COMPL00001', N'RENAL00008', N'Hiperpotasemia'),
-    (N'RENAL00008COMPL00002', N'RENAL00008', N'Acidosis metabólica'),
-    (N'RENAL00008COMPL00003', N'RENAL00008', N'Hipocalcemia'),
-    (N'RENAL00008COMPL00004', N'RENAL00008', N'Hiperfosfatemia'),
-    (N'RENAL00008COMPL00005', N'RENAL00008', N'Anemia'),
-    (N'RENAL00008COMPL00006', N'RENAL00008', N'Hiperparatiroidismo'),
-    (N'RENAL00008COMPL00007', N'RENAL00008', N'Osteodistrofia renal'),
-    (N'RENAL00008COMPL00008', N'RENAL00008', N'Hemorragia'),
-    (N'RENAL00008COMPL00009', N'RENAL00008', N'Serositis'),
-    (N'RENAL00008COMPL00010', N'RENAL00008', N'Hipertensión'),
-    (N'MUSCU00004COMPL00001', N'MUSCU00004', N'Anemia hemolítica'),
-    (N'MUSCU00004COMPL00002', N'MUSCU00004', N'Neutropenia'),
-    (N'MUSCU00004COMPL00003', N'MUSCU00004', N'Trombocitopenia'),
-    (N'MUSCU00004COMPL00004', N'MUSCU00004', N'Trombosis venosa o arterial'),
-    (N'MUSCU00004COMPL00005', N'MUSCU00004', N'Infarto miocárdico por ateroesclerosis acelerada'),
-    (N'MUSCU00004COMPL00006', N'MUSCU00004', N'Nefritis'),
-    (N'MUSCU00004COMPL00007', N'MUSCU00004', N'Cerebritis'),
-    (N'MUSCU00004COMPL00008', N'MUSCU00004', N'Síndromes cerebrales orgánicos'),
-    (N'ENDOC00015COMPL00001', N'ENDOC00015', N'Fibrilación auricular'),
-    (N'ENDOC00015COMPL00002', N'ENDOC00015', N'Osteopenia'),
-    (N'ENDOC00015COMPL00003', N'ENDOC00015', N'Tormenta tiroidea'),
-    (N'ENDOC00015COMPL00004', N'ENDOC00015', N'Tirotoxicosis apática en ancianos'),
-    (N'NEURO00085COMPL00001', N'NEURO00085', N'Elevación de presión intracraneal'),
-    (N'NEURO00085COMPL00002', N'NEURO00085', N'Secuelas moderadas o graves en 25%'),
-    (N'NEURO00085COMPL00003', N'NEURO00085', N'Sordera'),
-    (N'NEURO00085COMPL00004', N'NEURO00085', N'Alteraciones de memoria'),
-    (N'NEURO00085COMPL00005', N'NEURO00085', N'Convulsiones'),
-    (N'NEURO00085COMPL00006', N'NEURO00085', N'Alteración de la marcha');
-
 -- DEFECTOS_CONGENITOS: 43 filas
 INSERT INTO dbo.DEFECTOS_CONGENITOS (IdDefecto, IdEnfermedad, Descripcion) VALUES
     (N'DIGES00017DEFEC00001', N'DIGES00017', N'Hematemesis'),
@@ -738,11 +684,11 @@ INSERT INTO dbo.PACIENTES (IdPaciente, NombreCompleto, Edad, IdEnfermedadDiagnos
     (N'PACIE00003', N'Javier Duarte Leyva (ficticio)', 24, N'NEUMO00008', N'NEUMO00008COMOR00008', N'NEUMO00008TRATA00001', N'PLAN_00003'),
     (N'PACIE00004', N'Patricia Rendón Salazar (ficticio)', 48, N'NEUMO00025', N'NEUMO00025COMOR00010', N'NEUMO00025TRATA00001', N'PLAN_00004'),
     (N'PACIE00005', N'Hugo Tapia Urías (ficticio)', 63, N'RENAL00008', N'RENAL00008COMOR00011', N'RENAL00008TRATA00001', N'PLAN_00005'),
-    (N'PACIE00006', N'Karla Verdugo Zamora (ficticio)', 29, N'MUSCU00004',  N'MUSCU00004COMOR00002', N'MUSCU00004TRATA00001', N'PLAN_00006'),
-    (N'PACIE00007', N'Raúl Bórquez Cázares (ficticio)', 19, N'NEURO00085',  N'NEURO00085COMOR00012', N'NEURO00085TRATA00001', N'PLAN_00007'),
-    (N'PACIE00008', N'Alma Beltrán Ibarra (ficticio)', 71, N'DIGES00017',  N'DIGES00017COMOR00001', N'DIGES00017TRATA00001', N'PLAN_00008'),
-    (N'PACIE00009', N'Sergio Camacho Quijada (ficticio)', 66, N'ONCOL00014',  N'ONCOL00014COMOR00002', N'ONCOL00014TRATA00001', N'PLAN_00009'),
-    (N'PACIE00010', N'Gabriela Contreras Moreno (ficticio)', 38, N'INFEC00033',  N'INFEC00033COMOR00007', N'INFEC00033TRATA00001', N'PLAN_00010');
+    (N'PACIE00006', N'Karla Verdugo Zamora (ficticio)', 29, N'MUSCU00004', N'MUSCU00004COMOR00002', N'MUSCU00004TRATA00001', N'PLAN_00006'),
+    (N'PACIE00007', N'Raúl Bórquez Cázares (ficticio)', 19, N'NEURO00085', N'NEURO00085COMOR00012', N'NEURO00085TRATA00001', N'PLAN_00007'),
+    (N'PACIE00008', N'Alma Beltrán Ibarra (ficticio)', 71, N'DIGES00017', N'DIGES00017COMOR00001', N'DIGES00017TRATA00001', N'PLAN_00008'),
+    (N'PACIE00009', N'Sergio Camacho Quijada (ficticio)', 66, N'ONCOL00014', N'ONCOL00014COMOR00002', N'ONCOL00014TRATA00001', N'PLAN_00009'),
+    (N'PACIE00010', N'Gabriela Contreras Moreno (ficticio)', 38, N'INFEC00033', N'INFEC00033COMOR00007', N'INFEC00033TRATA00001', N'PLAN_00010');
 
 -- HALLAZGOS_PACIENTE: 212 filas
 INSERT INTO dbo.HALLAZGOS_PACIENTE (IdPaciente, TipoHallazgo, IdRegistro, Valor, Unidades) VALUES
@@ -972,18 +918,77 @@ INSERT INTO dbo.ATENCIONES_PACIENTE (IdPaciente, IdDoctor, IdHospital, Motivo) V
     (N'PACIE00009', N'DOCTO00007', N'HOSPI00001', N'Cáncer pulmonar'),
     (N'PACIE00010', N'DOCTO00006', N'HOSPI00002', N'Endocarditis infecciosa');
 
--- RESULTADOS_ESPERADOS: 10 filas
-INSERT INTO dbo.RESULTADOS_ESPERADOS (IdPaciente, IdEnfermedadEsperada) VALUES
-    (N'PACIE00001', N'CARDI00017'),
-    (N'PACIE00002', N'ENDOC00015'),
-    (N'PACIE00003', N'NEUMO00008'),
-    (N'PACIE00004', N'NEUMO00025'),
-    (N'PACIE00005', N'RENAL00008'),
-    (N'PACIE00006', N'MUSCU00004'),
-    (N'PACIE00007', N'NEURO00085'),
-    (N'PACIE00008', N'DIGES00017'),
-    (N'PACIE00009', N'ONCOL00014'),
-    (N'PACIE00010', N'INFEC00033');
+-- IO_Complicaciones: 56 filas
+INSERT INTO dbo.IO_Complicaciones (Id_Complic, Complicac, IdEnfermedad, IdPaciente) VALUES
+    (N'DIGES00017COMPL00001', N'Choque', N'DIGES00017', NULL),
+    (N'DIGES00017COMPL00002', N'Hemorragia recidivante', N'DIGES00017', N'PACIE00008'),
+    (N'DIGES00017COMPL00003', N'Muerte', N'DIGES00017', N'PACIE00008'),
+    (N'ONCOL00014COMPL00001', N'Metástasis cerebrales', N'ONCOL00014', N'PACIE00009'),
+    (N'ONCOL00014COMPL00002', N'Fracturas patológicas', N'ONCOL00014', NULL),
+    (N'ONCOL00014COMPL00003', N'Invasión hepática', N'ONCOL00014', NULL),
+    (N'ONCOL00014COMPL00004', N'Compresión de médula espinal', N'ONCOL00014', N'PACIE00009'),
+    (N'ONCOL00014COMPL00005', N'Obstrucción traqueal', N'ONCOL00014', NULL),
+    (N'INFEC00033COMPL00001', N'Insuficiencia cardiaca congestiva (30 a 40%)', N'INFEC00033', NULL),
+    (N'INFEC00033COMPL00002', N'Absceso perivalvular y fístulas intracardiacas', N'INFEC00033', N'PACIE00010'),
+    (N'INFEC00033COMPL00003', N'Embolias cerebrovasculares (15 a 35%)', N'INFEC00033', NULL),
+    (N'INFEC00033COMPL00004', N'Aneurisma micótico', N'INFEC00033', N'PACIE00010'),
+    (N'INFEC00033COMPL00005', N'Glomerulonefritis', N'INFEC00033', NULL),
+    (N'INFEC00033COMPL00006', N'Meningitis', N'INFEC00033', NULL),
+    (N'INFEC00033COMPL00007', N'Interrupción del sistema de conducción', N'INFEC00033', N'PACIE00010'),
+    (N'CARDI00017COMPL00001', N'Insuficiencia cardiaca congestiva', N'CARDI00017', N'PACIE00001'),
+    (N'CARDI00017COMPL00002', N'Taquiarritmias', N'CARDI00017', NULL),
+    (N'CARDI00017COMPL00003', N'Embolias periféricas por trombo mural en el ventrículo izquierdo', N'CARDI00017', N'PACIE00001'),
+    (N'NEUMO00008COMPL00001', N'Neumotórax en exacerbaciones agudas', N'NEUMO00008', N'PACIE00003'),
+    (N'NEUMO00008COMPL00002', N'Insuficiencia respiratoria', N'NEUMO00008', NULL),
+    (N'NEUMO00008COMPL00003', N'Hospitalización', N'NEUMO00008', NULL),
+    (N'NEUMO00008COMPL00004', N'Disminución más rápida de la función pulmonar en fumadores', N'NEUMO00008', N'PACIE00003'),
+    (N'NEUMO00025COMPL00001', N'Insuficiencia ventricular derecha progresiva', N'NEUMO00025', NULL),
+    (N'NEUMO00025COMPL00002', N'Muerte', N'NEUMO00025', NULL),
+    (N'NEUMO00025COMPL00003', N'Infarto pulmonar', N'NEUMO00025', NULL),
+    (N'NEUMO00025COMPL00004', N'Hipertensión pulmonar tromboembólica crónica', N'NEUMO00025', N'PACIE00004'),
+    (N'NEUMO00025COMPL00005', N'Síndrome posflebítico', N'NEUMO00025', NULL),
+    (N'NEUMO00025COMPL00006', N'Úlcera cutánea', N'NEUMO00025', N'PACIE00004'),
+    (N'RENAL00008COMPL00001', N'Hiperpotasemia', N'RENAL00008', NULL),
+    (N'RENAL00008COMPL00002', N'Acidosis metabólica', N'RENAL00008', N'PACIE00005'),
+    (N'RENAL00008COMPL00003', N'Hipocalcemia', N'RENAL00008', N'PACIE00005'),
+    (N'RENAL00008COMPL00004', N'Hiperfosfatemia', N'RENAL00008', NULL),
+    (N'RENAL00008COMPL00005', N'Anemia', N'RENAL00008', NULL),
+    (N'RENAL00008COMPL00006', N'Hiperparatiroidismo', N'RENAL00008', NULL),
+    (N'RENAL00008COMPL00007', N'Osteodistrofia renal', N'RENAL00008', N'PACIE00005'),
+    (N'RENAL00008COMPL00008', N'Hemorragia', N'RENAL00008', NULL),
+    (N'RENAL00008COMPL00009', N'Serositis', N'RENAL00008', NULL),
+    (N'RENAL00008COMPL00010', N'Hipertensión', N'RENAL00008', N'PACIE00005'),
+    (N'MUSCU00004COMPL00001', N'Anemia hemolítica', N'MUSCU00004', NULL),
+    (N'MUSCU00004COMPL00002', N'Neutropenia', N'MUSCU00004', N'PACIE00006'),
+    (N'MUSCU00004COMPL00003', N'Trombocitopenia', N'MUSCU00004', NULL),
+    (N'MUSCU00004COMPL00004', N'Trombosis venosa o arterial', N'MUSCU00004', N'PACIE00006'),
+    (N'MUSCU00004COMPL00005', N'Infarto miocárdico por ateroesclerosis acelerada', N'MUSCU00004', N'PACIE00006'),
+    (N'MUSCU00004COMPL00006', N'Nefritis', N'MUSCU00004', NULL),
+    (N'MUSCU00004COMPL00007', N'Cerebritis', N'MUSCU00004', NULL),
+    (N'MUSCU00004COMPL00008', N'Síndromes cerebrales orgánicos', N'MUSCU00004', NULL),
+    (N'ENDOC00015COMPL00001', N'Fibrilación auricular', N'ENDOC00015', N'PACIE00002'),
+    (N'ENDOC00015COMPL00002', N'Osteopenia', N'ENDOC00015', N'PACIE00002'),
+    (N'ENDOC00015COMPL00003', N'Tormenta tiroidea', N'ENDOC00015', NULL),
+    (N'ENDOC00015COMPL00004', N'Tirotoxicosis apática en ancianos', N'ENDOC00015', NULL),
+    (N'NEURO00085COMPL00001', N'Elevación de presión intracraneal', N'NEURO00085', N'PACIE00007'),
+    (N'NEURO00085COMPL00002', N'Secuelas moderadas o graves en 25%', N'NEURO00085', NULL),
+    (N'NEURO00085COMPL00003', N'Sordera', N'NEURO00085', N'PACIE00007'),
+    (N'NEURO00085COMPL00004', N'Alteraciones de memoria', N'NEURO00085', NULL),
+    (N'NEURO00085COMPL00005', N'Convulsiones', N'NEURO00085', NULL),
+    (N'NEURO00085COMPL00006', N'Alteración de la marcha', N'NEURO00085', NULL);
+
+-- IO_ResultadosEsperados: 10 filas
+INSERT INTO dbo.IO_ResultadosEsperados (IdPaciente, IdEnfermedad, Enfeespera) VALUES
+    (N'PACIE00001', N'CARDI00017', N'Miocardiopatía dilatada'),
+    (N'PACIE00002', N'ENDOC00015', N'Tirotoxicosis'),
+    (N'PACIE00003', N'NEUMO00008', N'Asma'),
+    (N'PACIE00004', N'NEUMO00025', N'Tromboembolia pulmonar'),
+    (N'PACIE00005', N'RENAL00008', N'Nefropatía crónica (CKD)'),
+    (N'PACIE00006', N'MUSCU00004', N'Lupus eritematoso sistémico'),
+    (N'PACIE00007', N'NEURO00085', N'Meningitis bacteriana aguda'),
+    (N'PACIE00008', N'DIGES00017', N'Hemorragia de tubo digestivo alto'),
+    (N'PACIE00009', N'ONCOL00014', N'Cáncer pulmonar'),
+    (N'PACIE00010', N'INFEC00033', N'Endocarditis infecciosa');
 
 COMMIT TRANSACTION;
 
