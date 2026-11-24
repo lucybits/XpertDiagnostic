@@ -28,7 +28,7 @@ Saber qué médico usa el sistema, mostrar su nombre y especialidad, y permitir 
 - **`USUARIOS`**:
   - `IdUSUARIO`;
   - `PASS`: hash BCrypt;
-  - `ROL`: `M` médico, `A` administrador;
+  - `ROL`: `T` médico tratante, `I` médico internista, `A` administrador;
   - `IdMEDICO`: llave foránea a `MEDICOS`;
   - `IdAREA`: opcional, sin llave foránea.
 - **Convención:** la cuenta de un médico usa el mismo número que su registro, es decir, `IdUSUARIO = IdMEDICO`. Con ese número inicia sesión.
@@ -52,7 +52,7 @@ Saber qué médico usa el sistema, mostrar su nombre y especialidad, y permitir 
 - **Especialidad:** de 2 a 80 caracteres.
 - **Cédula profesional:** 7 u 8 dígitos.
 - **Contraseña:** de 8 a 72 caracteres.
-- **Rol:** `M` o `A`.
+- **Rol:** las altas del panel crean cuentas `T`; las cuentas `I` también son médicos y requieren su registro en `MEDICOS`.
 
 ## 5. Requisitos no funcionales
 
@@ -72,8 +72,8 @@ Los casos marcados con **[auto]** tienen una prueba xUnit en `DoctorServiceTests
 ### PT17. Registrar un médico con su cuenta [auto]
 
 - **Given** un ID y una cédula que no existen.
-- **When** el administrador registra al médico con rol `M`.
-- **Then** se guardan el médico y un usuario con el mismo ID. El usuario tiene rol `M` y la contraseña cifrada con BCrypt, distinta del texto escrito.
+- **When** el administrador registra al médico tratante.
+- **Then** se guardan el médico y un usuario con el mismo ID. El usuario tiene rol `T` y la contraseña cifrada con BCrypt, distinta del texto escrito.
 
 ### PT18. ID repetido [auto]
 
@@ -107,7 +107,7 @@ Los casos marcados con **[auto]** tienen una prueba xUnit en `DoctorServiceTests
 
 ### PT23. Alta sin ser administrador
 
-- **Given** una sesión con rol `M`.
+- **Given** una sesión con rol `T` o `I`.
 - **When** se envía `POST /api/doctors`.
 - **Then** la API responde 403 y el formulario muestra "Solo un administrador puede registrar médicos".
 
@@ -137,6 +137,6 @@ Los casos marcados con **[auto]** tienen una prueba xUnit en `DoctorServiceTests
 
 ### PT28. Opción solo para administradores
 
-- **Given** una sesión con rol `M`.
+- **Given** una sesión con rol `T` o `I`.
 - **When** se abre el menú de cuenta.
 - **Then** no aparece "Registrar médico". Con rol `A` sí aparece y lleva a `/doctors/new`.

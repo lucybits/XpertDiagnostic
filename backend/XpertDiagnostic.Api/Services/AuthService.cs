@@ -41,8 +41,8 @@ public sealed class AuthService(
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(usuarioId);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(password.Length, LongitudMaximaPassword, nameof(password));
-        if (rolSolicitado is not (UserRoles.Medico or UserRoles.Administrador))
-            throw new ArgumentException("El rol solicitado debe ser M o A.", nameof(rolSolicitado));
+        if (rolSolicitado is not (UserRoles.MedicoTratante or UserRoles.Administrador))
+            throw new ArgumentException("El apartado solicitado debe ser T o A.", nameof(rolSolicitado));
 
         var usuario = await _usuarios.ObtenerPorIdAsync(usuarioId, cancellationToken);
 
@@ -54,7 +54,10 @@ public sealed class AuthService(
             await _usuarios.ActualizarPasswordHashAsync(usuario, verificacion.HashActualizado, cancellationToken);
 
         // Cada apartado del login solo acepta cuentas de su rol (P-116).
-        if (usuario.Rol != rolSolicitado)
+        var perteneceAlApartado = rolSolicitado == UserRoles.Administrador
+            ? usuario.Rol == UserRoles.Administrador
+            : UserRoles.EsMedico(usuario.Rol);
+        if (!perteneceAlApartado)
             return LoginResult.ApartadoIncorrecto(usuario.Rol);
 
         if (!usuario.Activo)

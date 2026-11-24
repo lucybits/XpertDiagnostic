@@ -103,7 +103,7 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
         var medico = await (
             from m in db.Medicos
             join u in db.Usuarios on (int?)m.Id equals u.IdMedico
-            where m.Id == idMedico && u.Rol == UserRoles.Medico
+            where m.Id == idMedico && (u.Rol == UserRoles.MedicoTratante || u.Rol == UserRoles.MedicoInternista)
             select m).FirstOrDefaultAsync(cancellationToken);
 
         if (medico is null)
@@ -133,7 +133,7 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
         ArgumentException.ThrowIfNullOrWhiteSpace(nuevoHash);
 
         var filas = await db.Usuarios
-            .Where(u => u.Id == idMedico && u.Rol == UserRoles.Medico)
+            .Where(u => u.Id == idMedico && (u.Rol == UserRoles.MedicoTratante || u.Rol == UserRoles.MedicoInternista))
             .ExecuteUpdateAsync(set => set.SetProperty(u => u.PasswordHash, nuevoHash), cancellationToken);
         return filas > 0;
     }
@@ -141,7 +141,7 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
     public async Task<bool> CambiarEstadoAsync(int idMedico, bool activo, CancellationToken cancellationToken = default)
     {
         var filas = await db.Usuarios
-            .Where(u => u.Id == idMedico && u.Rol == UserRoles.Medico)
+            .Where(u => u.Id == idMedico && (u.Rol == UserRoles.MedicoTratante || u.Rol == UserRoles.MedicoInternista))
             .ExecuteUpdateAsync(set => set.SetProperty(u => u.Activo, activo), cancellationToken);
         return filas > 0;
     }
@@ -154,7 +154,7 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
     private IQueryable<MedicoConCuenta> MedicosConCuenta() =>
         from m in db.Medicos.AsNoTracking()
         join u in db.Usuarios.AsNoTracking() on (int?)m.Id equals u.IdMedico
-        where u.Rol == UserRoles.Medico
+        where u.Rol == UserRoles.MedicoTratante || u.Rol == UserRoles.MedicoInternista
         select new MedicoConCuenta { Medico = m, Cuenta = u };
 
     private static readonly System.Linq.Expressions.Expression<Func<MedicoConCuenta, DoctorAccount>> ACuenta = c =>

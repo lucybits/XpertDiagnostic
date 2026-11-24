@@ -13,8 +13,8 @@ public interface IAuthService
     /// <remarks>
     /// @pre usuarioId &gt; 0
     /// @pre password no es null, vacío ni solo espacios, y tiene como máximo 72 caracteres.
-    /// @pre rolSolicitado es "M" (apartado Médico) o "A" (apartado Administrador).
-    /// @post Exitoso: la cuenta existe, la contraseña coincide, su rol es rolSolicitado y está activa;
+    /// @pre rolSolicitado es "T" (apartado Médico) o "A" (apartado Administrador).
+    /// @post Exitoso: la cuenta existe, la contraseña coincide, pertenece al apartado solicitado y está activa;
     ///       la respuesta trae UsuarioId == usuarioId, el rol y un token no vacío que expira en el futuro.
     /// @post CredencialesInvalidas: el ID no existe o la contraseña no coincide; no se modifican datos.
     /// @post ApartadoIncorrecto / CuentaInactiva: solo se informan si la contraseña es correcta

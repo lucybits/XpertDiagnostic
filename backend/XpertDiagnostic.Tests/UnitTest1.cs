@@ -18,7 +18,7 @@ public class UnitTest1
         // Arrange: preparar una solicitud con una contraseña incorrecta.
         using var cliente = new HttpClient();
         var contenido = new StringContent(
-            """{"usuarioId":1,"password":"Incorrecta123"}""",
+            """{"usuarioId":1,"password":"Incorrecta123","rol":"T"}""",
             Encoding.UTF8,
             "application/json"
         );

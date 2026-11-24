@@ -52,7 +52,7 @@ public sealed partial class DoctorService(IDoctorRepository medicos, IPasswordHa
         {
             Id = solicitud.IdMedico,
             PasswordHash = _hasher.Hash(solicitud.Password),
-            Rol = UserRoles.Medico,
+            Rol = UserRoles.MedicoTratante,
             IdMedico = solicitud.IdMedico,
             Activo = true
         };

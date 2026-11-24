@@ -37,7 +37,8 @@ export default function LoginForm() {
   const [isSectionTransitioning, setIsSectionTransitioning] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
-  // Pantalla a la que lleva el inicio de sesión: /home para médicos, /admin para administradores (P-116).
+  // Pantalla a la que lleva el inicio de sesión según el rol de la cuenta (P-116, P-140):
+  // /home tratante, /internista internista, /admin administrador.
   const [destination, setDestination] = useState<string>(DEFAULT_ROUTE);
   const sectionTransitionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -126,7 +127,9 @@ export default function LoginForm() {
         message={
           destination === HOME_ROUTE_BY_ROLE.A
             ? 'Inicio de sesión exitoso. Cargando el panel de administración…'
-            : 'Inicio de sesión exitoso. Cargando la pantalla principal…'
+            : destination === HOME_ROUTE_BY_ROLE.I
+              ? 'Inicio de sesión exitoso. Cargando el espacio del médico internista…'
+              : 'Inicio de sesión exitoso. Cargando la pantalla principal…'
         }
       />
     )}

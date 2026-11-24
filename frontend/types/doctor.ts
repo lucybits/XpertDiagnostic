@@ -1,7 +1,7 @@
 /** Médicos y cuentas de usuario (ESP-002, ESP-007). */
 
 /** Valores de USUARIOS.ROL. */
-export const USER_ROLES = { doctor: 'M', admin: 'A' } as const;
+export const USER_ROLES = { doctor: 'T', internist: 'I', admin: 'A' } as const;
 export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 
 /** Perfil del usuario autenticado, tal como lo devuelve GET /api/session. */

@@ -4491,3 +4491,125 @@ Criterio: se quita lo que repite algo visible, lo que explica algo que la interf
 **Verificación automática:** `eslint` sin errores.
 
 **Revisión humana:** corrección visual pedida por Lucía.
+
+### P-140. Textos y botones del panel de diagnóstico diferencial
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Antonio Castañeda |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Cambiar los textos de los botones y mensajes del panel de diagnóstico diferencial |
+| Especificación / tarea | ESP-005 (captura y análisis), ESP-006 (interfaz de salida), P-114, P-135, P-137 |
+
+**Prompt**
+
+> Ayúdame a realizar los siguientes cambios de textos y botones. Son cambios pequeños y no dependen de nadie. En el panel de diagnóstico diferencial (`DiagnosisPanel.tsx`):
+>
+> - El botón "Analizar expediente" cambia a "Generar diagnóstico y tratamiento".
+> - El botón "Volver a analizar" cambia a "Guardar".
+> - Borra el mensaje "Pulsa Analizar expediente para ver las enfermedades más probables" y sus referencias.
+> - El mensaje "…confirmado y guardado en el expediente" cambia a "Revisado por médico internista".
+>
+> Esto por ahora.
+
+**Resultado de la IA:**
+
+- Etiqueta del botón del análisis: sin análisis dice "Generar diagnóstico y tratamiento"; con el análisis desactualizado dice "Guardar". El estado "Análisis al día" no cambia.
+- Se quitó la línea que se mostraba antes del primer análisis (P-137), junto con su ícono. El ícono del microscopio se sigue usando en el botón.
+- El aviso del diagnóstico confirmado dice "{enfermedad} revisado por médico internista." Más adelante lo reemplaza P-141.
+
+**Archivos afectados:** `frontend/components/assistant/DiagnosisPanel.tsx`.
+
+**Verificación automática:** no se ejecutaron `tsc` ni `eslint`: las dependencias del frontend no estaban instaladas en ese momento.
+
+**Revisión humana:** Pendiente de revisión visual.
+
+### P-141. Envío a validación del médico internista y validación del comité (simulada)
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Antonio Castañeda |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Dejar claro que el diagnóstico confirmado lo valida el médico internista y mostrar la validación del comité, por ahora simulada |
+| Especificación / tarea | ESP-006 (interfaz de salida), P-112, P-140 |
+
+**Prompt**
+
+> Ahora vamos a hacer otra rama para estos cambios:
+>
+> - El mensaje "Los hallazgos cambiaron. Vuelve a analizar antes de confirmar" cambia a "Los hallazgos cambiaron. Actualiza el expediente antes de confirmar".
+> - Agrega el mensaje "Con diagnóstico validado por el Comité Interconsulta Especialidad". Por ahora este mensaje será simulado, pero debe estar agregado.
+> - Agrega también un mensaje como "Ha sido enviado a validación por el médico internista". Me refiero a la parte de confirmar los diagnósticos: eso lo debe validar el médico internista, no nosotros. Nosotros solo recibiremos el diagnóstico diferencial confirmado por el médico internista.
+>
+> Por ahora solo es ese texto.
+
+**Resultado de la IA:**
+
+- Aviso de análisis desactualizado: "Los hallazgos cambiaron. Actualiza el expediente antes de confirmar."
+- El recuadro del diagnóstico confirmado dice "{enfermedad}: enviado a validación por el médico internista." y, debajo, "Con diagnóstico validado por el Comité de Interconsulta de Especialidad."
+- La línea del comité es **simulada**: se muestra siempre y está marcada con un comentario `SIMULADO` en el código.
+- Se quitó "revisado por médico internista" (P-140), porque contradecía que el diagnóstico apenas se envía a validación.
+- La lógica no cambió: el médico sigue confirmando en la aplicación; solo cambian los textos.
+
+**Archivos afectados:** `frontend/components/assistant/DiagnosisPanel.tsx`.
+
+**Verificación automática:** no se ejecutaron `tsc` ni `eslint`.
+
+**Revisión humana:** Pendiente de revisión visual. La validación real del médico internista y del comité queda por definir.
+
+### P-142. Textos del expediente y de la interfaz de salida
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Antonio Castañeda |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Alinear el aviso del expediente con el nuevo texto del panel y quitar la frase del médico tratante en la interfaz de salida |
+| Especificación / tarea | ESP-005 (panel del expediente), ESP-006 (interfaz de salida), P-141 |
+
+**Prompt**
+
+> Vamos con este cambio ahora:
+>
+> - En el expediente (`PatientRecordPanel.tsx`): "Vuelve a analizar en Diagnóstico diferencial" cambia a "Actualiza el expediente en Diagnóstico diferencial".
+> - En la interfaz de salida (`ResultSections.tsx`), en la sección de Diagnóstico: quita "Confirmado por el médico tratante a partir del diagnóstico diferencial".
+
+**Resultado de la IA:**
+
+- El aviso del expediente dice "Los hallazgos cambiaron: actualiza el expediente en «Diagnóstico diferencial»."
+- La sección Diagnóstico de la interfaz de salida muestra solo el nombre de la enfermedad, sin la línea del médico tratante.
+
+**Archivos afectados:** `frontend/components/home/PatientRecordPanel.tsx`, `frontend/components/result/ResultSections.tsx`.
+
+**Verificación automática:** no se ejecutaron `tsc` ni `eslint`.
+
+**Revisión humana:** Pendiente de revisión visual.
+
+### P-143. Pantalla de inicio según el rol: tratante e internista
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | (por confirmar) |
+| Objetivo | Que cada rol médico tenga su propia pantalla según sus credenciales, con el internista aplazado |
+| Especificación / tarea | 3.2 Login y rutas; ESP-007 (RF-52) |
+
+**Prompt**
+
+> Volviendo al tema de los roles, dejemos todo listo para médico tratante y para internista; hay que dejarlo listo ya que, según las credenciales, es como se mostrará la página. Mientras tanto, el internista se aplazará por el momento.
+
+**Resultado de la IA:**
+
+- `HOME_ROUTE_BY_ROLE`: `T → /home`, `I → /internista`, `A → /admin`. El login lleva a cada cuenta a la pantalla de su rol y la capa de carga dice a cuál va.
+- `proxy.ts`: `/home` y `/patients` quedan solo para el tratante; la nueva `/internista` solo para el internista. Quien abre una pantalla de otro rol vuelve a la suya.
+- Nueva ruta `/internista` (`components/internist/InternistScreen.tsx`): saluda con el nombre del médico, avisa que su espacio está en preparación y permite cerrar sesión.
+- `HomeScreen` y `AdminPanel` también mandan a la pantalla del rol si la sesión trae otro rol (cubre un rol que cambió con la sesión abierta).
+- El backend no cambió: los endpoints médicos siguen aceptando `T` e `I`.
+
+**Archivos afectados:** `frontend/types/auth.ts`, `frontend/proxy.ts`, `frontend/app/(internista)/internista/page.tsx`, `frontend/components/internist/InternistScreen.tsx`, `frontend/components/home/HomeScreen.tsx`, `frontend/components/admin/AdminPanel.tsx`, `frontend/components/auth/LoginForm.tsx`, `specs/especificaciones/03-inicio-sesion.md`, `specs/especificaciones/10-panel-administrador.md`.
+
+**Verificación automática:** `tsc --noEmit` y `eslint` sin errores. Por HTTP contra el frontend: el tratante 123456 abre `/home` y `/patients` (200) y es redirigido desde `/internista` y `/admin` (307); el internista 654322 abre `/internista` (200) y es redirigido desde `/home`, `/patients` y `/admin` (307).
+
+**Revisión humana:** pendiente.

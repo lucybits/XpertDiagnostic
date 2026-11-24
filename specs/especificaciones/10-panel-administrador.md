@@ -4,9 +4,9 @@
 |---|---|
 | Identificador | ESP-007 |
 | Origen | Petición de Lucía (P-116): panel de administrador para crear cuentas de médicos con su cédula profesional y su contraseña; cada apartado del login solo acepta su rol; rutas protegidas y persistencia cuidada. |
-| Estado | Implementada y verificada de extremo a extremo; pendiente la ejecución manual de PT89 a PT93 |
+| Estado | Implementada; pendiente la ejecución manual de PT89 a PT94 (incluye roles T/I) |
 | Tareas | [tareas/inicio-sesion.md](../tareas/inicio-sesion.md), T60 a T66 |
-| Casos de prueba | Sección 7 de este documento, PT72 a PT93 |
+| Casos de prueba | Sección 7 de este documento, PT72 a PT94 |
 | Reemplaza | La pantalla `/doctors/new` y `POST /api/doctors` de ESP-002 (el alta ahora vive en el panel) |
 
 ## 1. Objetivo
@@ -32,7 +32,8 @@ Cambios en `USUARIOS`, aplicados sin perder registros y dentro de una transacci�
 | `IdMEDICO INT NULL` | Opcional solo para administradores: una cuenta de administrador ya no necesita un registro falso en `MEDICOS` con cédula inventada. |
 | `Activo BIT NOT NULL DEFAULT 1` | Baja lógica. `0` impide iniciar sesión y anula las sesiones abiertas. |
 | `FechaRegistro DATETIME2(0) NOT NULL DEFAULT SYSUTCDATETIME()` | Alta de la cuenta, en UTC. |
-| `CK_USUARIOS_MEDICO_ROL` | `ROL = 'A' OR IdMEDICO IS NOT NULL`: toda cuenta de médico tiene su médico. |
+| `CK_USUARIOS_ROL` | Solo admite `T`, `I` y `A`; las cuentas existentes `M` se migran a `T`. |
+| `CK_USUARIOS_MEDICO_ROL` | `T` e `I` requieren `IdMEDICO`; `A` puede tenerlo nulo. |
 | `CK_USUARIOS_MEDICO_ID` | `IdMEDICO IS NULL OR IdMEDICO = IdUSUARIO`: el médico inicia sesión con su propio número. |
 | `FK_USUARIOS_MEDICOS` | Se conserva (se quita y se vuelve a crear para poder cambiar la columna). |
 
@@ -42,10 +43,10 @@ Cuenta de administrador de prueba (`SeedAdminAccount.sql`): **ID 654321, contras
 
 | ID | Requisito |
 |---|---|
-| RF-50 | El login envía el apartado elegido (`M` o `A`). Si la contraseña es correcta pero la cuenta es de otro rol, responde 403 con "Esta cuenta es de médico/administrador. Inicia sesión desde el apartado …". Con contraseña incorrecta siempre responde el 401 genérico (no se revela el rol ni el estado). |
+| RF-50 | El login envía el apartado elegido (`T` para Médico o `A` para Administrador). El apartado Médico acepta cuentas `T` e `I`; el JWT conserva el rol real. Si la contraseña es correcta pero la cuenta es de otro grupo, responde 403 con el apartado correcto. Con contraseña incorrecta siempre responde el 401 genérico (no se revela el rol ni el estado). |
 | RF-51 | Una cuenta desactivada no puede entrar (403 "Tu cuenta está desactivada…", solo con la contraseña correcta). |
-| RF-52 | Tras iniciar sesión, el médico va a `/home` y el administrador a `/admin`. |
-| RF-53 | `/admin` lista a los médicos (solo cuentas de rol `M`) con ID, nombre, especialidad, cédula, fecha de alta y estado, y busca por nombre, especialidad, ID o cédula. |
+| RF-52 | Tras iniciar sesión, cada rol va a su pantalla (`HOME_ROUTE_BY_ROLE`): el médico tratante (`T`) a `/home`, el médico internista (`I`) a `/internista` y el administrador (`A`) a `/admin`. El contenido de `/internista` está aplazado; por ahora muestra un aviso de "en preparación" y permite cerrar sesión (P-140). |
+| RF-53 | `/admin` lista a los médicos (cuentas de rol `T` o `I`) con ID, nombre, especialidad, cédula, fecha de alta y estado, y busca por nombre, especialidad, ID o cédula. |
 | RF-54 | Registrar médico: ID (será su usuario), cédula de 7 u 8 dígitos única, nombre, especialidad y contraseña inicial de 8 a 72 caracteres (con confirmación). Médico y cuenta se guardan en una sola transacción; un ID o cédula repetidos responden 409 sin guardar nada. |
 | RF-55 | Editar nombre, especialidad y cédula (el ID no cambia). Una cédula de otro médico responde 409. |
 | RF-56 | Asignar contraseña nueva a un médico (se cifra con BCrypt; la anterior deja de funcionar). |
@@ -55,8 +56,8 @@ Cuenta de administrador de prueba (`SeedAdminAccount.sql`): **ID 654321, contras
 
 ## 5. Seguridad y protección de rutas
 
-- **Backend (autoridad):** `api/admin/doctors/*` exige rol `A`; pacientes y catálogos exigen rol `M`. Además, en cada petición autenticada `SessionValidator` comprueba en `USUARIOS` que la cuenta del token exista, esté activa y conserve su rol; si no, 401. Así desactivar una cuenta cierra sus sesiones al instante.
-- **Frontend:** `proxy.ts` (el middleware de Next.js 16) redirige sin sesión a `/login`, al administrador fuera de `/home` y `/patients`, y al médico fuera de `/admin`. Lee el token sin verificar la firma (la clave solo la tiene el backend), así que es una comprobación optimista; los datos siempre los protege el backend.
+- **Backend (autoridad):** `api/admin/doctors/*` exige rol `A`; pacientes y catálogos exigen rol `T` o `I`. Además, en cada petición autenticada `SessionValidator` comprueba en `USUARIOS` que la cuenta del token exista, esté activa y conserve su rol; si no, 401. Así desactivar una cuenta cierra sus sesiones al instante.
+- **Frontend:** `proxy.ts` (el middleware de Next.js 16) redirige sin sesión a `/login` y deja a cada rol solo en sus pantallas: `/home` y `/patients` para el tratante, `/internista` para el internista y `/admin` para el administrador. Quien abre una pantalla de otro rol va a la de inicio del suyo. Lee el token sin verificar la firma (la clave solo la tiene el backend), así que es una comprobación optimista; los datos siempre los protege el backend.
 - Cuando el backend responde 401, la ruta de Next borra la cookie `xd_session`, y la pantalla vuelve al login.
 - Las rutas `/api/admin/*` de Next validan los datos con las mismas reglas que el backend antes de reenviarlos.
 
@@ -119,6 +120,12 @@ Barra superior `bg-blue-900` (logo, "Panel de administración · ID", Cambiar mi
 - **Given** cambios hechos en el panel (alta, edición, contraseña, estado).
 - **When** se reinician la API y el frontend y se vuelve a entrar.
 - **Then** todos los cambios siguen ahí, y en SQL Server `MEDICOS` y `USUARIOS` muestran los mismos datos (la contraseña solo como hash `$2a$…`).
+
+#### PT94. Cuenta internista de prueba
+
+- **Given** la cuenta internista creada por `SeedInternistAccount.sql` (ID `654322`, contraseña inicial `admin`).
+- **When** inicia sesión desde el apartado Médico y luego escribe a mano `/home`, una ruta de pacientes y `/admin`.
+- **Then** entra con rol `I` y llega a `/internista`; `/home`, `/patients` y `/admin` lo regresan a `/internista` (P-140). El backend sigue aceptando al internista en los endpoints médicos.
 
 ### Verificación de extremo a extremo hecha por la IA (P-116)
 

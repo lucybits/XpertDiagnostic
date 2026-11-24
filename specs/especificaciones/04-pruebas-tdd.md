@@ -148,4 +148,12 @@ Pruebas automatizadas: `AuthServiceTests.LoginAsync_ContrasenaHeredadaCorrecta_G
 - **When** el usuario modifica el ID o la contraseña.
 - **Then** el mensaje desaparece con una transición y los campos dejan de estar marcados en rojo.
 
+### PT94. Acceso de médico internista
+
+- **Given** la cuenta de prueba creada por `backend/XpertDiagnostic.Api/Sql/SeedInternistAccount.sql` (ID `654322`, contraseña inicial `admin`).
+- **When** inicia sesión desde el apartado Médico, abre `/home` y consulta una ruta de pacientes.
+- **Then** la sesión conserva el rol `I`, puede acceder a funciones médicas y no puede acceder a `/admin`.
+
+Prueba automatizada del login: `AuthServiceTests.LoginAsync_InternistaDesdeApartadoMedico_DevuelveTokenYConservaRol`.
+
 ---

@@ -88,10 +88,7 @@ export function DiagnosisCard({ result }: { result: PatientResult }) {
   return (
     <ResultCard title="Diagnóstico" id={`${ids}-diagnosis`}>
       {result.enfermedadDiagnosticada ? (
-        <>
-          <p className="text-2xl font-bold text-[#0b1533]">{result.enfermedadDiagnosticada}</p>
-          <p className="mt-1 text-slate-800">Confirmado por el médico tratante a partir del diagnóstico diferencial.</p>
-        </>
+        <p className="text-2xl font-bold text-[#0b1533]">{result.enfermedadDiagnosticada}</p>
       ) : (
         <p className="text-slate-800">Aún no hay un diagnóstico confirmado.</p>
       )}

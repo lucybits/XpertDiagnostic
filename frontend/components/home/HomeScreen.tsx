@@ -12,7 +12,8 @@ import NewPatientDialog from './NewPatientDialog';
 import { listPatients, registerPatient } from '@/services/patientService';
 import { getRecord } from '@/services/recordService';
 import { getSessionState, logoutAndGoToLogin, markWelcomeSeen } from '@/services/doctorService';
-import type { SessionProfile } from '@/types/doctor';
+import { HOME_ROUTE_BY_ROLE } from '@/types/auth';
+import { USER_ROLES, type SessionProfile } from '@/types/doctor';
 import type { NewPatient, Patient } from '@/types/patient';
 import type { DiagnosisResult, PatientRecord } from '@/types/record';
 import type { FindingType, PatientFinding } from './PatientRecordPanel';
@@ -82,6 +83,12 @@ export default function HomeScreen() {
         return;
       }
       const profile = state.status === 'ok' ? state.profile : null;
+      // Pantalla solo del médico tratante. El proxy ya lo revisa; esto cubre un rol que cambió
+      // con la sesión abierta (P-140).
+      if (profile && profile.rol !== USER_ROLES.doctor) {
+        window.location.replace(HOME_ROUTE_BY_ROLE[profile.rol] ?? '/login');
+        return;
+      }
       if (wantsSearchRef.current) {
         wantsSearchRef.current = false;
         setIsPatientSearchOpen(true);

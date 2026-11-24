@@ -48,7 +48,7 @@ public class AuthController(IAuthService auth) : ControllerBase
         return resultado.Estado switch
         {
             LoginStatus.Exitoso => Ok(resultado.Respuesta),
-            LoginStatus.ApartadoIncorrecto => Prohibido(resultado.RolDeLaCuenta == UserRoles.Medico
+            LoginStatus.ApartadoIncorrecto => Prohibido(UserRoles.EsMedico(resultado.RolDeLaCuenta)
                 ? MensajeEsCuentaDeMedico
                 : MensajeEsCuentaDeAdministrador),
             LoginStatus.CuentaInactiva => Prohibido(MensajeCuentaInactiva),

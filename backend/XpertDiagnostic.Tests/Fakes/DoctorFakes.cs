@@ -24,7 +24,7 @@ internal sealed class RepositorioMedicosFalso : IDoctorRepository
     public RepositorioMedicosFalso ConMedico(int id, string nombre, string cedula, bool activo = true, string especialidad = "Cardiología")
     {
         Medicos.Add(new Doctor { Id = id, NombreCompleto = nombre, Especialidad = especialidad, CedulaProfesional = cedula });
-        Usuarios.Add(new User { Id = id, PasswordHash = "hash:original", Rol = UserRoles.Medico, IdMedico = id, Activo = activo, FechaRegistro = FechaAlta });
+        Usuarios.Add(new User { Id = id, PasswordHash = "hash:original", Rol = UserRoles.MedicoTratante, IdMedico = id, Activo = activo, FechaRegistro = FechaAlta });
         return this;
     }
 
@@ -106,11 +106,11 @@ internal sealed class RepositorioMedicosFalso : IDoctorRepository
     }
 
     private User? CuentaDeMedico(int idMedico) =>
-        Usuarios.FirstOrDefault(u => u.Id == idMedico && u.Rol == UserRoles.Medico && Medicos.Any(m => m.Id == idMedico));
+        Usuarios.FirstOrDefault(u => u.Id == idMedico && UserRoles.EsMedico(u.Rol) && Medicos.Any(m => m.Id == idMedico));
 
     private IEnumerable<DoctorAccount> Cuentas() =>
         from m in Medicos
         join u in Usuarios on (int?)m.Id equals u.IdMedico
-        where u.Rol == UserRoles.Medico
+        where UserRoles.EsMedico(u.Rol)
         select new DoctorAccount(m.Id, m.NombreCompleto, m.Especialidad, m.CedulaProfesional, u.Activo, u.FechaRegistro);
 }
