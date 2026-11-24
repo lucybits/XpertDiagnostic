@@ -9,6 +9,9 @@ export interface Patient {
   id: string;
   recordNumber: string;
   fullName: string;
+  /** Fecha de nacimiento en formato AAAA-MM-DD (P-144). */
+  birthDate: string;
+  /** Años cumplidos; el servidor la calcula de la fecha de nacimiento. */
   age: number;
   diagnosis: string | null;
 }
@@ -34,20 +37,25 @@ export const DIAGNOSIS_ALL = 'all';
 export const DIAGNOSIS_NONE = 'none';
 
 /**
- * Límites del alta de paciente, iguales a la tabla PACIENTES (ESP-004):
- * NombreCompleto NVARCHAR(150) NOT NULL y Edad INT con CHECK (Edad BETWEEN 0 AND 130).
+ * Límites del alta de paciente, iguales a CreatePatientRequest y a la tabla PACIENTES (ESP-004, P-144):
+ * Nombres NVARCHAR(60), ApellidoPaterno y ApellidoMaterno NVARCHAR(40), y una fecha de nacimiento que
+ * da una edad de 0 a 130 años.
  */
 export const PATIENT_LIMITS = {
-  nameMin: 3,
-  nameMax: 150,
-  ageMin: 0,
+  partMin: 2,
+  givenNamesMax: 60,
+  surnameMax: 40,
   ageMax: 130,
 } as const;
 
 /** Datos del alta de un paciente ya validados. */
 export interface NewPatient {
-  fullName: string;
-  age: number;
+  givenNames: string;
+  paternalSurname: string;
+  /** null si el paciente no tiene segundo apellido. */
+  maternalSurname: string | null;
+  /** AAAA-MM-DD. */
+  birthDate: string;
 }
 
 export type NewPatientField = keyof NewPatient;

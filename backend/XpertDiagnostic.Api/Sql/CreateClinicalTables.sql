@@ -132,8 +132,13 @@ CREATE TABLE dbo.PLANES (
 IF OBJECT_ID(N'dbo.PACIENTES', N'U') IS NULL
 CREATE TABLE dbo.PACIENTES (
     IdPaciente                VARCHAR(10)   NOT NULL CONSTRAINT PK_PACIENTES PRIMARY KEY,
+    -- Nombre completo armado con Nombres + ApellidoPaterno + ApellidoMaterno (lo usan el buscador y el PDF).
     NombreCompleto            NVARCHAR(150) NOT NULL,
-    Edad                      INT           NOT NULL CONSTRAINT CK_PACIENTES_EDAD CHECK (Edad BETWEEN 0 AND 130),
+    -- Datos que captura el administrador al dar de alta al paciente (P-144). La edad se calcula de la fecha.
+    Nombres                   NVARCHAR(60)  NULL,
+    ApellidoPaterno           NVARCHAR(40)  NULL,
+    ApellidoMaterno           NVARCHAR(40)  NULL,
+    FechaNacimiento           DATE          NOT NULL CONSTRAINT CK_PACIENTES_FECHA_NACIMIENTO CHECK (FechaNacimiento >= '1890-01-01'),
     IdEnfermedadDiagnosticada VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_ENFERMEDAD_DIAG REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
     IdEnfermedadPreexistente  VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_ENFERMEDAD_PREEX REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
     IdComorbilidad            VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_COMORBILIDADES REFERENCES dbo.COMORBILIDADES (IdComorbilidad),

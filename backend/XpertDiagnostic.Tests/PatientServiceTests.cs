@@ -33,18 +33,22 @@ public class PatientServiceTests
     {
         // Given pacientes hasta PACIE00010
         var repositorio = new RepositorioPacientesFalso();
-        repositorio.Pacientes.Add(new Patient { Id = "PACIE00010", NombreCompleto = "Previo", Edad = 40 });
+        repositorio.Pacientes.Add(Paciente("PACIE00010", "Previo"));
         var servicio = new PatientService(repositorio);
 
-        // When se registra un paciente con espacios de más
-        var creado = await servicio.RegistrarAsync(new CreatePatientRequest { NombreCompleto = "  María   López  ", Edad = 52 });
+        // When el administrador registra un paciente con espacios de más
+        var creado = await servicio.RegistrarAsync(Solicitud("  María   José ", " López ", "  Núñez", new DateOnly(1974, 3, 15)));
 
-        // Then se guarda como PACIE00011 con el nombre limpio y sin datos de salida
+        // Then se guarda como PACIE00011 con las partes del nombre limpias, el nombre completo armado
+        // con ellas, su fecha de nacimiento y sin datos de salida
         Assert.Equal("PACIE00011", creado.IdPaciente);
-        Assert.Equal("María López", creado.NombreCompleto);
+        Assert.Equal("María José López Núñez", creado.NombreCompleto);
         Assert.Null(creado.Diagnostico);
         var guardado = Assert.Single(repositorio.Pacientes, p => p.Id == "PACIE00011");
-        Assert.Equal(52, guardado.Edad);
+        Assert.Equal("María José", guardado.Nombres);
+        Assert.Equal("López", guardado.ApellidoPaterno);
+        Assert.Equal("Núñez", guardado.ApellidoMaterno);
+        Assert.Equal(new DateOnly(1974, 3, 15), guardado.FechaNacimiento);
         Assert.Null(guardado.IdEnfermedadDiagnosticada);
         Assert.Null(guardado.IdTratamiento);
         Assert.Null(guardado.IdPlan);
@@ -58,31 +62,104 @@ public class PatientServiceTests
         var servicio = new PatientService(repositorio);
 
         // When se registra el paciente
-        var creado = await servicio.RegistrarAsync(new CreatePatientRequest { NombreCompleto = "Ana Ruiz", Edad = 30 });
+        var creado = await servicio.RegistrarAsync(Solicitud("Ana", "Ruiz", null, new DateOnly(1996, 1, 1)));
 
-        // Then se guarda con el ID siguiente libre
+        // Then se guarda con el ID siguiente libre; sin apellido materno, el nombre completo no lo lleva
         Assert.Equal("PACIE00002", creado.IdPaciente);
+        Assert.Equal("Ana Ruiz", creado.NombreCompleto);
+        Assert.Null(repositorio.Pacientes.Single(p => p.Id == "PACIE00002").ApellidoMaterno);
         Assert.Equal(2, repositorio.Pacientes.Count);
     }
 
     [Theory] // PT45
-    [InlineData("María José Núñez", 30, true)]
-    [InlineData("O'Connor-Pérez", 0, true)]
-    [InlineData("111", 30, false)]
-    [InlineData("Ana 2", 30, false)]
-    [InlineData("Al", 30, false)]
-    [InlineData("Ana Ruiz", 131, false)]
-    [InlineData("Ana Ruiz", -1, false)]
-    public void CreatePatientRequest_Reglas_ValidaNombreYEdad(string nombre, int edad, bool esValido)
+    [InlineData("María José", "Núñez", "López", 30, true)]
+    [InlineData("Sean", "O'Connor-Pérez", null, 0, true)]
+    [InlineData("111", "Ruiz", null, 30, false)]
+    [InlineData("Ana 2", "Ruiz", null, 30, false)]
+    [InlineData("A", "Ruiz", null, 30, false)]
+    [InlineData("Ana", "", null, 30, false)]
+    [InlineData("Ana", "Ruiz", "R", 30, false)]
+    [InlineData("Ana", "Ruiz", null, 131, false)]
+    [InlineData("Ana", "Ruiz", null, -1, false)]
+    public void CreatePatientRequest_Reglas_ValidaNombresYFecha(
+        string nombres, string paterno, string? materno, int edad, bool esValido)
     {
-        // Given una solicitud de alta
-        var solicitud = new CreatePatientRequest { NombreCompleto = nombre, Edad = edad };
+        // Given una solicitud de alta; edad -1 representa una fecha de nacimiento futura
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var nacimiento = edad < 0 ? hoy.AddDays(1) : hoy.AddYears(-edad).AddDays(edad > 130 ? -1 : 0);
+        var solicitud = Solicitud(nombres, paterno, materno, nacimiento);
 
         // When ASP.NET Core la valida
         var valido = Validator.TryValidateObject(solicitud, new ValidationContext(solicitud), [], validateAllProperties: true);
 
-        // Then se acepta solo si cumple RF-31
+        // Then se acepta solo si cumple RF-31 y la fecha da una edad de 0 a 130 años
         Assert.Equal(esValido, valido);
+    }
+
+    [Fact]
+    public void CreatePatientRequest_SinFechaDeNacimiento_NoEsValida() // PT45
+    {
+        var solicitud = new CreatePatientRequest { Nombres = "Ana", ApellidoPaterno = "Ruiz" };
+
+        var valido = Validator.TryValidateObject(solicitud, new ValidationContext(solicitud), [], validateAllProperties: true);
+
+        Assert.False(valido);
+    }
+
+    [Theory] // PT100
+    [InlineData("1990-06-15", "2026-06-14", 35)]
+    [InlineData("1990-06-15", "2026-06-15", 36)]
+    // Nacidos el 29 de febrero: en años no bisiestos cumplen el 28 de febrero.
+    [InlineData("2000-02-29", "2026-02-27", 25)]
+    [InlineData("2000-02-29", "2026-02-28", 26)]
+    [InlineData("2026-11-24", "2026-11-24", 0)]
+    [InlineData("2027-01-01", "2026-11-24", 0)]
+    public void PatientAge_EnAnios_CuentaAniosCumplidos(string nacimiento, string hoy, int esperada)
+    {
+        // Given una fecha de nacimiento y la fecha de hoy
+        // When se calcula la edad
+        var edad = PatientAge.EnAnios(DateOnly.Parse(nacimiento), DateOnly.Parse(hoy));
+
+        // Then son los años cumplidos: el cumpleaños cuenta desde ese día
+        Assert.Equal(esperada, edad);
+    }
+
+    [Fact]
+    public async Task EliminarAsync_PacienteExistente_LoBorra() // PT98
+    {
+        // Given dos pacientes registrados
+        var repositorio = new RepositorioPacientesFalso();
+        repositorio.Pacientes.Add(Paciente("PACIE00001", "Ana Ruiz"));
+        repositorio.Pacientes.Add(Paciente("PACIE00002", "Luis Mora"));
+        var servicio = new PatientService(repositorio);
+
+        // When el administrador elimina al primero
+        var eliminado = await servicio.EliminarAsync("PACIE00001");
+
+        // Then se borra solo ese paciente
+        Assert.True(eliminado);
+        Assert.Equal("PACIE00002", Assert.Single(repositorio.Pacientes).Id);
+    }
+
+    [Theory] // PT99
+    [InlineData("PACIE00009")]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("PACIE000001")]
+    public async Task EliminarAsync_PacienteInexistenteOIdInvalido_DevuelveFalse(string idPaciente)
+    {
+        // Given un paciente registrado
+        var repositorio = new RepositorioPacientesFalso();
+        repositorio.Pacientes.Add(Paciente("PACIE00001", "Ana Ruiz"));
+        var servicio = new PatientService(repositorio);
+
+        // When se pide eliminar un ID que no existe o que no puede existir
+        var eliminado = await servicio.EliminarAsync(idPaciente);
+
+        // Then no se borra nada; un ID vacío o más largo que la columna ni siquiera llega a la base
+        Assert.False(eliminado);
+        Assert.Single(repositorio.Pacientes);
+        Assert.Equal(idPaciente == "PACIE00009" ? ["PACIE00009"] : [], repositorio.Eliminaciones);
     }
 
     [Theory] // PT46
@@ -106,6 +183,12 @@ public class PatientServiceTests
         if (existe) Assert.Equal(esperado, tipo);
     }
 
+    private static Patient Paciente(string id, string nombreCompleto) =>
+        new() { Id = id, NombreCompleto = nombreCompleto, FechaNacimiento = new DateOnly(1990, 1, 1) };
+
+    private static CreatePatientRequest Solicitud(string nombres, string paterno, string? materno, DateOnly nacimiento) =>
+        new() { Nombres = nombres, ApellidoPaterno = paterno, ApellidoMaterno = materno, FechaNacimiento = nacimiento };
+
     private sealed class RepositorioPacientesFalso : IPatientRepository
     {
         public List<Patient> Pacientes { get; } = [];
@@ -115,7 +198,7 @@ public class PatientServiceTests
 
         public Task<IReadOnlyList<PatientSummary>> ListarAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<PatientSummary>>(
-                Pacientes.Select(p => new PatientSummary(p.Id, p.NombreCompleto, p.Edad, null)).ToList());
+                Pacientes.Select(p => new PatientSummary(p.Id, p.NombreCompleto, p.FechaNacimiento, null)).ToList());
 
         public Task<string?> ObtenerUltimoIdAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(Pacientes.Select(p => p.Id).Where(id => id.StartsWith("PACIE")).Order().LastOrDefault());
@@ -125,12 +208,21 @@ public class PatientServiceTests
             if (ChoquesSimulados > 0)
             {
                 ChoquesSimulados--;
-                Pacientes.Add(new Patient { Id = paciente.Id, NombreCompleto = "Otro médico", Edad = 1 });
+                Pacientes.Add(Paciente(paciente.Id, "Otro registro"));
                 return Task.FromResult(false);
             }
             if (Pacientes.Any(p => p.Id == paciente.Id)) return Task.FromResult(false);
             Pacientes.Add(paciente);
             return Task.FromResult(true);
+        }
+
+        /// <summary>IDs con los que se llamó a EliminarAsync (para comprobar que no se consulta en vano).</summary>
+        public List<string> Eliminaciones { get; } = [];
+
+        public Task<bool> EliminarAsync(string idPaciente, CancellationToken cancellationToken = default)
+        {
+            Eliminaciones.Add(idPaciente);
+            return Task.FromResult(Pacientes.RemoveAll(p => p.Id == idPaciente) > 0);
         }
     }
 

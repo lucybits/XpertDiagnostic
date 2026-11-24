@@ -5,9 +5,15 @@ namespace XpertDiagnostic.Api.Models.DTOs;
 /// <summary>Datos editables de un médico (el ID no cambia: es la llave y su usuario de acceso).</summary>
 /// <remarks>
 /// @inv NombreCompleto de 3 a 120 caracteres; Especialidad de 2 a 80; CedulaProfesional de 7 u 8 dígitos.
+/// @inv Rol es "T" (tratante) o "I" (internista). Cambiarlo cierra las sesiones abiertas del médico,
+///      porque la validación de sesión compara el rol del token con el de la base (P-144).
 /// </remarks>
 public class UpdateDoctorRequest
 {
+    [Required(ErrorMessage = "Indica el tipo de médico.")]
+    [RegularExpression("^[TI]$", ErrorMessage = "El tipo de médico debe ser T (tratante) o I (internista).")]
+    public string Rol { get; set; } = string.Empty;
+
     [Required, StringLength(120, MinimumLength = 3)]
     public string NombreCompleto { get; set; } = string.Empty;
 

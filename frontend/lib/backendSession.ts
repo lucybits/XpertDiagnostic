@@ -56,7 +56,7 @@ export function parseDoctorId(text: string): number | null {
 export async function forwardWithSession(
   request: NextRequest,
   path: string,
-  init: { method: 'GET' | 'POST' | 'PUT'; body?: unknown },
+  init: { method: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: unknown },
 ): Promise<NextResponse> {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   if (!token) return errorResponse(401, 'Tu sesión terminó. Vuelve a iniciar sesión.');

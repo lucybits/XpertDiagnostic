@@ -20,4 +20,12 @@ public interface IPatientRepository
     /// @post true si se guardó; false si el ID ya existía (no se guardó nada).
     /// </remarks>
     Task<bool> CrearAsync(Patient paciente, CancellationToken cancellationToken = default);
+
+    /// <summary>Borra de forma definitiva al paciente y todo su expediente (P-144).</summary>
+    /// <remarks>
+    /// @post true si existía: en una sola transacción se borran sus hallazgos (HALLAZGOS_PACIENTE), atenciones
+    ///       (ATENCIONES_PACIENTE), resultados esperados (RESULTADOS_ESPERADOS), el paciente (PACIENTES) y su
+    ///       plan (PLANES) si ningún otro paciente lo usa. false si no existía (no se borra nada).
+    /// </remarks>
+    Task<bool> EliminarAsync(string idPaciente, CancellationToken cancellationToken = default);
 }

@@ -17,6 +17,7 @@ public sealed partial class PatientService(IPatientRepository pacientes) : IPati
 {
     public const string PrefijoId = "PACIE";
     private const int DigitosId = 5;
+    private const int LongitudMaximaId = 10;
     // Si dos médicos registran a la vez, uno choca con el ID del otro y vuelve a intentar.
     private const int IntentosMaximos = 3;
 
@@ -29,22 +30,44 @@ public sealed partial class PatientService(IPatientRepository pacientes) : IPati
     {
         // @pre
         ArgumentNullException.ThrowIfNull(solicitud);
-        ArgumentException.ThrowIfNullOrWhiteSpace(solicitud.NombreCompleto);
-        ArgumentOutOfRangeException.ThrowIfNegative(solicitud.Edad);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(solicitud.Edad, 130);
+        ArgumentException.ThrowIfNullOrWhiteSpace(solicitud.Nombres);
+        ArgumentException.ThrowIfNullOrWhiteSpace(solicitud.ApellidoPaterno);
+        if (solicitud.FechaNacimiento is not { } nacimiento)
+            throw new ArgumentException("La fecha de nacimiento es obligatoria.", nameof(solicitud));
 
-        var nombre = Limpiar(solicitud.NombreCompleto);
+        var nombres = Limpiar(solicitud.Nombres);
+        var paterno = Limpiar(solicitud.ApellidoPaterno);
+        var materno = string.IsNullOrWhiteSpace(solicitud.ApellidoMaterno) ? null : Limpiar(solicitud.ApellidoMaterno);
+        // El nombre completo se sigue guardando: lo usan el buscador, la interfaz de salida y el PDF.
+        var nombreCompleto = string.Join(' ', new[] { nombres, paterno, materno }.Where(parte => parte is not null));
 
         for (var intento = 0; intento < IntentosMaximos; intento++)
         {
             var id = SiguienteId(await _pacientes.ObtenerUltimoIdAsync(cancellationToken));
-            var paciente = new Patient { Id = id, NombreCompleto = nombre, Edad = solicitud.Edad };
+            var paciente = new Patient
+            {
+                Id = id,
+                NombreCompleto = nombreCompleto,
+                Nombres = nombres,
+                ApellidoPaterno = paterno,
+                ApellidoMaterno = materno,
+                FechaNacimiento = nacimiento
+            };
 
             if (await _pacientes.CrearAsync(paciente, cancellationToken))
-                return new PatientSummary(id, nombre, solicitud.Edad, Diagnostico: null);
+                return new PatientSummary(id, nombreCompleto, nacimiento, Diagnostico: null);
         }
 
         throw new InvalidOperationException("No se pudo asignar un número de expediente libre.");
+    }
+
+    public async Task<bool> EliminarAsync(string idPaciente, CancellationToken cancellationToken = default)
+    {
+        // Un ID vacío o más largo que la columna (varchar(10)) no puede existir: no se consulta la base.
+        if (string.IsNullOrWhiteSpace(idPaciente) || idPaciente.Length > LongitudMaximaId)
+            return false;
+
+        return await _pacientes.EliminarAsync(idPaciente, cancellationToken);
     }
 
     /// <summary>Siguiente IdPaciente a partir del mayor existente.</summary>

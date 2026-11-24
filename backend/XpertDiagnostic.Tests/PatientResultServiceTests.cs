@@ -133,7 +133,7 @@ public class PatientResultServiceTests
         public Task<PatientOutputRow?> ObtenerSalidaAsync(string idPaciente, CancellationToken cancellationToken = default) =>
             Task.FromResult(idPaciente != "PACIE00001"
                 ? null
-                : new PatientOutputRow(new PatientSummary(idPaciente, "Ana Ruiz", 30, null), Diagnostico, Diagnostico, Tratamiento, IdPlan));
+                : new PatientOutputRow(new PatientSummary(idPaciente, "Ana Ruiz", new DateOnly(1996, 1, 1), null), Diagnostico, Diagnostico, Tratamiento, IdPlan));
 
         public Task<bool> ExisteEnfermedadAsync(string idEnfermedad, CancellationToken cancellationToken = default) =>
             Task.FromResult(Enfermedades.Contains(idEnfermedad));

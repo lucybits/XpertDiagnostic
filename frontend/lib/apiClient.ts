@@ -39,6 +39,17 @@ export async function putJson<T>(url: string, body: unknown): Promise<ApiRespons
 }
 
 /**
+ * Hace un DELETE e interpreta la respuesta.
+ *
+ * @post Igual que postJson: { ok, status, data } si el servidor responde; rechaza si no hay conexión.
+ *       Una respuesta 204 sin cuerpo da data == null.
+ */
+export async function deleteJson<T>(url: string): Promise<ApiResponse<T>> {
+  const response = await fetch(url, { method: 'DELETE', headers: { Accept: 'application/json' } });
+  return toApiResponse<T>(response);
+}
+
+/**
  * Hace un GET e interpreta la respuesta como JSON.
  *
  * @post Igual que postJson: { ok, status, data } si el servidor responde; rechaza si no hay conexión.

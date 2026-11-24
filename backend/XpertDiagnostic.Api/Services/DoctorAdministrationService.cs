@@ -1,3 +1,4 @@
+using XpertDiagnostic.Api.Configuration;
 using XpertDiagnostic.Api.Models.DTOs;
 using XpertDiagnostic.Api.Models.Results;
 using XpertDiagnostic.Api.Repositories;
@@ -39,6 +40,8 @@ public sealed class DoctorAdministrationService(IDoctorRepository medicos, IPass
         // @pre
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(idMedico);
         ArgumentNullException.ThrowIfNull(solicitud);
+        if (!UserRoles.EsMedico(solicitud.Rol))
+            throw new ArgumentException("El tipo de médico debe ser T o I.", nameof(solicitud));
 
         var cedula = solicitud.CedulaProfesional.Trim();
 
@@ -53,7 +56,14 @@ public sealed class DoctorAdministrationService(IDoctorRepository medicos, IPass
             DoctorService.Limpiar(solicitud.NombreCompleto),
             DoctorService.Limpiar(solicitud.Especialidad),
             cedula,
+            solicitud.Rol,
             cancellationToken);
+    }
+
+    public Task<bool> EliminarAsync(int idMedico, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(idMedico);
+        return _medicos.EliminarAsync(idMedico, cancellationToken);
     }
 
     public Task<bool> RestablecerPasswordAsync(int idMedico, string password, CancellationToken cancellationToken = default)

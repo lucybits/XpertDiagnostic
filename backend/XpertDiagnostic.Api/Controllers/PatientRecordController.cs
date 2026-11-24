@@ -10,6 +10,8 @@ namespace XpertDiagnostic.Api.Controllers;
 /// <summary>
 /// Captura del expediente de un paciente (P-103): hallazgos por sección y enfermedad preexistente.
 /// Solo traduce HTTP ↔ servicio; exige token.
+/// Permisos por rol (P-144): los médicos consultan el expediente; capturar (hallazgos, enfermedad
+/// preexistente) y analizar es tarea del médico tratante. Los [Authorize] de clase y método se suman.
 /// </summary>
 [ApiController]
 [Route("api/patients/{idPaciente}")]
@@ -36,6 +38,7 @@ public class PatientRecordController(IPatientRecordService expedientes, IDiagnos
     ///       paciente o la sección no existen.
     /// </remarks>
     [HttpPut("findings/{seccion}")]
+    [Authorize(Roles = UserRoles.MedicoTratante)]
     [ProducesResponseType<PatientRecord>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -56,6 +59,7 @@ public class PatientRecordController(IPatientRecordService expedientes, IDiagnos
     /// <summary>Asigna o quita la enfermedad preexistente.</summary>
     /// <remarks>@post 200 con el expediente; 400 si la enfermedad no existe; 404 si el paciente no existe.</remarks>
     [HttpPut("preexisting-disease")]
+    [Authorize(Roles = UserRoles.MedicoTratante)]
     [ProducesResponseType<PatientRecord>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -72,6 +76,7 @@ public class PatientRecordController(IPatientRecordService expedientes, IDiagnos
     /// <summary>Analiza los hallazgos guardados con la máquina de inferencia registrada.</summary>
     /// <remarks>@post 200 con el diagnóstico diferencial (puede no tener candidatos); 404 si el paciente no existe.</remarks>
     [HttpPost("analysis")]
+    [Authorize(Roles = UserRoles.MedicoTratante)]
     [ProducesResponseType<DiagnosisResult>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]

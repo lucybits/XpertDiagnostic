@@ -65,7 +65,8 @@ public class DoctorAdministrationServiceTests
         {
             NombreCompleto = "  Ana  López Ruiz ",
             Especialidad = " Medicina   interna",
-            CedulaProfesional = " 7777777 "
+            CedulaProfesional = " 7777777 ",
+            Rol = UserRoles.MedicoTratante
         });
 
         // Then quedan guardados sin espacios sobrantes
@@ -185,13 +186,76 @@ public class DoctorAdministrationServiceTests
         Assert.Null(await servicio.CambiarEstadoAsync(999, activo: false));
     }
 
+    [Fact]
+    public async Task ActualizarAsync_CambiaTipo_GuardaElRolNuevo() // PT96
+    {
+        // Given un médico tratante
+        var repositorio = new RepositorioMedicosFalso().ConMedico(500, "Ana López", "1234567");
+        var servicio = CrearServicio(repositorio);
+
+        // When el administrador lo cambia a internista
+        var resultado = await servicio.ActualizarAsync(500, Solicitud("Ana López", "1234567", UserRoles.MedicoInternista));
+
+        // Then la cuenta queda con rol I (y SessionValidator cerrará sus sesiones con rol T)
+        Assert.Equal(DoctorUpdateStatus.Actualizado, resultado.Estado);
+        Assert.Equal(UserRoles.MedicoInternista, resultado.Cuenta!.Rol);
+        Assert.Equal(UserRoles.MedicoInternista, Assert.Single(repositorio.Usuarios).Rol);
+    }
+
+    [Fact]
+    public async Task ActualizarAsync_TipoAdministrador_Rechaza() // PT96
+    {
+        var repositorio = new RepositorioMedicosFalso().ConMedico(500, "Ana López", "1234567");
+        var servicio = CrearServicio(repositorio);
+
+        await Assert.ThrowsAnyAsync<ArgumentException>(
+            () => servicio.ActualizarAsync(500, Solicitud("Ana López", "1234567", UserRoles.Administrador)));
+        Assert.Equal(UserRoles.MedicoTratante, Assert.Single(repositorio.Usuarios).Rol);
+    }
+
+    [Fact]
+    public async Task EliminarAsync_MedicoExistente_BorraMedicoYCuenta() // PT97
+    {
+        // Given dos médicos registrados
+        var repositorio = new RepositorioMedicosFalso()
+            .ConMedico(500, "Ana López", "1234567")
+            .ConMedico(600, "Luis Pérez", "7654321");
+        var servicio = CrearServicio(repositorio);
+
+        // When el administrador elimina al primero
+        var eliminado = await servicio.EliminarAsync(500);
+
+        // Then se borran su registro y su cuenta, y el otro médico sigue
+        Assert.True(eliminado);
+        Assert.Equal(600, Assert.Single(repositorio.Medicos).Id);
+        Assert.Equal(600, Assert.Single(repositorio.Usuarios).Id);
+    }
+
+    [Fact]
+    public async Task EliminarAsync_InexistenteOAdministrador_NoBorraNada() // PT97
+    {
+        // Given un administrador ligado a un registro de MEDICOS
+        var repositorio = new RepositorioMedicosFalso();
+        repositorio.Medicos.Add(new Doctor { Id = 1, NombreCompleto = "Admin Dev", Especialidad = "X", CedulaProfesional = "1111111" });
+        repositorio.Usuarios.Add(new User { Id = 1, PasswordHash = "x", Rol = UserRoles.Administrador, IdMedico = 1 });
+        var servicio = CrearServicio(repositorio);
+
+        // When se intenta eliminar un ID que no existe y al administrador
+        // Then ninguno se borra
+        Assert.False(await servicio.EliminarAsync(999));
+        Assert.False(await servicio.EliminarAsync(1));
+        Assert.Single(repositorio.Usuarios);
+        Assert.Single(repositorio.Medicos);
+    }
+
     private static DoctorAdministrationService CrearServicio(RepositorioMedicosFalso repositorio) =>
         new(repositorio, new HasherFalso());
 
-    private static UpdateDoctorRequest Solicitud(string nombre, string cedula) => new()
+    private static UpdateDoctorRequest Solicitud(string nombre, string cedula, string rol = UserRoles.MedicoTratante) => new()
     {
         NombreCompleto = nombre,
         Especialidad = "Cardiología",
-        CedulaProfesional = cedula
+        CedulaProfesional = cedula,
+        Rol = rol
     };
 }

@@ -14,9 +14,9 @@ export async function GET(request: NextRequest) {
  * Registra un paciente. Valida en el servidor con las mismas reglas que el formulario y reenvía
  * al backend, que asigna el IdPaciente.
  *
- * @pre El cuerpo es JSON con { fullName, age }.
+ * @pre El cuerpo es JSON con { givenNames, paternalSurname, maternalSurname?, birthDate } (P-144).
  * @post 400 si los datos no cumplen las reglas (sin llamar al backend).
- * @post 201/401/5xx: el código y el cuerpo del backend.
+ * @post 201/401/403/5xx: el código y el cuerpo del backend (403 si no es administrador).
  */
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
@@ -28,14 +28,22 @@ export async function POST(request: NextRequest) {
     return errorResponse(400, 'Datos inválidos');
   }
 
+  const text = (value: unknown) => (typeof value === 'string' ? value : '');
   const result = validateNewPatient({
-    fullName: typeof body.fullName === 'string' ? body.fullName : '',
-    age: typeof body.age === 'number' ? String(body.age) : '',
+    givenNames: text(body.givenNames),
+    paternalSurname: text(body.paternalSurname),
+    maternalSurname: text(body.maternalSurname),
+    birthDate: text(body.birthDate),
   });
   if (!result.ok) return errorResponse(400, 'Datos inválidos');
 
   return forwardWithSession(request, '/api/patients', {
     method: 'POST',
-    body: { nombreCompleto: result.data.fullName, edad: result.data.age },
+    body: {
+      nombres: result.data.givenNames,
+      apellidoPaterno: result.data.paternalSurname,
+      apellidoMaterno: result.data.maternalSurname,
+      fechaNacimiento: result.data.birthDate,
+    },
   });
 }
