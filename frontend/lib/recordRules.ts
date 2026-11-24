@@ -77,3 +77,21 @@ export function filterOptions(options: readonly CatalogOption[], query: string):
   const needle = plain(query.trim());
   return needle === '' ? [...options] : options.filter((option) => plain(option.label).includes(needle));
 }
+
+/** Límites de la hipótesis inicial (SaveHypothesisRequest del backend, P-145). */
+export const HYPOTHESIS_LIMITS = { min: 3, max: 1000 } as const;
+
+/**
+ * Valida la hipótesis diagnóstica inicial que escribe el tratante (P-145).
+ * @post ok == true → text sin espacios en los extremos, de HYPOTHESIS_LIMITS.min a max caracteres.
+ */
+export function validateHypothesis(value: string): { ok: true; text: string } | { ok: false; message: string } {
+  const text = value.trim();
+  if (text.length < HYPOTHESIS_LIMITS.min) {
+    return { ok: false, message: `Escribe tu hipótesis inicial (al menos ${HYPOTHESIS_LIMITS.min} caracteres).` };
+  }
+  if (text.length > HYPOTHESIS_LIMITS.max) {
+    return { ok: false, message: `La hipótesis puede tener hasta ${HYPOTHESIS_LIMITS.max} caracteres.` };
+  }
+  return { ok: true, text };
+}

@@ -2,11 +2,10 @@
 
 import { useEffect, useId, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowRight, CircleAlert, CircleCheck, FileText, Microscope } from 'lucide-react';
+import { ArrowRight, CircleAlert, CircleCheck, Clock, FileText, Microscope } from 'lucide-react';
 import { analyzePatient } from '@/services/recordService';
 import { confirmDiagnosis } from '@/services/resultService';
-import type { DiagnosisResult } from '@/types/record';
+import type { DiagnosisResult, PatientRecord, ValidationStatus } from '@/types/record';
 
 type DiagnosisPanelProps = {
   patientId: string;
@@ -15,16 +14,19 @@ type DiagnosisPanelProps = {
   isStale: boolean;
   /** Llega el resultado: HomeScreen lo guarda para el expediente y marca la sección. */
   onAnalyzed: (result: DiagnosisResult) => void;
-  /** El médico confirmó un diagnóstico: HomeScreen lo anota en el paciente (P-111). */
-  onConfirmed: (diseaseName: string) => void;
+  /** El tratante confirmó un diagnóstico: HomeScreen lo anota en el paciente y guarda el expediente (P-111, P-145). */
+  onConfirmed: (diseaseName: string, record: PatientRecord) => void;
   /** Diagnóstico ya confirmado y guardado en el expediente (PACIENTES), o null (P-135). */
   confirmedName: string | null;
+  /** Validación por el internista (P-145): solo con "Validado" se puede ver la interfaz de salida. */
+  validationStatus: ValidationStatus;
 };
 
 /**
  * Último paso (P-103): analiza los hallazgos guardados con la máquina de inferencia registrada en
  * el backend y muestra el diagnóstico diferencial. Mientras el motor sea provisional lo dice
- * claramente. El médico confirma uno de los candidatos y pasa a la interfaz de salida (P-105).
+ * claramente. El tratante confirma uno de los candidatos y lo envía a validación del internista; la
+ * interfaz de salida se abre hasta que el internista lo valida (P-105, P-145).
  */
 export default function DiagnosisPanel({
   patientId,
@@ -33,6 +35,7 @@ export default function DiagnosisPanel({
   onAnalyzed,
   onConfirmed,
   confirmedName,
+  validationStatus,
 }: DiagnosisPanelProps) {
   const ids = useId();
   const [isRunning, setIsRunning] = useState(false);
@@ -45,20 +48,18 @@ export default function DiagnosisPanel({
   // Next conserva esta pantalla oculta al ir a la interfaz de salida; al ocultarse se limpia el
   // "Confirmando…" para que, al volver, el botón esté disponible y no quede esperando (P-108).
   useEffect(() => () => setConfirming(null), []);
-  const router = useRouter();
 
-  // El médico confirma un candidato: se guarda como enfermedad diagnosticada y se abre la
-  // interfaz de salida (P-105).
+  // El tratante confirma un candidato: se guarda como enfermedad diagnosticada y queda pendiente de
+  // validación por el internista (P-145). La interfaz de salida se abre hasta que lo valide.
   const confirm = async (diseaseId: string, diseaseName: string) => {
     setConfirming(diseaseId);
     setError(null);
     const response = await confirmDiagnosis(patientId, diseaseId);
+    setConfirming(null);
     if (response.ok) {
-      onConfirmed(diseaseName);
-      router.push(`/patients/${patientId}/result`);
+      onConfirmed(diseaseName, response.data);
       return;
     }
-    setConfirming(null);
     setError(response.message);
   };
 
@@ -113,25 +114,46 @@ export default function DiagnosisPanel({
               className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-slate-100 px-4 py-3"
             >
               <div className="flex min-w-0 flex-1 items-start gap-2 text-slate-900">
-                <CircleCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
-                <div className="space-y-0.5">
+                {validationStatus === 'Validado' ? (
+                  <CircleCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
+                ) : (
+                  <Clock aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+                )}
+                {/* Flujo de validación (P-145): el resultado se ve hasta que el internista valida. */}
+                {validationStatus === 'Validado' ? (
+                  <div className="space-y-0.5">
+                    <p>
+                      <span className="font-semibold">{confirmedName}</span>: validado por el médico internista.
+                    </p>
+                    {/* SIMULADO: todavía no existe la validación del comité (P-141). */}
+                    <p className="text-sm text-slate-700">
+                      Con diagnóstico validado por el Comité de Interconsulta de Especialidad.
+                    </p>
+                  </div>
+                ) : validationStatus === 'Pendiente' ? (
+                  <div className="space-y-0.5">
+                    <p>
+                      <span className="font-semibold">{confirmedName}</span>: enviado a validación por el médico
+                      internista.
+                    </p>
+                    <p className="text-sm text-slate-700">Podrás ver el resultado cuando lo valide.</p>
+                  </div>
+                ) : (
                   <p>
-                    <span className="font-semibold">{confirmedName}</span>: enviado a validación por el médico
-                    internista.
+                    <span className="font-semibold">{confirmedName}</span>: todavía no se envía a validación.
+                    Confírmalo para enviarlo al médico internista.
                   </p>
-                  {/* SIMULADO: todavía no existe la validación del comité; el texto se muestra siempre. */}
-                  <p className="text-sm text-slate-700">
-                    Con diagnóstico validado por el Comité de Interconsulta de Especialidad.
-                  </p>
-                </div>
+                )}
               </div>
-              <Link
-                href={`/patients/${patientId}/result`}
-                className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-teal-700 px-3.5 py-1.5 font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-              >
-                <FileText aria-hidden="true" className="h-4 w-4" />
-                Ver resultado
-              </Link>
+              {validationStatus === 'Validado' && (
+                <Link
+                  href={`/patients/${patientId}/result`}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-teal-700 px-3.5 py-1.5 font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+                >
+                  <FileText aria-hidden="true" className="h-4 w-4" />
+                  Ver resultado
+                </Link>
+              )}
             </div>
           )}
           {/* Análisis desactualizado (P-112): no se confirma con datos que ya cambiaron. */}
@@ -198,22 +220,25 @@ export default function DiagnosisPanel({
                     )}
                     {/* El confirmado no repite el botón; con uno ya confirmado, los demás ofrecen cambiarlo
                         con un botón secundario para no competir con el confirmado (P-135). */}
-                    {!isConfirmed && (
+                    {/* Un confirmado que nunca se envió (p. ej. datos de prueba) se puede enviar a validación. */}
+                    {(!isConfirmed || validationStatus === null) && (
                       <button
                         type="button"
                         onClick={() => confirm(candidate.idEnfermedad, candidate.nombre)}
                         disabled={confirming !== null || isStale}
                         className={`group mt-3 inline-flex items-center gap-2 rounded-lg border-2 px-3.5 py-1.5 font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-                          confirmedName
+                          confirmedName && !isConfirmed
                             ? 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 hover:bg-slate-50'
                             : 'border-teal-700 bg-teal-700 text-white hover:border-teal-800 hover:bg-teal-800'
                         }`}
                       >
                         {confirming === candidate.idEnfermedad
-                          ? 'Confirmando…'
-                          : confirmedName
-                            ? 'Cambiar a este diagnóstico'
-                            : 'Confirmar este diagnóstico'}
+                          ? 'Enviando…'
+                          : isConfirmed
+                            ? 'Enviar a validación'
+                            : confirmedName
+                              ? 'Cambiar y enviar a validación'
+                              : 'Confirmar y enviar a validación'}
                         <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                       </button>
                     )}

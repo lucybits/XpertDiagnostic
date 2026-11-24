@@ -136,6 +136,68 @@ public class PatientRecordServiceTests
         Assert.Empty(vacio);
     }
 
+    [Fact]
+    public async Task GuardarAntecedentes_Respuestas_SeVenEnElExpediente() // PT103
+    {
+        // Given un paciente registrado por el administrador, sin interrogatorio
+        var (servicio, expedientes) = Crear();
+        Assert.Null((await servicio.ObtenerAsync("PACIE00001"))!.AntecedentesNoPatologicos);
+
+        // When el tratante marca que fuma y que estuvo expuesto a biomasa
+        var estado = await servicio.GuardarAntecedentesNoPatologicosAsync("PACIE00001",
+            new SaveNonPathologicalHistoryRequest { Tabaquismo = true, Biomasa = true });
+
+        // Then se guardan (biomasa como 1) y el expediente los muestra; lo no marcado cuenta como no
+        Assert.Equal(SaveFindingsStatus.Guardado, estado);
+        Assert.Equal(1, expedientes.Antecedentes!.Biomasa);
+        var vista = (await servicio.ObtenerAsync("PACIE00001"))!.AntecedentesNoPatologicos!;
+        Assert.True(vista.Tabaquismo);
+        Assert.True(vista.Biomasa);
+        Assert.False(vista.Alcoholismo);
+        Assert.False(vista.Transfusiones);
+    }
+
+    [Fact]
+    public async Task GuardarAntecedentes_PacienteInexistente_NoGuardaNada() // PT103
+    {
+        var (servicio, expedientes) = Crear();
+
+        var estado = await servicio.GuardarAntecedentesNoPatologicosAsync("PACIE09999", new SaveNonPathologicalHistoryRequest());
+
+        Assert.Equal(SaveFindingsStatus.PacienteNoExiste, estado);
+        Assert.Equal(0, expedientes.GuardadosDeAntecedentes);
+    }
+
+    [Fact]
+    public async Task GuardarHipotesis_TextoConEspacios_SeGuardaLimpio() // PT104
+    {
+        // Given un paciente en captura
+        var (servicio, _) = Crear();
+
+        // When el tratante escribe su hipótesis inicial con espacios de más
+        var estado = await servicio.GuardarHipotesisAsync("PACIE00001", "  Probable asma bronquial  ");
+
+        // Then se guarda sin espacios en los extremos y el expediente la devuelve
+        Assert.Equal(SaveFindingsStatus.Guardado, estado);
+        Assert.Equal("Probable asma bronquial", (await servicio.ObtenerAsync("PACIE00001"))!.HipotesisInicial);
+        Assert.Equal(SaveFindingsStatus.PacienteNoExiste, await servicio.GuardarHipotesisAsync("PACIE09999", "Asma"));
+    }
+
+    [Theory] // PT104
+    [InlineData("Asma", true)]
+    [InlineData("ab", false)]
+    [InlineData("     ", false)]
+    [InlineData("", false)]
+    public void SaveHypothesisRequest_Reglas_ValidaElTexto(string hipotesis, bool esValido)
+    {
+        var solicitud = new SaveHypothesisRequest { Hipotesis = hipotesis };
+
+        var valido = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(
+            solicitud, new System.ComponentModel.DataAnnotations.ValidationContext(solicitud), [], validateAllProperties: true);
+
+        Assert.Equal(esValido, valido);
+    }
+
     private static (PatientRecordService Servicio, ExpedientesFalsos Expedientes) Crear()
     {
         var expedientes = new ExpedientesFalsos();
@@ -171,6 +233,33 @@ public class PatientRecordServiceTests
         {
             Hallazgos.RemoveAll(h => h.IdPaciente == idPaciente && h.TipoHallazgo == tipoHallazgo);
             Hallazgos.AddRange(hallazgos);
+            return Task.CompletedTask;
+        }
+
+        public NonPathologicalHistory? Antecedentes { get; private set; }
+        public string? Hipotesis { get; private set; }
+        public int GuardadosDeAntecedentes { get; private set; }
+
+        public Task<PatientCaptureState?> ObtenerEstadoCapturaAsync(string idPaciente, CancellationToken cancellationToken = default) =>
+            Task.FromResult(idPaciente != "PACIE00001"
+                ? null
+                : new PatientCaptureState(Hipotesis, null, Antecedentes is null
+                    ? null
+                    : new NonPathologicalHistoryView(
+                        Antecedentes.Tabaquismo, Antecedentes.Alcoholism == true, Antecedentes.Toxicomans == true,
+                        Antecedentes.Biomasa == 1, Antecedentes.TatuajPerf == true, Antecedentes.Herbolaria == true,
+                        Antecedentes.Transfusio == true)));
+
+        public Task GuardarAntecedentesNoPatologicosAsync(NonPathologicalHistory antecedentes, CancellationToken cancellationToken = default)
+        {
+            Antecedentes = antecedentes;
+            GuardadosDeAntecedentes++;
+            return Task.CompletedTask;
+        }
+
+        public Task GuardarHipotesisAsync(string idPaciente, string hipotesis, CancellationToken cancellationToken = default)
+        {
+            Hipotesis = hipotesis;
             return Task.CompletedTask;
         }
     }

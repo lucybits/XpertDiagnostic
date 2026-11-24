@@ -100,6 +100,49 @@ public class PatientResultServiceTests
         Assert.Null(await servicio.ObtenerAsync("PACIE09999"));
     }
 
+    [Fact]
+    public async Task ConfirmarDiagnostico_QuedaPendienteDeValidacion() // PT101
+    {
+        // Given un paciente cuyo diagnóstico ya había validado el internista
+        var (servicio, salidas) = Crear();
+        salidas.EstadoValidacion = PatientValidation.Validado;
+
+        // When el tratante confirma un diagnóstico (nuevo o el mismo)
+        var estado = await servicio.ConfirmarDiagnosticoAsync("PACIE00001", "NEUMO00008");
+
+        // Then vuelve a quedar pendiente: el internista debe validarlo otra vez
+        Assert.Equal(SaveResultStatus.Guardado, estado);
+        Assert.Equal(PatientValidation.Pendiente, salidas.EstadoValidacion);
+    }
+
+    [Fact]
+    public async Task Validar_DiagnosticoPendiente_QuedaValidado() // PT102
+    {
+        // Given un diagnóstico enviado a validación
+        var (servicio, salidas) = Crear();
+        await servicio.ConfirmarDiagnosticoAsync("PACIE00001", "NEUMO00008");
+
+        // When el internista lo valida
+        var estado = await servicio.ValidarAsync("PACIE00001");
+
+        // Then queda validado
+        Assert.Equal(SaveResultStatus.Guardado, estado);
+        Assert.Equal(PatientValidation.Validado, salidas.EstadoValidacion);
+    }
+
+    [Fact]
+    public async Task Validar_SinPendienteOPacienteInexistente_NoCambiaNada() // PT102
+    {
+        // Given un paciente sin diagnóstico enviado
+        var (servicio, salidas) = Crear();
+
+        // When se intenta validar ese paciente y uno que no existe
+        // Then no hay nada que validar, y el inexistente se informa como tal
+        Assert.Equal(SaveResultStatus.SinDiagnostico, await servicio.ValidarAsync("PACIE00001"));
+        Assert.Equal(SaveResultStatus.PacienteNoExiste, await servicio.ValidarAsync("PACIE09999"));
+        Assert.Null(salidas.EstadoValidacion);
+    }
+
     private static (PatientResultService Servicio, SalidasFalsas Salidas) Crear()
     {
         var salidas = new SalidasFalsas();
@@ -114,6 +157,12 @@ public class PatientResultServiceTests
             Task.FromResult<PatientRecord?>(new PatientRecord(idPaciente, []));
 
         public Task<SaveFindingsStatus> GuardarHallazgosAsync(string idPaciente, CatalogType catalogo, IReadOnlyList<FindingInput> hallazgos, CancellationToken cancellationToken = default) =>
+            Task.FromResult(SaveFindingsStatus.Guardado);
+
+        public Task<SaveFindingsStatus> GuardarAntecedentesNoPatologicosAsync(string idPaciente, SaveNonPathologicalHistoryRequest respuestas, CancellationToken cancellationToken = default) =>
+            Task.FromResult(SaveFindingsStatus.Guardado);
+
+        public Task<SaveFindingsStatus> GuardarHipotesisAsync(string idPaciente, string hipotesis, CancellationToken cancellationToken = default) =>
             Task.FromResult(SaveFindingsStatus.Guardado);
     }
 
@@ -142,11 +191,22 @@ public class PatientResultServiceTests
         public Task<CarePlanView?> ObtenerPlanAsync(string idPlan, CancellationToken cancellationToken = default) =>
             Task.FromResult(Planes.Where(p => p.Id == idPlan).Select(p => new CarePlanView(p.Id, p.PlanIndicado, p.Pronostico, p.Seguimiento)).FirstOrDefault());
 
+        /// <summary>PACIENTES.EstadoValidacion: null, "Pendiente" o "Validado".</summary>
+        public string? EstadoValidacion { get; set; }
+
         public Task AsignarDiagnosticoAsync(string idPaciente, string idEnfermedad, string? idTratamiento, CancellationToken cancellationToken = default)
         {
             Diagnostico = idEnfermedad;
             Tratamiento = idTratamiento;
+            EstadoValidacion = PatientValidation.Pendiente;
             return Task.CompletedTask;
+        }
+
+        public Task<bool> MarcarValidadoAsync(string idPaciente, CancellationToken cancellationToken = default)
+        {
+            if (EstadoValidacion != PatientValidation.Pendiente) return Task.FromResult(false);
+            EstadoValidacion = PatientValidation.Validado;
+            return Task.FromResult(true);
         }
 
         public Task AsignarTratamientoAsync(string idPaciente, string idTratamiento, CancellationToken cancellationToken = default)

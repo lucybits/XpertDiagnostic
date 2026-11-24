@@ -6,7 +6,9 @@
 | Origen | Petición de Lucía (P-105), con su boceto: desarrollar la interfaz de salida y conectarla con la de entrada, de forma lógica y coherente con lo que dijo Axel. |
 | Estado | Implementada. Falta probarla con sesión contra la API reiniciada (PT71). |
 | Tareas | [tareas/inicio-sesion.md](../tareas/inicio-sesion.md), T56 y T58 |
-| Casos de prueba | Sección 6 de este documento, PT59 a PT71 |
+| Casos de prueba | Sección 6 de este documento, PT59 a PT71; PT101 y PT102 (P-145) |
+
+> **Cambio P-145 (3.4).** El tratante ve la interfaz de salida **solo después de que el internista valida** el diagnóstico: hasta entonces `GET /api/patients/{id}/result`, `PUT …/treatment` y `PUT …/plan` le responden 409 ("El diagnóstico todavía no está validado por el médico internista…"), la pantalla muestra ese mensaje y los botones "Ver resultado" del panel de diagnóstico y del expediente no aparecen (dicen "Enviado a validación del médico internista"). El internista sí puede abrirla, porque es quien revisa. El aviso del comité (P-141, simulado) se muestra solo con el diagnóstico validado.
 
 ## 1. Objetivo
 

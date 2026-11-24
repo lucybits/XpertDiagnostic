@@ -279,6 +279,10 @@ Para crear y llenar las tablas clínicas (enfermedades, síntomas, signos, estud
 1. `backend\XpertDiagnostic.Api\Sql\CreateClinicalTables.sql` (y `CreateDoctorsAndUsersTables.sql` para médicos y cuentas): crea solo las tablas que falten; no toca `dbo.USUARIOS`.
 2. `backend\XpertDiagnostic.Api\Sql\SeedClinicalData.sql`: borra y recarga los datos clínicos en una sola transacción. Se puede repetir.
 
+**Si tu base se creó antes de P-144** (la tabla `PACIENTES` todavía tiene la columna `Edad`), ejecuta una vez `backend\XpertDiagnostic.Api\Sql\UpdatePatientsNameAndBirthDate.sql` **antes** de `SeedClinicalData.sql`. Agrega `Nombres`, `ApellidoPaterno`, `ApellidoMaterno` y `FechaNacimiento`, rellena esas columnas a partir de los datos actuales y quita `Edad`. Se puede repetir sin efecto.
+
+**Si tu base se creó antes de P-145**, ejecuta también una vez `backend\XpertDiagnostic.Api\Sql\AddPatientHypothesisAndValidation.sql`: agrega a `PACIENTES` la hipótesis inicial del tratante (`HipotesisInicial`) y el estado de validación del internista (`EstadoValidacion`). Se puede repetir sin efecto.
+
 Los datos vienen de los CSV de `Sql\ClinicalData` (Windows-1252). `SeedClinicalData.sql` no se edita a mano: si cambia un CSV, se vuelve a generar con `python backend/XpertDiagnostic.Api/Sql/Tools/generate_clinical_seed.py`. El generador valida llaves y referencias y no escribe nada si encuentra errores.
 
 No guardes contraseñas ni cadenas de conexión reales en archivos que vayan a GitHub. Usa la configuración de la sección 5.1.

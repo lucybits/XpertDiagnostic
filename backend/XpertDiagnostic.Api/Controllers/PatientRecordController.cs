@@ -58,6 +58,41 @@ public class PatientRecordController(IPatientRecordService expedientes, IDiagnos
 
     /// <summary>Analiza los hallazgos guardados con la máquina de inferencia registrada.</summary>
     /// <remarks>@post 200 con el diagnóstico diferencial (puede no tener candidatos); 404 si el paciente no existe.</remarks>
+    /// <summary>Guarda los antecedentes no patológicos del interrogatorio (P-145). Solo el médico tratante.</summary>
+    /// <remarks>@post 200 con el expediente actualizado; 404 si el paciente no existe.</remarks>
+    [HttpPut("non-pathological-history")]
+    [Authorize(Roles = UserRoles.MedicoTratante)]
+    [ProducesResponseType<PatientRecord>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PatientRecord>> SaveNonPathologicalHistory(
+        string idPaciente,
+        [FromBody] SaveNonPathologicalHistoryRequest request,
+        CancellationToken cancellationToken)
+    {
+        var estado = await expedientes.GuardarAntecedentesNoPatologicosAsync(idPaciente, request, cancellationToken);
+        return await Responder(idPaciente, estado, cancellationToken);
+    }
+
+    /// <summary>Guarda la hipótesis diagnóstica inicial (P-145). Solo el médico tratante.</summary>
+    /// <remarks>@post 200 con el expediente actualizado; 400 si el texto no cumple; 404 si el paciente no existe.</remarks>
+    [HttpPut("hypothesis")]
+    [Authorize(Roles = UserRoles.MedicoTratante)]
+    [ProducesResponseType<PatientRecord>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PatientRecord>> SaveHypothesis(
+        string idPaciente,
+        [FromBody] SaveHypothesisRequest request,
+        CancellationToken cancellationToken)
+    {
+        var estado = await expedientes.GuardarHipotesisAsync(idPaciente, request.Hipotesis, cancellationToken);
+        return await Responder(idPaciente, estado, cancellationToken);
+    }
+
     [HttpPost("analysis")]
     [Authorize(Roles = UserRoles.MedicoTratante)]
     [ProducesResponseType<DiagnosisResult>(StatusCodes.Status200OK)]

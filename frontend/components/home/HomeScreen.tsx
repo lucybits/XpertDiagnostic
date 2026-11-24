@@ -186,9 +186,10 @@ export default function HomeScreen() {
     setActiveSectionId(nextSectionAfterSave(done));
   };
 
-  // Diagnóstico confirmado: se anota en el paciente (y en la lista del buscador) para que el panel
-  // del expediente ofrezca su resultado (P-111).
-  const handleDiagnosisConfirmed = (diseaseName: string) => {
+  // Diagnóstico confirmado y enviado a validación (P-111, P-145): se anota en el paciente (y en la
+  // lista del buscador), y el expediente queda "Pendiente" hasta que lo valide el internista.
+  const handleDiagnosisConfirmed = (diseaseName: string, record: PatientRecord) => {
+    setPatientRecord(record);
     if (!selectedPatient) return;
     const updated = { ...selectedPatient, diagnosis: diseaseName };
     setSelectedPatient(updated);
@@ -316,6 +317,7 @@ export default function HomeScreen() {
               findings={recordFindings}
               diagnosis={diagnosis}
               isDiagnosisStale={isDiagnosisStale}
+              validationStatus={patientRecord?.estadoValidacion ?? null}
               collapsed={isRecordCollapsed}
               onToggleCollapsed={() => setIsRecordCollapsed((collapsed) => !collapsed)}
             />
@@ -342,6 +344,7 @@ export default function HomeScreen() {
               findings={recordFindings}
               diagnosis={diagnosis}
               isDiagnosisStale={isDiagnosisStale}
+              validationStatus={patientRecord?.estadoValidacion ?? null}
               onClose={() => setIsRecordOpen(false)}
             />
           </aside>

@@ -10,7 +10,7 @@ import { saveFindings } from '@/services/recordService';
 import type { PatientRecord } from '@/types/record';
 import { FOCUS_RING } from './styles';
 
-type CaptureConfig = Exclude<SectionCaptureConfig, { kind: 'analysis' }>;
+type CaptureConfig = Extract<SectionCaptureConfig, { kind: 'findings' }>;
 
 type SectionCaptureProps = {
   patientId: string;

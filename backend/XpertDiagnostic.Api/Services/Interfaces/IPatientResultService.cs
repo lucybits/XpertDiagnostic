@@ -13,7 +13,8 @@ public interface IPatientResultService
     /// <summary>Confirma la enfermedad diagnosticada.</summary>
     /// <remarks>
     /// @post Guardado: IdEnfermedadDiagnosticada = idEnfermedad. Si cambió de enfermedad, el tratamiento
-    ///       anterior se quita (ya no le corresponde); si es la misma, se conserva.
+    ///       anterior se quita (ya no le corresponde); si es la misma, se conserva. El diagnóstico queda
+    ///       "Pendiente" de validación por el internista, aunque antes estuviera validado (P-145).
     /// @post DatoInvalido si la enfermedad no existe; PacienteNoExiste si el paciente no existe.
     /// </remarks>
     Task<SaveResultStatus> ConfirmarDiagnosticoAsync(string idPaciente, string idEnfermedad, CancellationToken cancellationToken = default);
@@ -28,4 +29,11 @@ public interface IPatientResultService
     /// <summary>Guarda el plan escrito por el médico: lo actualiza si existe o lo crea con el siguiente IdPlan.</summary>
     /// <remarks>@post Guardado: el paciente queda con un IdPlan cuyo texto es el enviado (sin espacios sobrantes).</remarks>
     Task<SaveResultStatus> GuardarPlanAsync(string idPaciente, SaveCarePlanRequest plan, CancellationToken cancellationToken = default);
+
+    /// <summary>El internista valida el diagnóstico enviado por el tratante (P-145).</summary>
+    /// <remarks>
+    /// @post Guardado: queda "Validado". PacienteNoExiste si no existe; SinDiagnostico si no estaba
+    ///       "Pendiente" (no hay nada que validar). No cambia nada en esos casos.
+    /// </remarks>
+    Task<SaveResultStatus> ValidarAsync(string idPaciente, CancellationToken cancellationToken = default);
 }

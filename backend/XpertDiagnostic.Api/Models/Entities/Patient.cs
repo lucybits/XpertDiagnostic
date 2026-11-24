@@ -36,6 +36,14 @@ public class Patient
 
     public DateOnly FechaNacimiento { get; set; }
 
+    /// <summary>Hipótesis diagnóstica inicial que escribe el médico tratante (P-145).</summary>
+    [StringLength(1000)]
+    public string? HipotesisInicial { get; set; }
+
+    /// <summary>null, <see cref="PatientValidation.Pendiente"/> o <see cref="PatientValidation.Validado"/> (P-145).</summary>
+    [Column(TypeName = "varchar(10)")]
+    public string? EstadoValidacion { get; set; }
+
     // ── Salida de la máquina de inferencia (null hasta que exista un diagnóstico) ──
     [Column(TypeName = "varchar(10)")]
     public string? IdEnfermedadDiagnosticada { get; set; }
@@ -50,4 +58,15 @@ public class Patient
 
     [Column(TypeName = "varchar(10)")]
     public string? IdPlan { get; set; }
+}
+
+/// <summary>
+/// Estados de PACIENTES.EstadoValidacion (P-145). El médico tratante confirma el diagnóstico y queda
+/// <see cref="Pendiente"/>; el médico internista lo valida y queda <see cref="Validado"/>. Solo entonces
+/// el tratante puede abrir la interfaz de salida. null = todavía en captura.
+/// </summary>
+public static class PatientValidation
+{
+    public const string Pendiente = "Pendiente";
+    public const string Validado = "Validado";
 }

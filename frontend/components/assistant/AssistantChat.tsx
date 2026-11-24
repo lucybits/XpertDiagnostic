@@ -22,6 +22,8 @@ import ChatIntro from './ChatIntro';
 import { AssistantMessage, DoctorMessage, ThinkingIndicator } from './ChatMessages';
 import ChatNotice from './ChatNotice';
 import DiagnosisPanel from './DiagnosisPanel';
+import HistoryCapture from './HistoryCapture';
+import HypothesisCapture from './HypothesisCapture';
 import SectionCapture from './SectionCapture';
 import SectionHeader, { ShowSectionHeaderButton } from './SectionHeader';
 import SessionPatientPill from './SessionPatientPill';
@@ -51,7 +53,7 @@ type AssistantChatProps = {
   isDiagnosisStale: boolean;
   onAnalyzed: (result: DiagnosisResult) => void;
   /** Se confirmó un diagnóstico (P-111). */
-  onDiagnosisConfirmed: (diseaseName: string) => void;
+  onDiagnosisConfirmed: (diseaseName: string, record: PatientRecord) => void;
 };
 
 /**
@@ -309,6 +311,21 @@ export default function AssistantChat({
                   onAnalyzed={onAnalyzed}
                   onConfirmed={onDiagnosisConfirmed}
                   confirmedName={patient.diagnosis}
+                  validationStatus={record?.estadoValidacion ?? null}
+                />
+              ) : section.capture.kind === 'history' ? (
+                <HistoryCapture
+                  patientId={patient.id}
+                  sectionLabel={section.label}
+                  record={record}
+                  onSaved={onSectionSaved}
+                />
+              ) : section.capture.kind === 'hypothesis' ? (
+                <HypothesisCapture
+                  patientId={patient.id}
+                  sectionLabel={section.label}
+                  record={record}
+                  onSaved={onSectionSaved}
                 />
               ) : (
                 <SectionCapture

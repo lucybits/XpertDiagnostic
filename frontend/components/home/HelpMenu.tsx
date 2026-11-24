@@ -5,9 +5,9 @@ import { CircleHelp } from 'lucide-react';
 
 const STEPS: readonly { title: string; detail: string }[] = [
   { title: 'Elige un paciente', detail: '«Buscar paciente» en la barra lateral. Los pacientes los registra el administrador.' },
-  { title: 'Captura cada sección', detail: 'Marca en la tarjeta lo que presenta y pulsa «Guardar y continuar».' },
-  { title: 'Analiza y confirma', detail: 'En «Diagnóstico diferencial», analiza y confirma uno de los candidatos.' },
-  { title: 'Completa el resultado', detail: 'Elige el tratamiento, escribe el plan y descarga o imprime el PDF.' },
+  { title: 'Interroga y explora', detail: 'Captura cada sección: antecedentes, signos, síntomas, estudios y tu hipótesis inicial.' },
+  { title: 'Analiza y envía', detail: 'En «Diagnóstico diferencial», analiza y confirma un candidato: se envía a validación del internista.' },
+  { title: 'Revisa el resultado', detail: 'Cuando el internista lo valide, abre «Ver resultado» y descarga o imprime el PDF.' },
 ];
 
 /**

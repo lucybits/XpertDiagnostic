@@ -4613,3 +4613,63 @@ Criterio: se quita lo que repite algo visible, lo que explica algo que la interf
 **Verificación automática:** `tsc --noEmit` y `eslint` sin errores. Por HTTP contra el frontend: el tratante 123456 abre `/home` y `/patients` (200) y es redirigido desde `/internista` y `/admin` (307); el internista 654322 abre `/internista` (200) y es redirigido desde `/home`, `/patients` y `/admin` (307).
 
 **Revisión humana:** pendiente.
+
+### P-144. Administrador: tipo de médico, eliminar médicos y alta/baja de pacientes
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | (por confirmar) |
+| Objetivo | Repartir tareas por rol: el administrador da de alta y elimina médicos y pacientes; el tratante captura; el internista valida (aplazado) |
+| Especificación / tarea | 3.3 Administrador; ESP-007 (RF-53 a RF-63), ESP-004 (RF-30 a RF-32) |
+
+**Prompt**
+
+> 3.3 Administrador: en el formulario de alta de médicos, agregar un selector de tipo (Tratante o Internista). El administrador puede eliminar médicos (endpoint y botón con confirmación). Pasar al panel del administrador el registro y la eliminación de pacientes. Endpoints de pacientes (crear, eliminar) solo para el rol A.
+>
+> Aclaración: el administrador solo da de alta al paciente, lo elimina y da de alta al médico. El médico tratante hace el interrogatorio, registra los datos clínicos y la exploración física. El médico internista valida el diagnóstico y el tratamiento.
+>
+> Aclaración: el administrador captura del paciente el ID, nombres y apellidos, y fecha de nacimiento. (Decisiones: el ID lo sigue asignando el sistema; nombre(s), apellido paterno y apellido materno en campos separados; la edad se calcula de la fecha.)
+
+**Resultado de la IA:**
+
+- **Médicos:** selector Tratante/Internista en el alta y en la edición (`CreateDoctorRequest.Rol` y `UpdateDoctorRequest.Rol`, solo `T` o `I`); columna "Tipo" en la lista; `DELETE /api/admin/doctors/{id}` borra cuenta y médico en una transacción, con ventana de confirmación (`DeleteDialog`). Una cuenta de administrador nunca se borra.
+- **Pacientes en el panel:** pestañas "Médicos" y "Pacientes". La pestaña de pacientes lista, busca, registra (`NewPatientDialog`, movido a `components/admin`) y elimina con confirmación. `DELETE /api/patients/{id}` borra hallazgos, atenciones, resultados esperados, el paciente y su plan en una transacción.
+- **Datos del paciente:** `PACIENTES` gana `Nombres`, `ApellidoPaterno`, `ApellidoMaterno` y `FechaNacimiento`, y pierde `Edad` (la edad se calcula con `PatientAge.EnAnios`). `NombreCompleto` se sigue guardando, armado con las tres partes. Migración: `UpdatePatientsNameAndBirthDate.sql`. El generador del seed deriva las partes y la fecha del CSV; `SeedClinicalData.sql` se ajustó a mano con la misma regla, porque no había Python en el equipo (**pendiente regenerarlo con el generador**).
+- **Permisos (backend):** lista de pacientes para `T`, `I` y `A`; alta y baja solo `A`; captura de hallazgos, enfermedad preexistente y análisis solo `T`.
+- **Pantalla del tratante:** sin "Nuevo paciente" (barra lateral, buscador, bienvenida, interfaz de salida, ayuda); el buscador indica pedir el alta al administrador.
+
+**Archivos afectados:** backend (`UserRoles`, controladores de médicos y pacientes, DTOs, `Patient`, `PatientSummary`, `DoctorAccount`, repositorios y servicios de médicos y pacientes, scripts SQL y generador del seed, pruebas), frontend (`AdminPanel`, `AdminPatientsSection`, `DeleteDialog`, `DoctorFormDialog`, `NewPatientDialog`, pantallas del tratante, rutas `/api/admin/doctors/[id]`, `/api/patients` y `/api/patients/[id]`, servicios, tipos y validaciones), `specs/especificaciones/07-nuevo-paciente.md`, `specs/especificaciones/10-panel-administrador.md`, `specs/guias/guia-instalacion.md`.
+
+**Verificación automática:** `dotnet test` 114 pruebas unitarias correctas (nuevas PT95 a PT100) y 9 de integración con la base; `tsc --noEmit` y `eslint` sin errores. Por HTTP contra el frontend: alta de internista, cambio a tratante, tipo `A` rechazado (400), eliminar médico (204, luego 404; el tratante recibe 403; el administrador no se puede borrar); alta de paciente solo por el administrador (tratante 403, fecha futura 400); captura solo del tratante (internista y administrador 403); eliminar paciente con expediente completo borra sus 23 hallazgos, atención, resultado esperado y plan.
+
+**Revisión humana:** pendiente.
+
+### P-145. Médico tratante: interrogatorio, hipótesis inicial y envío a validación del internista
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | (por confirmar) |
+| Objetivo | Que el tratante interrogue, explore, formule su hipótesis y envíe el diagnóstico del sistema a validación; que vea la interfaz de salida solo cuando el internista lo valide |
+| Especificación / tarea | 3.4 Médico tratante; ESP-005 y ESP-006 |
+
+**Prompt**
+
+> 3.4 Médico tratante: el que interroga al paciente, explora al paciente, formula hipótesis inicial, llena el formulario y las secciones que se van completando, se apoya en el sistema para generar un diagnóstico para que el internista lo valide. Quitar del tratante el botón y el diálogo de "Nuevo paciente". El tratante solo busca pacientes (PatientSearchDialog), revisa su expediente y, después de la validación por el internista, regresa los resultados en la interfaz de salida.
+>
+> Decisiones: las casillas de antecedentes no patológicos que `main` había puesto en el alta pasan a la captura del tratante como primera sección; la hipótesis inicial es texto libre; flujo con estado ("Pendiente" / "Validado"), sin validación temporal mientras la pantalla del internista sigue aplazada.
+
+**Resultado de la IA:**
+
+- **Merge con `main` (PR #33):** se conservó la eliminación de la enfermedad preexistente y las tablas `IO_*`; el alta del administrador queda sin las casillas de antecedentes. La eliminación de pacientes borra también `IO_Antec*Pacientes` e `IO_ResultadosEsperados` y quita la marca en `IO_Complicaciones`.
+- **Captura del tratante:** sección nueva "Antecedentes no patológicos" (grupo *Interrogatorio*, primera) y "Hipótesis inicial" (grupo *Diagnóstico*, antes del diagnóstico diferencial). Endpoints `PUT …/non-pathological-history` y `PUT …/hypothesis`, solo rol `T`.
+- **Validación:** `PACIENTES.EstadoValidacion` (`Pendiente`/`Validado`). Confirmar un candidato lo envía a validación y ya no abre la salida. `PUT …/validation` (solo `I`) lo valida. Hasta entonces el tratante recibe 409 en la salida, el tratamiento y el plan, y la interfaz oculta "Ver resultado".
+- "Nuevo paciente" ya se había quitado del tratante en P-144.
+- Textos de la bienvenida y de la ayuda actualizados al flujo nuevo.
+
+**Archivos afectados:** backend (`PatientRecordController`, `PatientResultController`, `Patient`, `PatientRecord`, `CaptureRequests`, repositorios y servicios del expediente y de la salida, `CreateClinicalTables.sql`, `AddPatientHypothesisAndValidation.sql`, pruebas), frontend (`clinicalSections`, `HistoryCapture`, `HypothesisCapture`, `AssistantChat`, `SectionCapture`, `DiagnosisPanel`, `PatientRecordPanel`, `HomeScreen`, `HelpMenu`, `welcomeTour`, `recordRules`, servicios del expediente y de la salida, `types/record`, rutas `/api/patients/[id]/non-pathological-history` y `/hypothesis`), `specs/especificaciones/08-captura-y-analisis.md`, `specs/especificaciones/09-interfaz-de-salida.md`, `specs/guias/guia-instalacion.md`.
+
+**Verificación automática:** `dotnet test` 132 de 133 (nuevas PT101 a PT104; falla solo `PT02`, que necesita la API en marcha); `tsc --noEmit` y `eslint` sin errores. Por HTTP contra la API: antecedentes e hipótesis solo del tratante (internista y administrador 403; hipótesis de 2 caracteres 400); salida bloqueada para el tratante (409) antes de validar y tras volver a confirmar; el internista abre la salida, no puede confirmar (403) y valida una sola vez (luego 409); ya validado, el tratante abre la salida y guarda plan y tratamiento. Se corrigió un 500 al guardar el plan (conversión de `null` a `ActionResult<T>`).
+
+**Revisión humana:** pendiente.

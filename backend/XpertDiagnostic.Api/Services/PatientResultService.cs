@@ -61,6 +61,18 @@ public sealed class PatientResultService(IPatientResultRepository salidas, IPati
         return SaveResultStatus.Guardado;
     }
 
+    public async Task<SaveResultStatus> ValidarAsync(string idPaciente, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(idPaciente);
+
+        if (await _salidas.ObtenerSalidaAsync(idPaciente, cancellationToken) is null)
+            return SaveResultStatus.PacienteNoExiste;
+
+        return await _salidas.MarcarValidadoAsync(idPaciente, cancellationToken)
+            ? SaveResultStatus.Guardado
+            : SaveResultStatus.SinDiagnostico;
+    }
+
     public async Task<SaveResultStatus> ElegirTratamientoAsync(
         string idPaciente,
         string idTratamiento,

@@ -26,4 +26,18 @@ public interface IPatientRecordService
         CatalogType catalogo,
         IReadOnlyList<FindingInput> hallazgos,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Guarda las respuestas de antecedentes no patológicos del interrogatorio (P-145).</summary>
+    /// <remarks>@post Guardado (crea o reemplaza la fila) o PacienteNoExiste sin cambios.</remarks>
+    Task<SaveFindingsStatus> GuardarAntecedentesNoPatologicosAsync(
+        string idPaciente,
+        SaveNonPathologicalHistoryRequest respuestas,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Guarda la hipótesis diagnóstica inicial (con espacios normalizados en los extremos), P-145.</summary>
+    /// <remarks>@pre hipotesis cumple <see cref="SaveHypothesisRequest"/>. @post Guardado o PacienteNoExiste sin cambios.</remarks>
+    Task<SaveFindingsStatus> GuardarHipotesisAsync(
+        string idPaciente,
+        string hipotesis,
+        CancellationToken cancellationToken = default);
 }

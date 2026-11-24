@@ -27,9 +27,16 @@ public interface IPatientResultRepository
     /// <remarks>@post null si no existe. No modifica datos.</remarks>
     Task<CarePlanView?> ObtenerPlanAsync(string idPlan, CancellationToken cancellationToken = default);
 
-    /// <summary>Guarda la enfermedad diagnosticada y el tratamiento (null para quitarlo).</summary>
+    /// <summary>
+    /// Guarda la enfermedad diagnosticada y el tratamiento (null para quitarlo), y deja el diagnóstico
+    /// pendiente de validación por el internista (P-145).
+    /// </summary>
     /// <remarks>@pre el paciente y la enfermedad existen; el tratamiento, si viene, es de esa enfermedad.</remarks>
     Task AsignarDiagnosticoAsync(string idPaciente, string idEnfermedad, string? idTratamiento, CancellationToken cancellationToken = default);
+
+    /// <summary>Marca como validado el diagnóstico de un paciente que estaba pendiente (P-145).</summary>
+    /// <remarks>@post true si estaba "Pendiente" y quedó "Validado"; false en otro caso (sin cambios).</remarks>
+    Task<bool> MarcarValidadoAsync(string idPaciente, CancellationToken cancellationToken = default);
 
     /// <summary>Guarda el tratamiento indicado.</summary>
     /// <remarks>@pre el paciente existe y el tratamiento es de su enfermedad diagnosticada.</remarks>

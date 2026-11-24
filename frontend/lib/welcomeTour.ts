@@ -32,6 +32,8 @@ export const WELCOME_STEPS: readonly WelcomeStep[] = [
       {
         text: () =>
           [
+            '**Interrogatorio**',
+            '- Antecedentes no patológicos (tabaquismo, alcohol, transfusiones…)',
             '**Evaluación clínica**',
             '- Signos de la exploración física',
             '- Síntomas que presenta o siente el paciente',
@@ -52,11 +54,10 @@ export const WELCOME_STEPS: readonly WelcomeStep[] = [
       {
         text: () =>
           [
-            'Con toda esa información compararé los hallazgos del paciente con mi base de conocimiento médico y te propondré un **diagnóstico diferencial**: las enfermedades más probables, en orden, junto con los datos que apoyan cada una.',
-            'Con el diagnóstico que elijas, te sugeriré:',
-            '- Estudios complementarios',
-            '- Un plan de tratamiento',
-            '- Su seguimiento',
+            'Antes de analizar, escribe tu **hipótesis inicial**. Después compararé los hallazgos del paciente con mi base de conocimiento médico y te propondré un **diagnóstico diferencial**: las enfermedades más probables, en orden, junto con los datos que apoyan cada una.',
+            'El diagnóstico que confirmes se **envía a validación del médico internista**. Cuando lo valide, verás el resultado con:',
+            '- El tratamiento',
+            '- El plan y su seguimiento',
           ].join('\n'),
         thinkingMs: 2200,
         wordDelayMs: 85,

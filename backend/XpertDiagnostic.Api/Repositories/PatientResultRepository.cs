@@ -49,7 +49,13 @@ public sealed class PatientResultRepository(AppDbContext db) : IPatientResultRep
         CancellationToken cancellationToken = default) =>
         db.Pacientes.Where(p => p.Id == idPaciente).ExecuteUpdateAsync(set => set
             .SetProperty(p => p.IdEnfermedadDiagnosticada, idEnfermedad)
-            .SetProperty(p => p.IdTratamiento, idTratamiento), cancellationToken);
+            .SetProperty(p => p.IdTratamiento, idTratamiento)
+            .SetProperty(p => p.EstadoValidacion, PatientValidation.Pendiente), cancellationToken);
+
+    public async Task<bool> MarcarValidadoAsync(string idPaciente, CancellationToken cancellationToken = default) =>
+        await db.Pacientes
+            .Where(p => p.Id == idPaciente && p.EstadoValidacion == PatientValidation.Pendiente)
+            .ExecuteUpdateAsync(set => set.SetProperty(p => p.EstadoValidacion, PatientValidation.Validado), cancellationToken) > 0;
 
     public Task AsignarTratamientoAsync(string idPaciente, string idTratamiento, CancellationToken cancellationToken = default) =>
         db.Pacientes.Where(p => p.Id == idPaciente)

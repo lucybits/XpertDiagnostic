@@ -6,7 +6,15 @@
 | Origen | P-102 y P-103: conectar la estructura visual con la lógica antes de tener la máquina de inferencia o el RAG. |
 | Estado | Implementada. La máquina de inferencia es provisional. Falta probar el flujo con sesión iniciada. |
 | Tareas | [tareas/inicio-sesion.md](../tareas/inicio-sesion.md), T52 a T54 |
-| Casos de prueba | Sección 6 de este documento, PT49 a PT57 |
+| Casos de prueba | Sección 6 de este documento, PT49 a PT57; PT101 a PT104 (P-145) |
+
+> **Cambio P-145 (3.4, flujo del médico tratante).** El tratante interroga, explora, formula una hipótesis y se apoya en el sistema para un diagnóstico que valida el internista:
+>
+> - **Orden de captura:** *Interrogatorio* → **Antecedentes no patológicos** (7 casillas sí/no, `IO_AntecNoPatolPacientes`); *Evaluación clínica* → signos, síntomas, estudios y laboratorios, comorbilidades; *Diagnóstico* → **Hipótesis inicial** (texto libre de 3 a 1000 caracteres, `PACIENTES.HipotesisInicial`) y diagnóstico diferencial.
+> - **Endpoints nuevos (solo tratante):** `PUT /api/patients/{id}/non-pathological-history` y `PUT /api/patients/{id}/hypothesis`. `GET /api/patients/{id}/record` devuelve además `antecedentesNoPatologicos`, `hipotesisInicial` y `estadoValidacion`.
+> - **Confirmar = enviar a validación:** al confirmar un candidato (`PUT /api/patients/{id}/diagnosis`, solo tratante) el paciente queda `EstadoValidacion = 'Pendiente'` y la respuesta es el expediente, no la salida. El botón dice "Confirmar y enviar a validación" y ya no abre la interfaz de salida. Volver a confirmar regresa el estado a "Pendiente".
+> - **Validación del internista:** `PUT /api/patients/{id}/validation` (solo rol `I`) pasa de "Pendiente" a "Validado" (409 si no hay nada pendiente). La pantalla del internista sigue aplazada: el endpoint queda listo para ella.
+> - Migración para bases existentes: `AddPatientHypothesisAndValidation.sql`.
 
 ## 1. Objetivo
 

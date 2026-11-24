@@ -132,6 +132,11 @@ CREATE TABLE dbo.PACIENTES (
     ApellidoPaterno           NVARCHAR(40)  NULL,
     ApellidoMaterno           NVARCHAR(40)  NULL,
     FechaNacimiento           DATE          NOT NULL CONSTRAINT CK_PACIENTES_FECHA_NACIMIENTO CHECK (FechaNacimiento >= '1890-01-01'),
+    -- Hipótesis diagnóstica inicial que escribe el médico tratante antes de analizar (P-145).
+    HipotesisInicial          NVARCHAR(1000) NULL,
+    -- Validación del diagnóstico por el médico internista (P-145): NULL = en captura,
+    -- 'Pendiente' = enviado a validación, 'Validado' = el tratante ya puede ver la interfaz de salida.
+    EstadoValidacion          VARCHAR(10)   NULL CONSTRAINT CK_PACIENTES_ESTADO_VALIDACION CHECK (EstadoValidacion IN ('Pendiente', 'Validado')),
     IdEnfermedadDiagnosticada VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_ENFERMEDAD_DIAG REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
     IdComorbilidad            VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_COMORBILIDADES REFERENCES dbo.COMORBILIDADES (IdComorbilidad),
     IdTratamiento             VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_TRATAMIENTOS REFERENCES dbo.TRATAMIENTOS (IdTratamiento),

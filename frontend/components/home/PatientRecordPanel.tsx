@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import type { ClinicalSectionGroup } from './clinicalSections';
 import type { Patient } from '@/types/patient';
-import type { DiagnosisResult } from '@/types/record';
+import type { DiagnosisResult, ValidationStatus } from '@/types/record';
 
 /** Un hallazgo del paciente (fila de HALLAZGOS_PACIENTE). */
 export interface PatientFinding {
@@ -85,6 +85,8 @@ type PatientRecordPanelProps = {
   diagnosis?: DiagnosisResult | null;
   /** Los hallazgos cambiaron después del análisis (P-112). */
   isDiagnosisStale?: boolean;
+  /** Validación del diagnóstico por el internista (P-145): el resultado se abre solo con "Validado". */
+  validationStatus?: ValidationStatus;
   /** Solo en el modo cajón (pantallas medianas y móvil). */
   onClose?: () => void;
   /** Solo en la columna fija (xl): plegado como lomo de libro (P-75). */
@@ -110,6 +112,7 @@ export default function PatientRecordPanel({
   findings = {},
   diagnosis = null,
   isDiagnosisStale = false,
+  validationStatus = null,
   onClose,
   collapsed = false,
   onToggleCollapsed,
@@ -357,14 +360,15 @@ export default function PatientRecordPanel({
               Los hallazgos cambiaron: actualiza el expediente en «Diagnóstico diferencial».
             </p>
           )}
-          {/* Interfaz de salida (P-110, P-111): solo existe resultado después de confirmar un diagnóstico,
-              así que el acceso aparece hasta entonces; antes se explica el paso que falta. */}
+          {/* Interfaz de salida (P-110, P-111, P-145): el resultado se abre hasta que el internista valida
+              el diagnóstico confirmado; antes se explica el paso que falta. */}
           {patient?.diagnosis ? (
             <>
               <p className="mt-3 text-slate-700">
                 <span className="text-slate-700">Diagnóstico confirmado: </span>
                 <span className="font-semibold text-slate-900">{patient.diagnosis}</span>
               </p>
+              {validationStatus === 'Validado' ? (
               <Link
                 href={`/patients/${patient.id}/result`}
                 className="group mt-3 flex items-center justify-center gap-2 rounded-xl border-2 border-[#1e47c5] px-4 py-2.5 font-semibold text-[#1e47c5] transition-colors hover:bg-[#1e47c5] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1e47c5] focus-visible:ring-offset-2"
@@ -373,6 +377,13 @@ export default function PatientRecordPanel({
                 Ver resultado del expediente
                 <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
+              ) : (
+                <p className="mt-2 text-sm text-slate-700">
+                  {validationStatus === 'Pendiente'
+                    ? 'Enviado a validación del médico internista. Podrás ver el resultado cuando lo valide.'
+                    : 'Todavía no se envía a validación.'}
+                </p>
+              )}
             </>
           ) : (
             patient && (

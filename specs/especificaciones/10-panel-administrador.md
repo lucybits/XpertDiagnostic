@@ -4,9 +4,9 @@
 |---|---|
 | Identificador | ESP-007 |
 | Origen | Petición de Lucía (P-116): panel de administrador para crear cuentas de médicos con su cédula profesional y su contraseña; cada apartado del login solo acepta su rol; rutas protegidas y persistencia cuidada. |
-| Estado | Implementada; pendiente la ejecución manual de PT89 a PT94 (incluye roles T/I) |
-| Tareas | [tareas/inicio-sesion.md](../tareas/inicio-sesion.md), T60 a T66 |
-| Casos de prueba | Sección 7 de este documento, PT72 a PT94 |
+| Estado | Implementada; pendiente la ejecución manual de PT89 a PT94 (incluye roles T/I). Ampliada en P-144: tipo de médico, eliminar médicos y alta/baja de pacientes |
+| Tareas | [tareas/inicio-sesion.md](../tareas/inicio-sesion.md), T60 a T66; 3.3 Administrador (P-144) |
+| Casos de prueba | Sección 7 de este documento, PT72 a PT100 |
 | Reemplaza | La pantalla `/doctors/new` y `POST /api/doctors` de ESP-002 (el alta ahora vive en el panel) |
 
 ## 1. Objetivo
@@ -46,9 +46,13 @@ Cuenta de administrador de prueba (`SeedAdminAccount.sql`): **ID 654321, contras
 | RF-50 | El login envía el apartado elegido (`T` para Médico o `A` para Administrador). El apartado Médico acepta cuentas `T` e `I`; el JWT conserva el rol real. Si la contraseña es correcta pero la cuenta es de otro grupo, responde 403 con el apartado correcto. Con contraseña incorrecta siempre responde el 401 genérico (no se revela el rol ni el estado). |
 | RF-51 | Una cuenta desactivada no puede entrar (403 "Tu cuenta está desactivada…", solo con la contraseña correcta). |
 | RF-52 | Tras iniciar sesión, cada rol va a su pantalla (`HOME_ROUTE_BY_ROLE`): el médico tratante (`T`) a `/home`, el médico internista (`I`) a `/internista` y el administrador (`A`) a `/admin`. El contenido de `/internista` está aplazado; por ahora muestra un aviso de "en preparación" y permite cerrar sesión (P-140). |
-| RF-53 | `/admin` lista a los médicos (cuentas de rol `T` o `I`) con ID, nombre, especialidad, cédula, fecha de alta y estado, y busca por nombre, especialidad, ID o cédula. |
-| RF-54 | Registrar médico: ID (será su usuario), cédula de 7 u 8 dígitos única, nombre, especialidad y contraseña inicial de 8 a 72 caracteres (con confirmación). Médico y cuenta se guardan en una sola transacción; un ID o cédula repetidos responden 409 sin guardar nada. |
-| RF-55 | Editar nombre, especialidad y cédula (el ID no cambia). Una cédula de otro médico responde 409. |
+| RF-53 | `/admin` tiene dos pestañas, "Médicos" y "Pacientes" (P-144). "Médicos" lista las cuentas de rol `T` o `I` con nombre, tipo (Tratante o Internista), especialidad, ID, cédula, fecha de alta y estado, y busca por nombre, especialidad, ID o cédula. |
+| RF-54 | Registrar médico: tipo (Tratante o Internista; por omisión Tratante), ID (será su usuario), cédula de 7 u 8 dígitos única, nombre, especialidad y contraseña inicial de 8 a 72 caracteres (con confirmación). Médico y cuenta se guardan en una sola transacción; un ID o cédula repetidos responden 409 sin guardar nada. El tipo solo puede ser `T` o `I` (400 en otro caso): el panel nunca crea administradores. |
+| RF-55 | Editar tipo, nombre, especialidad y cédula (el ID no cambia). Una cédula de otro médico responde 409. Si cambia el tipo, sus sesiones abiertas dejan de valer (el rol del token ya no coincide) y al volver a entrar va a la pantalla de su nuevo tipo. |
+| RF-60 | Eliminar médico (P-144), con ventana de confirmación que advierte que no se puede deshacer: borra su cuenta (`USUARIOS`) y su registro (`MEDICOS`) en una sola transacción (`DELETE /api/admin/doctors/{id}`, 204). Un ID inexistente o de administrador responde 404 sin borrar nada. Para bloquearlo sin borrar, se sigue usando "Desactivar". |
+| RF-61 | Pestaña "Pacientes" (P-144): lista a los pacientes con expediente, fecha de nacimiento, edad y diagnóstico; busca por nombre o expediente (sin importar acentos). "Registrar paciente" abre la ventana de alta (RF-31 de ESP-004). |
+| RF-62 | Eliminar paciente (P-144), con confirmación: borra sus hallazgos, atenciones, resultados esperados, el paciente y su plan (si ningún otro paciente lo usa) en una sola transacción (`DELETE /api/patients/{id}`, 204; 404 si no existe). |
+| RF-63 | Reparto de tareas por rol (P-144): el **administrador** da de alta y elimina médicos y pacientes; el **médico tratante** hace el interrogatorio, la captura clínica (antecedentes, síntomas, signos, estudios) y el análisis; el **internista** valida el diagnóstico y el tratamiento (aplazado). El tratante ya no ve "Nuevo paciente": si no encuentra a un paciente, el buscador le indica pedirlo al administrador. |
 | RF-56 | Asignar contraseña nueva a un médico (se cifra con BCrypt; la anterior deja de funcionar). |
 | RF-57 | Activar o desactivar la cuenta de un médico, con confirmación. No se borra ningún dato. |
 | RF-58 | El administrador cambia su contraseña escribiendo la actual. |
@@ -56,7 +60,7 @@ Cuenta de administrador de prueba (`SeedAdminAccount.sql`): **ID 654321, contras
 
 ## 5. Seguridad y protección de rutas
 
-- **Backend (autoridad):** `api/admin/doctors/*` exige rol `A`; pacientes y catálogos exigen rol `T` o `I`. Además, en cada petición autenticada `SessionValidator` comprueba en `USUARIOS` que la cuenta del token exista, esté activa y conserve su rol; si no, 401. Así desactivar una cuenta cierra sus sesiones al instante.
+- **Backend (autoridad):** `api/admin/doctors/*` exige rol `A`. Pacientes (P-144): la lista (`GET /api/patients`) la consultan `T`, `I` y `A`; dar de alta (`POST`) y eliminar (`DELETE /api/patients/{id}`) solo `A`; capturar hallazgos, la enfermedad preexistente y analizar solo `T`; leer el expediente, la interfaz de salida y los catálogos, `T` o `I`. Además, en cada petición autenticada `SessionValidator` comprueba en `USUARIOS` que la cuenta del token exista, esté activa y conserve su rol; si no, 401. Así desactivar una cuenta cierra sus sesiones al instante.
 - **Frontend:** `proxy.ts` (el middleware de Next.js 16) redirige sin sesión a `/login` y deja a cada rol solo en sus pantallas: `/home` y `/patients` para el tratante, `/internista` para el internista y `/admin` para el administrador. Quien abre una pantalla de otro rol va a la de inicio del suyo. Lee el token sin verificar la firma (la clave solo la tiene el backend), así que es una comprobación optimista; los datos siempre los protege el backend.
 - Cuando el backend responde 401, la ruta de Next borra la cookie `xd_session`, y la pantalla vuelve al login.
 - Las rutas `/api/admin/*` de Next validan los datos con las mismas reglas que el backend antes de reenviarlos.
@@ -88,6 +92,12 @@ Barra superior `bg-blue-900` (logo, "Panel de administración · ID", Cambiar mi
 | PT86 | Desactivar conserva los datos; se puede reactivar | `DoctorAdministrationServiceTests` |
 | PT87 | Sesión de cuenta activa con su rol → vigente | `SessionValidatorTests` |
 | PT88 | Sesión de cuenta desactivada después de entrar → deja de valer | `SessionValidatorTests` |
+| PT95 | Alta como internista → cuenta con rol `I`; el tipo solo admite `T` o `I` | `DoctorServiceTests` |
+| PT96 | Editar el tipo → se guarda el rol nuevo; tipo `A` rechazado sin cambios | `DoctorAdministrationServiceTests` |
+| PT97 | Eliminar médico → se borran médico y cuenta; inexistente o administrador → nada | `DoctorAdministrationServiceTests` |
+| PT98 | Eliminar paciente existente → se borra solo ese paciente | `PatientServiceTests` |
+| PT99 | Eliminar paciente inexistente o con ID inválido → false, sin consultar la base si el ID no puede existir | `PatientServiceTests` |
+| PT100 | Edad calculada con la fecha de nacimiento (cumpleaños, 29 de febrero, fechas futuras) | `PatientServiceTests` |
 
 ### Manuales (con la API y el frontend en marcha)
 

@@ -48,4 +48,55 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
         await transaccion.CommitAsync(cancellationToken);
         db.ChangeTracker.Clear();
     }
+
+    public async Task<PatientCaptureState?> ObtenerEstadoCapturaAsync(
+        string idPaciente,
+        CancellationToken cancellationToken = default)
+    {
+        var paciente = await db.Pacientes.AsNoTracking()
+            .Where(p => p.Id == idPaciente)
+            .Select(p => new { p.HipotesisInicial, p.EstadoValidacion })
+            .FirstOrDefaultAsync(cancellationToken);
+        if (paciente is null)
+            return null;
+
+        var antecedentes = await db.AntecedentesNoPatologicos.AsNoTracking()
+            .FirstOrDefaultAsync(a => a.IdPaciente == idPaciente, cancellationToken);
+
+        return new PatientCaptureState(
+            paciente.HipotesisInicial,
+            paciente.EstadoValidacion,
+            antecedentes is null
+                ? null
+                : new NonPathologicalHistoryView(
+                    antecedentes.Tabaquismo,
+                    antecedentes.Alcoholism == true,
+                    antecedentes.Toxicomans == true,
+                    antecedentes.Biomasa == 1,
+                    antecedentes.TatuajPerf == true,
+                    antecedentes.Herbolaria == true,
+                    antecedentes.Transfusio == true));
+    }
+
+    public async Task GuardarAntecedentesNoPatologicosAsync(
+        NonPathologicalHistory antecedentes,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(antecedentes);
+
+        var existentes = await db.AntecedentesNoPatologicos
+            .FirstOrDefaultAsync(a => a.IdPaciente == antecedentes.IdPaciente, cancellationToken);
+        if (existentes is null)
+            db.AntecedentesNoPatologicos.Add(antecedentes);
+        else
+            db.Entry(existentes).CurrentValues.SetValues(antecedentes);
+
+        await db.SaveChangesAsync(cancellationToken);
+        db.ChangeTracker.Clear();
+    }
+
+    public Task GuardarHipotesisAsync(string idPaciente, string hipotesis, CancellationToken cancellationToken = default) =>
+        db.Pacientes
+            .Where(p => p.Id == idPaciente)
+            .ExecuteUpdateAsync(set => set.SetProperty(p => p.HipotesisInicial, hipotesis), cancellationToken);
 }
