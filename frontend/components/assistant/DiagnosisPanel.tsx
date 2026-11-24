@@ -81,9 +81,9 @@ export default function DiagnosisPanel({
   const analyzeLabel = isRunning
     ? 'Analizando…'
     : result === null
-      ? 'Analizar expediente'
+      ? 'Generar diagnóstico y tratamiento'
       : isStale
-        ? 'Volver a analizar'
+        ? 'Guardar'
         : 'Análisis al día';
 
   return (
@@ -106,15 +106,6 @@ export default function DiagnosisPanel({
         </header>
 
         <div className="space-y-3 px-5 py-4">
-          {/* Antes del primer análisis se dice qué hacer: sin esto la tarjeta se veía vacía (P-137). */}
-          {result === null && (
-            <p className="flex items-start gap-2 text-slate-900">
-              <Microscope aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
-              <span>
-                Pulsa <span className="font-semibold">Analizar expediente</span> para ver las enfermedades más probables.
-              </span>
-            </p>
-          )}
           {/* Diagnóstico ya confirmado (P-135): se dice cuál es, que ya está en el expediente y cómo verlo. */}
           {confirmedName && (
             <div
@@ -124,7 +115,7 @@ export default function DiagnosisPanel({
               <p className="flex min-w-0 flex-1 items-start gap-2 text-slate-900">
                 <CircleCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
                 <span>
-                  <span className="font-semibold">{confirmedName}</span> confirmado y guardado en el expediente.
+                  <span className="font-semibold">{confirmedName}</span> revisado por médico internista.
                 </span>
               </p>
               <Link
