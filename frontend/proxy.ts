@@ -14,10 +14,10 @@ import { HOME_ROUTE_BY_ROLE } from '@/types/auth';
  * el backend vuelve a validar firma, rol y cuenta activa en cada petición de datos.
  */
 
-const ROUTE_ROLES: ReadonlyArray<{ prefix: string; rol: string }> = [
-  { prefix: '/admin', rol: 'A' },
-  { prefix: '/home', rol: 'M' },
-  { prefix: '/patients', rol: 'M' },
+const ROUTE_ROLES: ReadonlyArray<{ prefix: string; roles: readonly string[] }> = [
+  { prefix: '/admin', roles: ['A'] },
+  { prefix: '/home', roles: ['T', 'I'] },
+  { prefix: '/patients', roles: ['T', 'I'] },
 ];
 
 export function proxy(request: NextRequest) {
@@ -34,7 +34,7 @@ export function proxy(request: NextRequest) {
     return token ? clearSessionCookie(response) : response;
   }
 
-  if (session.rol !== route.rol) {
+  if (!route.roles.includes(session.rol)) {
     const home = HOME_ROUTE_BY_ROLE[session.rol];
     return NextResponse.redirect(new URL(home ?? '/login', request.url));
   }

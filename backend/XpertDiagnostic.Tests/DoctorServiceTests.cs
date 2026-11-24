@@ -23,14 +23,14 @@ public class DoctorServiceTests
         // When el administrador registra al médico desde el panel
         var resultado = await servicio.RegistrarAsync(CrearSolicitud());
 
-        // Then se guardan el médico y su usuario activo con el mismo ID, rol M y contraseña cifrada
+        // Then se guardan el médico y su usuario activo con el mismo ID, rol T y contraseña cifrada
         Assert.Equal(DoctorRegistrationStatus.Creado, resultado.Estado);
         var medico = Assert.Single(repositorio.Medicos);
         var usuario = Assert.Single(repositorio.Usuarios);
         Assert.Equal(500, medico.Id);
         Assert.Equal(500, usuario.Id);
         Assert.Equal(500, usuario.IdMedico);
-        Assert.Equal(UserRoles.Medico, usuario.Rol);
+        Assert.Equal(UserRoles.MedicoTratante, usuario.Rol);
         Assert.Equal("hash:ClaveSegura1", usuario.PasswordHash);
         Assert.NotEqual("ClaveSegura1", usuario.PasswordHash);
         Assert.True(usuario.Activo);
@@ -44,7 +44,7 @@ public class DoctorServiceTests
     {
         // Given que ya existe un usuario con el ID 500
         var repositorio = new RepositorioMedicosFalso();
-        repositorio.Usuarios.Add(new User { Id = 500, PasswordHash = "x", Rol = UserRoles.Medico, IdMedico = 500 });
+        repositorio.Usuarios.Add(new User { Id = 500, PasswordHash = "x", Rol = UserRoles.MedicoTratante, IdMedico = 500 });
         var servicio = new DoctorService(repositorio, new HasherFalso());
 
         // When se registra otro médico con el ID 500
@@ -125,7 +125,7 @@ public class DoctorServiceTests
     {
         // Given el usuario 1 que no ha visto la bienvenida
         var repositorio = new RepositorioMedicosFalso();
-        repositorio.Usuarios.Add(new User { Id = 1, PasswordHash = "x", Rol = UserRoles.Medico, IdMedico = 1 });
+        repositorio.Usuarios.Add(new User { Id = 1, PasswordHash = "x", Rol = UserRoles.MedicoTratante, IdMedico = 1 });
         var servicio = new DoctorService(repositorio, new HasherFalso());
 
         // When se marca su bienvenida
@@ -150,7 +150,7 @@ public class DoctorServiceTests
         // Given el usuario 1 que ya vio la bienvenida
         var repositorio = new RepositorioMedicosFalso();
         repositorio.Medicos.Add(new Doctor { Id = 1, NombreCompleto = "Ana López", Especialidad = "Cardiología", CedulaProfesional = "7654321" });
-        repositorio.Usuarios.Add(new User { Id = 1, PasswordHash = "x", Rol = UserRoles.Medico, IdMedico = 1, BienvenidaVista = true });
+        repositorio.Usuarios.Add(new User { Id = 1, PasswordHash = "x", Rol = UserRoles.MedicoTratante, IdMedico = 1, BienvenidaVista = true });
         var servicio = new DoctorService(repositorio, new HasherFalso());
 
         // When se consulta su perfil

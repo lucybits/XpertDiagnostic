@@ -14,7 +14,7 @@ namespace XpertDiagnostic.Api.Controllers;
 [ApiController]
 [Route("api/patients/{idPaciente}")]
 [Produces("application/json")]
-[Authorize(Roles = UserRoles.Medico)]
+[Authorize(Roles = UserRoles.RolesMedicos)]
 public class PatientRecordController(IPatientRecordService expedientes, IDiagnosisService diagnosticos) : ControllerBase
 {
     /// <summary>Expediente capturado: enfermedad preexistente y hallazgos.</summary>

@@ -10,8 +10,8 @@ namespace XpertDiagnostic.Api.Models.DTOs;
 /// <remarks>
 /// @inv UsuarioId está entre 1 e int.MaxValue.
 /// @inv Password tiene entre 1 y 72 caracteres (límite de BCrypt) y no es solo espacios.
-/// @inv Rol es "M" (apartado Médico del login) o "A" (apartado Administrador). Cada apartado
-///      solo acepta cuentas de su rol (P-116).
+/// @inv Rol es "T" (apartado Médico) o "A" (apartado Administrador). El apartado Médico
+///      acepta cuentas "T" e "I" (P-116).
 /// </remarks>
 public class LoginRequest
 {
@@ -23,6 +23,6 @@ public class LoginRequest
     public string Password { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Indica el apartado del inicio de sesión.")]
-    [RegularExpression("^[MA]$", ErrorMessage = "El apartado debe ser M o A.")]
+    [RegularExpression("^[TA]$", ErrorMessage = "El apartado debe ser T o A.")]
     public string Rol { get; set; } = string.Empty;
 }

@@ -3,10 +3,10 @@
 export type LoginMode = 'medico' | 'administrador';
 
 /** Rol (USUARIOS.ROL) que acepta cada apartado del login: cada apartado solo deja entrar a su rol (P-116). */
-export const ROLE_BY_LOGIN_MODE = { medico: 'M', administrador: 'A' } as const satisfies Record<LoginMode, string>;
+export const ROLE_BY_LOGIN_MODE = { medico: 'T', administrador: 'A' } as const satisfies Record<LoginMode, string>;
 
 /** Pantalla de inicio de cada rol después de iniciar sesión. */
-export const HOME_ROUTE_BY_ROLE: Readonly<Record<string, string>> = { M: '/home', A: '/admin' };
+export const HOME_ROUTE_BY_ROLE: Readonly<Record<string, string>> = { T: '/home', I: '/home', A: '/admin' };
 
 export type LoginField = 'usuarioId' | 'password';
 

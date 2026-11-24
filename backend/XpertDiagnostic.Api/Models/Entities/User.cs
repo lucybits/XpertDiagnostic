@@ -10,8 +10,8 @@ namespace XpertDiagnostic.Api.Models.Entities;
 /// @inv Id &gt; 0 (cédula o identificador asignado por la institución).
 /// @inv PasswordHash no está vacío y mide como máximo 60 caracteres
 ///      (hash BCrypt o, mientras se migra, contraseña heredada).
-/// @inv Rol es UserRoles.Medico ("M") o UserRoles.Administrador ("A").
-/// @inv Rol == Medico ⇒ IdMedico == Id y apunta a un registro de MEDICOS (CK_USUARIOS_MEDICO_ROL/_ID).
+/// @inv Rol es UserRoles.MedicoTratante ("T"), UserRoles.MedicoInternista ("I") o UserRoles.Administrador ("A").
+/// @inv Rol T o I ⇒ IdMedico == Id y apunta a un registro de MEDICOS (CK_USUARIOS_MEDICO_ROL/_ID).
 /// @inv Rol == Administrador ⇒ IdMedico puede ser null (cuenta sin registro de médico, P-116).
 /// @inv Activo == false ⇒ la cuenta no puede iniciar sesión ni usar un token ya emitido.
 /// </remarks>
