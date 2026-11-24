@@ -38,10 +38,10 @@ export const DIAGNOSIS_NONE = 'none';
  * NombreCompleto NVARCHAR(150) NOT NULL y Edad INT con CHECK (Edad BETWEEN 0 AND 130).
  */
 export const PATIENT_LIMITS = {
-  nameMin: 3,
+  nameMin: 15,
   nameMax: 150,
   ageMin: 0,
-  ageMax: 130,
+  ageMax: 100,
 } as const;
 
 /**
