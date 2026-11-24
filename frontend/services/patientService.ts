@@ -5,6 +5,9 @@ import type { NewPatient, Patient } from '@/types/patient';
 interface BackendPatient {
   idPaciente: string;
   nombreCompleto: string;
+  /** AAAA-MM-DD. */
+  fechaNacimiento: string;
+  /** Calculada por el servidor a partir de la fecha de nacimiento. */
   edad: number;
   diagnostico: string | null;
 }
@@ -15,6 +18,7 @@ function toPatient(data: BackendPatient): Patient {
     id: data.idPaciente,
     recordNumber: data.idPaciente,
     fullName: data.nombreCompleto,
+    birthDate: data.fechaNacimiento,
     age: data.edad,
     diagnosis: data.diagnostico,
   };
@@ -40,23 +44,21 @@ export type RegisterPatientResult = { ok: true; patient: Patient } | { ok: false
 
 /**
  * Registra un paciente en PACIENTES; el servidor asigna el IdPaciente (ESP-004, RF-32).
+ * Solo lo puede hacer el administrador (P-144).
  * @pre data ya pasó validateNewPatient.
  * @post Nunca lanza: el paciente creado, o un mensaje listo para mostrar al médico.
  */
 export async function registerPatient(data: NewPatient): Promise<RegisterPatientResult> {
   try {
-    const response = await postJson<BackendPatient>('/api/patients', {
-      fullName: data.fullName,
-      birthDate: data.birthDate,
-      sex: data.sex,
-      history: data.history,
-    });
+    const response = await postJson<BackendPatient>('/api/patients', data);
     if (response.ok && response.data) return { ok: true, patient: toPatient(response.data) };
     switch (response.status) {
       case 401:
         return { ok: false, message: 'Tu sesión terminó. Vuelve a iniciar sesión para registrar al paciente.' };
       case 400:
-        return { ok: false, message: 'Revisa el nombre, la fecha de nacimiento y el sexo e inténtalo de nuevo.' };
+        return { ok: false, message: 'Revisa el nombre, los apellidos, la fecha de nacimiento y el sexo e inténtalo de nuevo.' };
+      case 403:
+        return { ok: false, message: 'Solo un administrador puede registrar pacientes.' };
       default:
         return { ok: false, message: 'No se pudo registrar al paciente. Inténtalo de nuevo en un momento.' };
     }

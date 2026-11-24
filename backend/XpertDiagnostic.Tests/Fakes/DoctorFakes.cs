@@ -77,16 +77,27 @@ internal sealed class RepositorioMedicosFalso : IDoctorRepository
         Task.FromResult(Cuentas().FirstOrDefault(c => c.IdMedico == idMedico));
 
     public async Task<DoctorUpdateResult> ActualizarDatosAsync(
-        int idMedico, string nombreCompleto, string especialidad, string cedulaProfesional,
+        int idMedico, string nombreCompleto, string especialidad, string cedulaProfesional, string rol,
         CancellationToken cancellationToken = default)
     {
-        var medico = CuentaDeMedico(idMedico) is null ? null : Medicos.First(m => m.Id == idMedico);
-        if (medico is null) return DoctorUpdateResult.NoEncontrado;
+        var cuenta = CuentaDeMedico(idMedico);
+        if (cuenta is null) return DoctorUpdateResult.NoEncontrado;
 
+        var medico = Medicos.First(m => m.Id == idMedico);
         medico.NombreCompleto = nombreCompleto;
         medico.Especialidad = especialidad;
         medico.CedulaProfesional = cedulaProfesional;
+        cuenta.Rol = rol;
         return DoctorUpdateResult.Actualizado((await ObtenerCuentaAsync(idMedico, cancellationToken))!);
+    }
+
+    public Task<bool> EliminarAsync(int idMedico, CancellationToken cancellationToken = default)
+    {
+        var cuenta = CuentaDeMedico(idMedico);
+        if (cuenta is null) return Task.FromResult(false);
+        Usuarios.Remove(cuenta);
+        Medicos.RemoveAll(m => m.Id == idMedico);
+        return Task.FromResult(true);
     }
 
     public Task<bool> ActualizarPasswordAsync(int idMedico, string nuevoHash, CancellationToken cancellationToken = default)
@@ -112,5 +123,5 @@ internal sealed class RepositorioMedicosFalso : IDoctorRepository
         from m in Medicos
         join u in Usuarios on (int?)m.Id equals u.IdMedico
         where UserRoles.EsMedico(u.Rol)
-        select new DoctorAccount(m.Id, m.NombreCompleto, m.Especialidad, m.CedulaProfesional, u.Activo, u.FechaRegistro);
+        select new DoctorAccount(m.Id, m.NombreCompleto, m.Especialidad, m.CedulaProfesional, u.Rol, u.Activo, u.FechaRegistro);
 }

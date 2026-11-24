@@ -121,18 +121,19 @@ CREATE TABLE dbo.PLANES (
     Seguimiento NVARCHAR(300)  NULL
 );
 
-/* El número de expediente que muestra el buscador es Id_Paciente.
-   Edad no se guarda: es una columna calculada con los años cumplidos de FechaNacimiento a la fecha
-   actual, así que siempre está al día. Sexo es obligatorio: un solo carácter, 'F' o 'M' en
-   mayúscula (la comparación es binaria porque la collation de la base no distingue mayúsculas). */
+/* El número de expediente que muestra el buscador es Id_Paciente. */
 IF OBJECT_ID(N'dbo.PACIENTES', N'U') IS NULL
 CREATE TABLE dbo.PACIENTES (
     Id_Paciente                VARCHAR(10)   NOT NULL CONSTRAINT PK_PACIENTES PRIMARY KEY,
+    -- Nombre completo armado con Nombres + ApellidoPaterno + ApellidoMaterno (lo usan el buscador y el PDF).
     NombreCompleto            NVARCHAR(150) NOT NULL,
-    FechaNacimiento           DATE          NOT NULL,
-    Edad                      AS (DATEDIFF(YEAR, FechaNacimiento, CAST(GETDATE() AS DATE))
-                                  - CASE WHEN DATEADD(YEAR, DATEDIFF(YEAR, FechaNacimiento, CAST(GETDATE() AS DATE)), FechaNacimiento)
-                                              > CAST(GETDATE() AS DATE) THEN 1 ELSE 0 END),
+    -- Datos que captura el administrador al dar de alta al paciente (P-144). La edad se calcula de la fecha.
+    Nombres                   NVARCHAR(60)  NULL,
+    ApellidoPaterno           NVARCHAR(40)  NULL,
+    ApellidoMaterno           NVARCHAR(40)  NULL,
+    FechaNacimiento           DATE          NOT NULL CONSTRAINT CK_PACIENTES_FECHA_NACIMIENTO CHECK (FechaNacimiento >= '1890-01-01'),
+    -- Obligatorio: un carácter, 'F' o 'M' en mayúscula (comparación binaria: la collation de la base no
+    -- distingue mayúsculas).
     Sexo                      CHAR(1)       NOT NULL CONSTRAINT CK_PACIENTES_SEXO CHECK (Sexo COLLATE Latin1_General_BIN2 IN ('F', 'M')),
     Id_EnfermedadDiagnosticada VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_ENFERMEDAD_DIAG REFERENCES dbo.ENFERMEDADES (Id_Enfermedad),
     Id_Comorbilidad            VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_COMORBILIDADES REFERENCES dbo.COMORBILIDADES (Id_Comorbilidad),

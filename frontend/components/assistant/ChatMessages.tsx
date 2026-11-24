@@ -100,7 +100,7 @@ function StepAction({
 }: {
   step: number;
   onAction: (step: number) => void;
-  onSecondaryAction: (step: number) => void;
+  onSecondaryAction?: (step: number) => void;
 }) {
   const { icon: Icon, position } = stepIcon(step);
   const secondary = WELCOME_STEPS[step].secondaryAction;
@@ -122,7 +122,7 @@ function StepAction({
         )}
       </button>
       {/* Acción secundaria (ESP-004): misma forma, con borde y sin relleno, para que la principal destaque. */}
-      {secondary && (
+      {secondary && onSecondaryAction && (
         <button
           type="button"
           onClick={() => onSecondaryAction(step)}
@@ -151,7 +151,8 @@ type AssistantMessageProps = {
   /** Muestra los botones del paso de la bienvenida bajo la burbuja. */
   showAction: boolean;
   onAction: (step: number) => void;
-  onSecondaryAction: (step: number) => void;
+  /** Acción secundaria del paso, si el paso la tiene y quien usa el chat la ofrece. */
+  onSecondaryAction?: (step: number) => void;
   /** Se pidió detener esta burbuja mientras se escribe (P-83). */
   isStopping: boolean;
   onTyped: (message: ChatMessage) => void;

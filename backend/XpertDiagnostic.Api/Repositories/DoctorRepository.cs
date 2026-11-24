@@ -98,20 +98,25 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
         string nombreCompleto,
         string especialidad,
         string cedulaProfesional,
+        string rol,
         CancellationToken cancellationToken = default)
     {
-        var medico = await (
+        if (!UserRoles.EsMedico(rol))
+            throw new ArgumentException("El tipo de médico debe ser T o I.", nameof(rol));
+
+        var registro = await (
             from m in db.Medicos
             join u in db.Usuarios on (int?)m.Id equals u.IdMedico
             where m.Id == idMedico && (u.Rol == UserRoles.MedicoTratante || u.Rol == UserRoles.MedicoInternista)
-            select m).FirstOrDefaultAsync(cancellationToken);
+            select new { Medico = m, Cuenta = u }).FirstOrDefaultAsync(cancellationToken);
 
-        if (medico is null)
+        if (registro is null)
             return DoctorUpdateResult.NoEncontrado;
 
-        medico.NombreCompleto = nombreCompleto;
-        medico.Especialidad = especialidad;
-        medico.CedulaProfesional = cedulaProfesional;
+        registro.Medico.NombreCompleto = nombreCompleto;
+        registro.Medico.Especialidad = especialidad;
+        registro.Medico.CedulaProfesional = cedulaProfesional;
+        registro.Cuenta.Rol = rol;
 
         try
         {
@@ -146,6 +151,23 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
         return filas > 0;
     }
 
+    public async Task<bool> EliminarAsync(int idMedico, CancellationToken cancellationToken = default)
+    {
+        // Ambos borrados en una transacción: o se van la cuenta y el médico, o no se borra nada.
+        await using var transaccion = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        var cuentas = await db.Usuarios
+            .Where(u => u.Id == idMedico && u.IdMedico == idMedico
+                && (u.Rol == UserRoles.MedicoTratante || u.Rol == UserRoles.MedicoInternista))
+            .ExecuteDeleteAsync(cancellationToken);
+        if (cuentas == 0)
+            return false;
+
+        await db.Medicos.Where(m => m.Id == idMedico).ExecuteDeleteAsync(cancellationToken);
+        await transaccion.CommitAsync(cancellationToken);
+        return true;
+    }
+
     /// <summary>
     /// Médicos cuya cuenta es de rol médico, sin seguimiento de cambios (solo lectura). Se filtra y ordena
     /// sobre las entidades y se proyecta a <see cref="DoctorAccount"/> al final: EF no traduce filtros sobre
@@ -163,6 +185,7 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
             c.Medico.NombreCompleto,
             c.Medico.Especialidad,
             c.Medico.CedulaProfesional,
+            c.Cuenta.Rol,
             c.Cuenta.Activo,
             c.Cuenta.FechaRegistro);
 

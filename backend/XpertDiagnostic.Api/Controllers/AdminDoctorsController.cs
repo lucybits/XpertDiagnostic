@@ -42,7 +42,7 @@ public class AdminDoctorsController(IDoctorService registro, IDoctorAdministrati
         return cuenta is null ? NotFound(new ErrorResponse(MensajeNoEncontrado)) : Ok(cuenta);
     }
 
-    /// <summary>Registra un médico y crea su cuenta (rol médico, activa).</summary>
+    /// <summary>Registra un médico y crea su cuenta activa, como tratante o internista.</summary>
     /// <remarks>
     /// @pre request cumple <see cref="CreateDoctorRequest"/>.
     /// @post 201 con la cuenta creada; 409 si el ID o la cédula ya existen (sin guardar nada).
@@ -66,7 +66,7 @@ public class AdminDoctorsController(IDoctorService registro, IDoctorAdministrati
         };
     }
 
-    /// <summary>Edita nombre, especialidad y cédula de un médico.</summary>
+    /// <summary>Edita nombre, especialidad, cédula y tipo (tratante o internista) de un médico.</summary>
     /// <remarks>@post 200 con la cuenta actualizada; 404 si no existe; 409 si la cédula es de otro médico.</remarks>
     [HttpPut("{id:int:min(1)}")]
     [ProducesResponseType<DoctorAccount>(StatusCodes.Status200OK)]
@@ -116,4 +116,14 @@ public class AdminDoctorsController(IDoctorService registro, IDoctorAdministrati
         var cuenta = await administracion.CambiarEstadoAsync(id, request.Activo!.Value, cancellationToken);
         return cuenta is null ? NotFound(new ErrorResponse(MensajeNoEncontrado)) : Ok(cuenta);
     }
+
+    /// <summary>Elimina de forma definitiva al médico y su cuenta (P-144).</summary>
+    /// <remarks>@post 204 si se borró; 404 si no existe o no es una cuenta de médico.</remarks>
+    [HttpDelete("{id:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken) =>
+        await administracion.EliminarAsync(id, cancellationToken)
+            ? NoContent()
+            : NotFound(new ErrorResponse(MensajeNoEncontrado));
 }

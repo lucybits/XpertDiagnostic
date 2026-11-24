@@ -17,7 +17,7 @@ public sealed class PatientResultRepository(AppDbContext db) : IPatientResultRep
          from e in diagnosticos.DefaultIfEmpty()
          where p.Id == idPaciente
          select new PatientOutputRow(
-             new PatientSummary(p.Id, p.NombreCompleto, p.Edad, e == null ? null : e.Nombre),
+             new PatientSummary(p.Id, p.NombreCompleto, p.FechaNacimiento, e == null ? null : e.Nombre),
              p.IdEnfermedadDiagnosticada,
              e == null ? null : e.Nombre,
              p.IdTratamiento,

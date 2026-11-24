@@ -1,100 +1,99 @@
-import {
-  EMPTY_NON_PATHOLOGICAL_HISTORY,
-  NON_PATHOLOGICAL_QUESTIONS,
-  PATIENT_LIMITS,
-  isSex,
-  type NewPatient,
-  type NewPatientField,
-  type NonPathologicalHistory,
-} from '@/types/patient';
+import { PATIENT_LIMITS, isSex, type NewPatient, type NewPatientField } from '@/types/patient';
 
 /** Datos del formulario tal como se escriben (texto), antes de convertirlos. */
 export interface NewPatientInput {
-  fullName: string;
-  /** Fecha de nacimiento como la da <input type="date">: "AAAA-MM-DD" (vacía si no se eligió). */
+  givenNames: string;
+  paternalSurname: string;
+  maternalSurname: string;
+  /** Valor de <input type="date">: AAAA-MM-DD, o vacío. */
   birthDate: string;
-  /** "F" o "M"; vacío si no se eligió. */
+  /** "F" o "M"; vacío si no se eligió. Se acepta en minúscula y se convierte a mayúscula. */
   sex: string;
-  /** Casillas de antecedentes no patológicos; si falta o una respuesta no es true, cuenta como "no". */
-  history?: unknown;
-}
-
-/** Respuestas sí/no a partir de un valor cualquiera: solo true cuenta como "sí". */
-export function toNonPathologicalHistory(value: unknown): NonPathologicalHistory {
-  const answers = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
-  const history = { ...EMPTY_NON_PATHOLOGICAL_HISTORY };
-  for (const { key } of NON_PATHOLOGICAL_QUESTIONS) history[key] = answers[key] === true;
-  return history;
 }
 
 export type NewPatientFieldErrors = Partial<Record<NewPatientField, string>>;
 
-const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 // Un nombre lleva letras (de cualquier idioma, con acentos) y no lleva números (P-99: "111" no es un nombre).
 const HAS_LETTER = /\p{L}/u;
 const HAS_DIGIT = /\d/;
 
-/** Fecha local de hoy como "AAAA-MM-DD" (el formato de <input type="date">). */
-export function toIsoDate(date: Date): string {
+const clean = (text: string) => text.trim().replace(/\s+/g, ' ');
+
+/** Fecha local de hoy en AAAA-MM-DD (la que usa <input type="date">). */
+export function todayIso(now: Date = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+/** Fecha más antigua permitida: hoy hace PATIENT_LIMITS.ageMax años. */
+export function oldestBirthDateIso(now: Date = new Date()): string {
+  return todayIso(new Date(now.getFullYear() - PATIENT_LIMITS.ageMax, now.getMonth(), now.getDate()));
+}
+
+/** @post true si text es una fecha real del calendario en AAAA-MM-DD (rechaza 2026-02-30). */
+function isRealDate(text: string): boolean {
+  const match = DATE_PATTERN.exec(text);
+  if (!match) return false;
+  const [year, month, day] = match.slice(1).map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function namePartError(value: string, label: string, max: number, required: boolean): string | undefined {
+  if (!value) return required ? `Escribe ${label}.` : undefined;
+  if (value.length < PATIENT_LIMITS.partMin || value.length > max) {
+    return `Escribe ${label} (${PATIENT_LIMITS.partMin} a ${max} caracteres).`;
+  }
+  if (!HAS_LETTER.test(value) || HAS_DIGIT.test(value)) {
+    return 'Solo puede llevar letras, espacios y signos como guion o apóstrofo; sin números.';
+  }
+  return undefined;
 }
 
 /**
- * Edad en años cumplidos a partir de la fecha de nacimiento (igual que EdadPaciente.Calcular en el backend).
+ * Valida el alta de un paciente con las mismas reglas que el backend (CreatePatientRequest, P-144).
  *
- * @pre birthDate y today tienen formato "AAAA-MM-DD".
- * @post null si birthDate no es una fecha real (p. ej. "2024-02-30"); negativa si es posterior a today.
- */
-export function ageFromBirthDate(birthDate: string, today: string): number | null {
-  const born = ISO_DATE_PATTERN.exec(birthDate);
-  const now = ISO_DATE_PATTERN.exec(today);
-  if (!born || !now) return null;
-  const [by, bm, bd] = born.slice(1).map(Number);
-  const [ty, tm, td] = now.slice(1).map(Number);
-  const check = new Date(Date.UTC(by, bm - 1, bd));
-  if (check.getUTCFullYear() !== by || check.getUTCMonth() !== bm - 1 || check.getUTCDate() !== bd) return null;
-  const hadBirthday = tm > bm || (tm === bm && td >= bd);
-  return ty - by - (hadBirthday ? 0 : 1);
-}
-
-/**
- * Valida el alta de un paciente con las reglas de la tabla PACIENTES (ESP-004).
- *
- * @pre input.fullName, input.birthDate e input.sex son cadenas (pueden estar vacías).
- * @pre today tiene formato "AAAA-MM-DD" (por omisión, la fecha local de hoy).
- * @post ok == true  → data.fullName sin espacios en los extremos ni dobles, de nameMin a nameMax
- *   caracteres, con al menos una letra y sin números; data.birthDate es una fecha real que da una
- *   edad entre ageMin y ageMax; data.sex es "F" o "M"; data.history con una respuesta sí/no por pregunta.
+ * @pre Todos los campos de input son cadenas (pueden estar vacías).
+ * @post ok == true  → nombre(s) y apellido paterno limpios (sin espacios dobles ni en los extremos), con
+ *   letras y sin números; apellido materno igual o null si se dejó vacío; birthDate es una fecha real,
+ *   no futura y de hace como mucho ageMax años; sex es "F" o "M" (en mayúscula aunque se haya escrito en minúscula).
  * @post ok == false → errors tiene un mensaje por cada campo inválido.
  */
 export function validateNewPatient(
   input: NewPatientInput,
-  today: string = toIsoDate(new Date()),
+  now: Date = new Date(),
 ): { ok: true; data: NewPatient } | { ok: false; errors: NewPatientFieldErrors } {
   const errors: NewPatientFieldErrors = {};
-  const fullName = input.fullName.trim().replace(/\s+/g, ' ');
+  const givenNames = clean(input.givenNames);
+  const paternalSurname = clean(input.paternalSurname);
+  const maternalSurname = clean(input.maternalSurname);
   const birthDate = input.birthDate.trim();
-  const age = ageFromBirthDate(birthDate, today);
-  // "f"/"m" se aceptan y se guardan en mayúscula.
   const sex = input.sex.trim().toUpperCase();
 
-  if (fullName.length < PATIENT_LIMITS.nameMin || fullName.length > PATIENT_LIMITS.nameMax) {
-    errors.fullName = `Escribe el nombre completo del paciente (${PATIENT_LIMITS.nameMin} a ${PATIENT_LIMITS.nameMax} caracteres).`;
-  } else if (!HAS_LETTER.test(fullName) || HAS_DIGIT.test(fullName)) {
-    errors.fullName = 'El nombre solo puede llevar letras, espacios y signos como guion o apóstrofo; sin números.';
-  }
-  if (age === null) {
-    errors.birthDate = 'Elige la fecha de nacimiento del paciente.';
-  } else if (age < PATIENT_LIMITS.ageMin) {
-    errors.birthDate = 'La fecha de nacimiento no puede ser posterior a hoy.';
-  } else if (age > PATIENT_LIMITS.ageMax) {
-    errors.birthDate = `La fecha de nacimiento da más de ${PATIENT_LIMITS.ageMax} años; revísala.`;
-  }
-  if (!isSex(sex)) {
-    errors.sex = 'Elige el sexo del paciente.';
+  const givenError = namePartError(givenNames, 'el nombre o los nombres', PATIENT_LIMITS.givenNamesMax, true);
+  if (givenError) errors.givenNames = givenError;
+  const paternalError = namePartError(paternalSurname, 'el apellido paterno', PATIENT_LIMITS.surnameMax, true);
+  if (paternalError) errors.paternalSurname = paternalError;
+  const maternalError = namePartError(maternalSurname, 'el apellido materno', PATIENT_LIMITS.surnameMax, false);
+  if (maternalError) errors.maternalSurname = maternalError;
+
+  // Las fechas AAAA-MM-DD se comparan bien como texto.
+  if (!birthDate) {
+    errors.birthDate = 'Escribe la fecha de nacimiento.';
+  } else if (!isRealDate(birthDate)) {
+    errors.birthDate = 'Escribe una fecha válida (día, mes y año).';
+  } else if (birthDate > todayIso(now)) {
+    errors.birthDate = 'La fecha de nacimiento no puede ser futura.';
+  } else if (birthDate < oldestBirthDateIso(now)) {
+    errors.birthDate = `La edad no puede pasar de ${PATIENT_LIMITS.ageMax} años.`;
   }
 
+  if (!isSex(sex)) errors.sex = 'Elige el sexo del paciente.';
+
   if (Object.keys(errors).length > 0 || !isSex(sex)) return { ok: false, errors };
-  return { ok: true, data: { fullName, birthDate, sex, history: toNonPathologicalHistory(input.history) } };
+  return {
+    ok: true,
+    data: { givenNames, paternalSurname, maternalSurname: maternalSurname || null, birthDate, sex },
+  };
 }

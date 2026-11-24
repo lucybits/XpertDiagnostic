@@ -9,7 +9,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Search,
-  UserPlus,
   UserRound,
   X,
 } from 'lucide-react';
@@ -24,10 +23,8 @@ type SidebarProps = {
   /** Solo en pantallas pequeñas: si el menú está abierto. En escritorio siempre es visible. */
   isOpen: boolean;
   onClose: () => void;
-  /** Abre el buscador de pacientes. */
+  /** Abre el buscador de pacientes. El alta la hace el administrador (P-144). */
   onSearchPatient: () => void;
-  /** Abre el alta de paciente (ESP-004). */
-  onNewPatient: () => void;
   /** Nombre del paciente seleccionado, o null si no hay ninguno. */
   selectedPatientName: string | null;
 };
@@ -71,7 +68,6 @@ export default function Sidebar({
   isOpen,
   onClose,
   onSearchPatient,
-  onNewPatient,
   selectedPatientName,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -151,21 +147,6 @@ export default function Sidebar({
           >
             <Search aria-hidden="true" className={`h-4 w-4 shrink-0 ${isCollapsed ? COLLAPSED_ICON : ''}`} />
             <span className={hideWhenCollapsed}>Buscar paciente</span>
-          </button>
-        </Tooltip>
-
-        {/* Acción secundaria (ESP-004): con borde y sin relleno, para que "Buscar" siga siendo la principal. */}
-        <Tooltip label="Nuevo paciente" enabled={isCollapsed}>
-          <button
-            type="button"
-            onClick={onNewPatient}
-            aria-haspopup="dialog"
-            className={`flex w-full items-center justify-center gap-2 rounded-lg border-2 border-white/25 px-3 py-2 text-base font-medium text-white transition-colors duration-200 hover:border-white/50 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1533] ${
-              isCollapsed ? COLLAPSED_SQUARE : ''
-            }`}
-          >
-            <UserPlus aria-hidden="true" className={`h-4 w-4 shrink-0 ${isCollapsed ? COLLAPSED_ICON : ''}`} />
-            <span className={hideWhenCollapsed}>Nuevo paciente</span>
           </button>
         </Tooltip>
 

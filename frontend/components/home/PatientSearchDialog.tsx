@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, FileText, Search, SearchX, Stethoscope, UserPlus, UserRound, X } from 'lucide-react';
+import { ChevronRight, FileText, Search, SearchX, Stethoscope, UserRound, X } from 'lucide-react';
 import { filterPatients, getDiagnosisOptions, hasActiveCriteria } from '@/lib/patientSearch';
 import {
   DIAGNOSIS_ALL,
@@ -18,9 +18,10 @@ type PatientSearchDialogProps = {
   patients: readonly Patient[];
   onClose: () => void;
   onSelect: (patient: Patient) => void;
-  /** Abre el alta de paciente (ESP-004). */
-  onNewPatient: () => void;
 };
+
+/** El médico tratante no da de alta pacientes: lo hace el administrador (P-144). */
+const NOT_FOUND_HINT = 'Si el paciente no aparece, pide al administrador que lo registre.';
 
 const FOCUS_RING = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60';
 const FIELD =
@@ -39,7 +40,7 @@ const AGE_OPTIONS: { value: AgeFilter; label: string }[] = [
  * sencillos. Usa el elemento <dialog> nativo: atrapa el foco, se cierra con Escape y el resto
  * de la página queda inerte mientras está abierta.
  */
-export default function PatientSearchDialog({ open, patients, onClose, onSelect, onNewPatient }: PatientSearchDialogProps) {
+export default function PatientSearchDialog({ open, patients, onClose, onSelect }: PatientSearchDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -78,7 +79,6 @@ export default function PatientSearchDialog({ open, patients, onClose, onSelect,
           patients={patients}
           onClose={onClose}
           onSelect={onSelect}
-          onNewPatient={onNewPatient}
         />
       )}
     </dialog>
@@ -87,7 +87,7 @@ export default function PatientSearchDialog({ open, patients, onClose, onSelect,
 
 type SearchPanelProps = Omit<PatientSearchDialogProps, 'open'> & { titleId: string };
 
-function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: SearchPanelProps) {
+function SearchPanel({ titleId, patients, onClose, onSelect }: SearchPanelProps) {
   const [criteria, setCriteria] = useState<PatientSearchCriteria>(EMPTY_PATIENT_SEARCH);
   const ids = useId();
 
@@ -218,26 +218,18 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
             {patients.length === 0 ? (
               <>
                 <p className="font-medium text-slate-900">Aún no hay pacientes registrados</p>
-                <p className="text-slate-700">Cuando se registren pacientes, podrás buscarlos aquí.</p>
+                <p className="text-slate-700">
+                  Cuando el administrador registre pacientes, podrás buscarlos aquí.
+                </p>
               </>
             ) : (
               <>
                 <p className="font-medium text-slate-900">No se encontraron pacientes</p>
-                <p className="text-slate-700">Prueba con otro nombre o quita algunos filtros.</p>
+                <p className="text-slate-700">Prueba con otro nombre o quita algunos filtros. {NOT_FOUND_HINT}</p>
               </>
             )}
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-              {/* Sin resultados es justo cuando hace falta registrarlo: aquí se destaca (ESP-004). */}
-              <button
-                type="button"
-                onClick={onNewPatient}
-                aria-haspopup="dialog"
-                className="inline-flex items-center gap-2 rounded-lg bg-teal-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-              >
-                <UserPlus aria-hidden="true" className="h-4 w-4" />
-                Registrar nuevo paciente
-              </button>
-              {filtersActive && (
+            {filtersActive && (
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={clearFilters}
@@ -245,8 +237,8 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
                 >
                   Limpiar búsqueda y filtros
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -255,19 +247,7 @@ function SearchPanel({ titleId, patients, onClose, onSelect, onNewPatient }: Sea
       <footer className="flex items-center gap-3 border-t-2 border-slate-200 px-6 py-3">
         <p aria-live="polite" className="flex-1 text-slate-700">
           {results.length === 1 ? '1 paciente encontrado' : `${results.length} pacientes encontrados`}
-          {results.length > 0 && (
-            <>
-              {' | ¿No lo encuentras? '}
-              <button
-                type="button"
-                onClick={onNewPatient}
-                aria-haspopup="dialog"
-                className={`rounded font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800 ${FOCUS_RING}`}
-              >
-                Registrar nuevo paciente
-              </button>
-            </>
-          )}
+          {results.length > 0 && <span className="max-sm:hidden"> | {NOT_FOUND_HINT}</span>}
         </p>
         {filtersActive && results.length > 0 && (
           <button

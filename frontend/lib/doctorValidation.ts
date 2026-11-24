@@ -1,5 +1,6 @@
 import {
   DOCTOR_LIMITS,
+  isDoctorRole,
   type DoctorRegistration,
   type DoctorRegistrationField,
   type DoctorUpdate,
@@ -13,9 +14,11 @@ export interface DoctorRegistrationInput {
   cedulaProfesional: string;
   password: string;
   confirmPassword: string;
+  /** Tipo de médico elegido: 'T' o 'I'; vacío si aún no se elige. */
+  rol: string;
 }
 
-export type DoctorUpdateInput = Pick<DoctorRegistrationInput, 'nombreCompleto' | 'especialidad' | 'cedulaProfesional'>;
+export type DoctorUpdateInput = Pick<DoctorRegistrationInput, 'nombreCompleto' | 'especialidad' | 'cedulaProfesional' | 'rol'>;
 
 export type DoctorFieldErrors = Partial<Record<DoctorRegistrationField, string>>;
 
@@ -52,7 +55,8 @@ export function validateDoctorRegistration(
 /**
  * Valida los datos editables de un médico (UpdateDoctorRequest del backend).
  *
- * @post ok == true → nombre, especialidad y cédula sin espacios en los extremos y dentro de DOCTOR_LIMITS.
+ * @post ok == true → nombre, especialidad y cédula sin espacios en los extremos y dentro de DOCTOR_LIMITS;
+ *       rol es 'T' (tratante) o 'I' (internista).
  */
 export function validateDoctorUpdate(
   input: DoctorUpdateInput,
@@ -71,9 +75,13 @@ export function validateDoctorUpdate(
   if (!CEDULA_PATTERN.test(cedula)) {
     errors.cedulaProfesional = 'La cédula profesional debe tener 7 u 8 dígitos.';
   }
+  const rol = input.rol;
+  if (!isDoctorRole(rol)) {
+    errors.rol = 'Elige el tipo de médico: tratante o internista.';
+  }
 
-  if (Object.keys(errors).length > 0) return { ok: false, errors };
-  return { ok: true, data: { nombreCompleto: nombre, especialidad, cedulaProfesional: cedula } };
+  if (Object.keys(errors).length > 0 || !isDoctorRole(rol)) return { ok: false, errors };
+  return { ok: true, data: { nombreCompleto: nombre, especialidad, cedulaProfesional: cedula, rol } };
 }
 
 /**

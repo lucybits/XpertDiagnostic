@@ -41,8 +41,6 @@ type AssistantChatProps = {
   /** Se llama al aceptar el aviso clínico: HomeScreen lo registra en la cuenta. */
   onWelcomeAccepted: () => void;
   onSearchPatient: () => void;
-  /** Abre el alta de paciente (ESP-004). */
-  onNewPatient: () => void;
   /** Expediente capturado del paciente (null mientras carga o sin paciente). */
   record: PatientRecord | null;
   /** Se guardó la sección actual: HomeScreen la marca y pasa a la siguiente (P-103). */
@@ -77,7 +75,6 @@ export default function AssistantChat({
   doctorName,
   onWelcomeAccepted,
   onSearchPatient,
-  onNewPatient,
   record,
   onSectionSaved,
   diagnosis,
@@ -340,7 +337,6 @@ export default function AssistantChat({
                   showAction={showsAction(message)}
                   onRetry={canRetry(message) ? () => retry(message) : undefined}
                   onAction={handleWelcomeAction}
-                  onSecondaryAction={onNewPatient}
                   isStopping={stoppingId === message.id}
                   onTyped={markTyped}
                   onStopped={handleStopped}

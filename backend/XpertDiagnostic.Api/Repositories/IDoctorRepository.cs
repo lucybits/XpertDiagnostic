@@ -44,13 +44,21 @@ public interface IDoctorRepository
     /// <remarks>@post La cuenta del médico, o null si no existe o no es de rol médico. No modifica datos.</remarks>
     Task<DoctorAccount?> ObtenerCuentaAsync(int idMedico, CancellationToken cancellationToken = default);
 
-    /// <summary>Reemplaza nombre, especialidad y cédula de un médico.</summary>
+    /// <summary>Reemplaza nombre, especialidad, cédula y tipo (rol T o I) de un médico.</summary>
     /// <remarks>
-    /// @post Actualizado: los tres campos quedaron guardados. NoEncontrado/CedulaDuplicada: no cambió nada.
+    /// @pre rol es "T" o "I".
+    /// @post Actualizado: los cuatro campos quedaron guardados. NoEncontrado/CedulaDuplicada: no cambió nada.
     /// </remarks>
     Task<DoctorUpdateResult> ActualizarDatosAsync(
-        int idMedico, string nombreCompleto, string especialidad, string cedulaProfesional,
+        int idMedico, string nombreCompleto, string especialidad, string cedulaProfesional, string rol,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Borra de forma definitiva la cuenta (USUARIOS) y el registro (MEDICOS) de un médico.</summary>
+    /// <remarks>
+    /// @post true si existía con rol de médico y se borraron ambos en una sola transacción; false si no
+    ///       existía o no es de rol médico (no se borra nada). Una cuenta de administrador nunca se borra.
+    /// </remarks>
+    Task<bool> EliminarAsync(int idMedico, CancellationToken cancellationToken = default);
 
     /// <summary>Reemplaza el hash de contraseña de la cuenta de un médico.</summary>
     /// <remarks>@pre nuevoHash es un hash BCrypt. @post true si la cuenta existe y es de médico; false si no (sin cambios).</remarks>

@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import csv
 import sys
-from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
@@ -23,6 +22,13 @@ SQL_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = SQL_DIR / "ClinicalData"
 OUTPUT = SQL_DIR / "SeedClinicalData.sql"
 SOURCE_ENCODING = "cp1252"
+# Año contra el que se convierte la edad del CSV en fecha de nacimiento (P-144).
+ANIO_REFERENCIA = 2026
+# IO_Pacientes.csv no trae el sexo: se inventa según el nombre (ficticio) de cada paciente de prueba.
+SEED_PATIENT_SEX = {
+    "PACIE00001": "M", "PACIE00002": "F", "PACIE00003": "M", "PACIE00004": "F", "PACIE00005": "M",
+    "PACIE00006": "F", "PACIE00007": "M", "PACIE00008": "F", "PACIE00009": "M", "PACIE00010": "F",
+}
 
 # Correcciones de caracteres perdidos. Solo las que no admiten otra lectura.
 CHARACTER_FIXES = [
@@ -36,32 +42,6 @@ CHARACTER_FIXES = [
     ("y ?5 cm", "y ≤5 cm"),
     ("y ?7 cm", "y ≤7 cm"),
 ]
-
-# IO_Pacientes.csv trae Edad pero no fecha de nacimiento ni sexo, y PACIENTES ya no guarda la edad
-# (es una columna calculada de FechaNacimiento). Para los pacientes de prueba se inventan: la fecha
-# cae entre 1 y 300 días antes del cumpleaños número Edad contado desde SEED_REFERENCE_DATE, así que
-# da exactamente esa Edad ese día (y la edad sigue avanzando con el tiempo). Fija para que el script
-# no cambie cada vez que se genera.
-SEED_REFERENCE_DATE = date(2026, 11, 24)
-# Sexo inventado según el nombre (ficticio) de cada paciente de prueba.
-SEED_PATIENT_SEX = {
-    "PACIE00001": "M", "PACIE00002": "F", "PACIE00003": "M", "PACIE00004": "F", "PACIE00005": "M",
-    "PACIE00006": "F", "PACIE00007": "M", "PACIE00008": "F", "PACIE00009": "M", "PACIE00010": "F",
-}
-
-
-def invented_birth_date(patient_id: str, age: int) -> date:
-    """Fecha de nacimiento con la que el paciente tiene `age` años en SEED_REFERENCE_DATE."""
-    birthday = SEED_REFERENCE_DATE.replace(year=SEED_REFERENCE_DATE.year - age)
-    days_before = int(patient_id[-5:]) * 37 % 300 + 1
-    born = birthday - timedelta(days=days_before)
-    assert age_on(born, SEED_REFERENCE_DATE) == age
-    return born
-
-
-def age_on(born: date, today: date) -> int:
-    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-
 
 # Tipo de hallazgo -> (tabla, columna id) del catálogo al que apunta.
 FINDING_CATALOGS = {
@@ -143,8 +123,6 @@ def sql(value: object) -> str:
         return "NULL"
     if isinstance(value, (int, Decimal)):
         return str(value)
-    if isinstance(value, date):
-        return "'" + value.isoformat() + "'"
     return "N'" + str(value).replace("'", "''") + "'"
 
 
@@ -259,17 +237,24 @@ def main() -> int:
             errors.append(f"{where}: tratamiento {p['Id_Tratam']} no existe")
         if p["Id_Plan"] and p["Id_Plan"] not in plan_ids:
             errors.append(f"{where}: plan {p['Id_Plan']} no existe")
-        age = int(p["Edad"]) if p["Edad"].isdigit() else None
-        if age is None:
+        if not p["Edad"].isdigit():
             errors.append(f"{where}: edad '{p['Edad']}' inválida")
-        sex = SEED_PATIENT_SEX.get(p["Id_Pacient"])
-        if sex is None:
+        # P-144: el CSV trae nombre completo y edad; la tabla guarda nombre(s), apellidos y fecha de
+        # nacimiento. Las dos últimas palabras (sin "(ficticio)") son los apellidos; la fecha es el
+        # 1 de enero del año que da la edad respecto a ANIO_REFERENCIA (fijo: el seed no cambia solo).
+        palabras = p["Nombre"].replace("(ficticio)", "").split()
+        if len(palabras) < 3:
+            errors.append(f"{where}: el nombre '{p['Nombre']}' no tiene nombre(s) y dos apellidos")
+        nombres, paterno, materno = (" ".join(palabras[:-2]), palabras[-2], palabras[-1]) if len(palabras) >= 3 else (None, None, None)
+        nacimiento = f"{ANIO_REFERENCIA - int(p['Edad'])}-01-01" if p["Edad"].isdigit() else None
+        sexo = SEED_PATIENT_SEX.get(p["Id_Pacient"])
+        if sexo is None:
             errors.append(f"{where}: falta su sexo en SEED_PATIENT_SEX")
-        patient_values.append([p["Id_Pacient"], p["Nombre"],
-                               invented_birth_date(p["Id_Pacient"], age) if age is not None else None, sex,
+        patient_values.append([p["Id_Pacient"], p["Nombre"], nombres, paterno, materno, nacimiento, sexo,
                                p["Id_Enferme"], p["Id_comorb"], p["Id_Tratam"], p["Id_Plan"]])
-    tables["PACIENTES"] = (["Id_Paciente", "NombreCompleto", "FechaNacimiento", "Sexo",
-                            "Id_EnfermedadDiagnosticada", "Id_Comorbilidad", "Id_Tratamiento", "Id_Plan"], patient_values)
+    tables["PACIENTES"] = (["Id_Paciente", "NombreCompleto", "Nombres", "ApellidoPaterno", "ApellidoMaterno",
+                            "FechaNacimiento", "Sexo", "Id_EnfermedadDiagnosticada",
+                            "Id_Comorbilidad", "Id_Tratamiento", "Id_Plan"], patient_values)
 
     # IO_Complicaciones: catálogo por enfermedad que además marca al paciente de prueba (va después de PACIENTES).
     complications = read("Complicaciones")
