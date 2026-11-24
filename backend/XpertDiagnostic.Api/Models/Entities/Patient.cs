@@ -28,10 +28,7 @@ public class Patient
     [Column(TypeName = "varchar(10)")]
     public string? IdEnfermedadDiagnosticada { get; set; }
 
-    // ── Entradas que se capturan en el chat ──
-    [Column(TypeName = "varchar(10)")]
-    public string? IdEnfermedadPreexistente { get; set; }
-
+    // ── Entrada que se captura en el chat ──
     [Column(TypeName = "varchar(20)")]
     public string? IdComorbilidad { get; set; }
 

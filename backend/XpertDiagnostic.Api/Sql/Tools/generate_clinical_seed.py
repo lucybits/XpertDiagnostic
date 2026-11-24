@@ -224,9 +224,9 @@ def main() -> int:
         if not p["Edad"].isdigit():
             errors.append(f"{where}: edad '{p['Edad']}' inválida")
         patient_values.append([p["Id_Pacient"], p["Nombre"], int(p["Edad"]) if p["Edad"].isdigit() else None,
-                               p["Id_Enferme"], p["Id_Enfermp"], p["Id_comorb"], p["Id_Tratam"], p["Id_Plan"]])
+                               p["Id_Enferme"], p["Id_comorb"], p["Id_Tratam"], p["Id_Plan"]])
     tables["PACIENTES"] = (["IdPaciente", "NombreCompleto", "Edad", "IdEnfermedadDiagnosticada",
-                            "IdEnfermedadPreexistente", "IdComorbilidad", "IdTratamiento", "IdPlan"], patient_values)
+                            "IdComorbilidad", "IdTratamiento", "IdPlan"], patient_values)
 
     findings = read("HallazgosPacientes")
     finding_keys: set[tuple[str, str]] = set()

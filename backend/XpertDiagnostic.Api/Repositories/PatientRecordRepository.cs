@@ -11,19 +11,6 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
     public Task<bool> ExistePacienteAsync(string idPaciente, CancellationToken cancellationToken = default) =>
         db.Pacientes.AnyAsync(p => p.Id == idPaciente, cancellationToken);
 
-    public async Task<(string? Id, string? Nombre)> ObtenerPreexistenteAsync(
-        string idPaciente,
-        CancellationToken cancellationToken = default)
-    {
-        var fila = await (from p in db.Pacientes.AsNoTracking()
-                          join e in db.Enfermedades on p.IdEnfermedadPreexistente equals e.Id into enfermedades
-                          from e in enfermedades.DefaultIfEmpty()
-                          where p.Id == idPaciente
-                          select new { p.IdEnfermedadPreexistente, Nombre = e == null ? null : e.Nombre })
-            .FirstOrDefaultAsync(cancellationToken);
-        return (fila?.IdEnfermedadPreexistente, fila?.Nombre);
-    }
-
     public async Task<IReadOnlyList<FindingView>> ListarHallazgosAsync(
         string idPaciente,
         CancellationToken cancellationToken = default) =>
@@ -61,9 +48,4 @@ public sealed class PatientRecordRepository(AppDbContext db) : IPatientRecordRep
         await transaccion.CommitAsync(cancellationToken);
         db.ChangeTracker.Clear();
     }
-
-    public Task AsignarPreexistenteAsync(string idPaciente, string? idEnfermedad, CancellationToken cancellationToken = default) =>
-        db.Pacientes
-            .Where(p => p.Id == idPaciente)
-            .ExecuteUpdateAsync(set => set.SetProperty(p => p.IdEnfermedadPreexistente, idEnfermedad), cancellationToken);
 }

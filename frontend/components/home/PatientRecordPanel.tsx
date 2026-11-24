@@ -81,8 +81,6 @@ type PatientRecordPanelProps = {
   sectionGroups: readonly ClinicalSectionGroup[];
   /** Hallazgos guardados en HALLAZGOS_PACIENTE, por tipo (P-103). */
   findings?: Partial<Record<FindingType, readonly PatientFinding[]>>;
-  /** Nombre de la enfermedad preexistente, si tiene. */
-  preexistingDisease?: string | null;
   /** Último análisis del paciente (salida de la máquina de inferencia), si ya se hizo. */
   diagnosis?: DiagnosisResult | null;
   /** Los hallazgos cambiaron después del análisis (P-112). */
@@ -100,7 +98,7 @@ const EASE = 'ease-[cubic-bezier(0.22,1,0.36,1)]';
 /**
  * Panel derecho con el resumen del expediente del paciente seleccionado: ficha, avance de la
  * captura, hallazgos registrados y, al final del flujo, el diagnóstico diferencial.
- * Los hallazgos y la enfermedad preexistente vienen del expediente guardado (P-103).
+ * Los hallazgos vienen del expediente guardado (P-103).
  *
  * En la columna fija se puede plegar (P-75): queda un "lomo" angosto con el título en vertical,
  * los íconos de hallazgos con su número y el avance como barra vertical. El contenido completo
@@ -110,7 +108,6 @@ export default function PatientRecordPanel({
   patient,
   sectionGroups,
   findings = {},
-  preexistingDisease = null,
   diagnosis = null,
   isDiagnosisStale = false,
   onClose,
@@ -173,10 +170,6 @@ export default function PatientRecordPanel({
               <p className="truncate font-semibold">{patient.fullName}</p>
               <p className="text-slate-700">
                 {patient.recordNumber} | {patient.age} años
-              </p>
-              <p className="mt-0.5 text-slate-800">
-                <span className="text-slate-700">Preexistente: </span>
-                {preexistingDisease ?? 'ninguna registrada'}
               </p>
             </div>
           </section>

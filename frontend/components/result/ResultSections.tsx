@@ -41,17 +41,13 @@ const HISTORY_GROUPS: readonly { type: FindingType; label: string }[] = [
   { type: 'Complicacion', label: 'Complicaciones' },
 ];
 
-/** 1. Historia clínica: las entradas capturadas (enfermedad preexistente y hallazgos). */
+/** 1. Historia clínica: las entradas capturadas (hallazgos). */
 export function ClinicalHistoryCard({ result }: { result: PatientResult }) {
   const ids = useId();
   const { expediente } = result;
   return (
     <ResultCard title="Historia clínica" id={`${ids}-history`}>
       <dl className="space-y-3">
-        <div className="break-inside-avoid">
-          <dt className="font-medium text-slate-700">Enfermedad preexistente</dt>
-          <dd className="text-slate-900">{expediente.enfermedadPreexistente ?? 'Ninguna registrada'}</dd>
-        </div>
         {HISTORY_GROUPS.map(({ type, label }) => {
           const items = expediente.hallazgos.filter((h) => h.tipoHallazgo === type);
           if (items.length === 0 && (type === 'Estudio_diagdif' || type === 'Complicacion')) return null;

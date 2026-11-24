@@ -33,7 +33,6 @@ export const WELCOME_STEPS: readonly WelcomeStep[] = [
         text: () =>
           [
             '**1. Antecedentes**',
-            '- Enfermedades preexistentes',
             '- Comorbilidades',
             'En cada sección **eliges de la base de conocimiento** lo que presenta el paciente; así puedo compararlo con precisión.',
           ].join('\n'),

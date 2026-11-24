@@ -1,6 +1,5 @@
 import {
   Activity,
-  ClipboardList,
   ClipboardPlus,
   FlaskConical,
   Stethoscope,
@@ -16,12 +15,10 @@ export type SectionStatus = 'pending' | 'in-progress' | 'complete';
 /**
  * Qué captura una sección y dónde se guarda (P-103):
  * - findings: elementos de un catálogo → HALLAZGOS_PACIENTE con su TipoHallazgo.
- * - preexisting: una enfermedad de ENFERMEDADES → PACIENTES.IdEnfermedadPreexistente.
  * - analysis: no captura; ejecuta la máquina de inferencia con lo capturado.
  */
 export type SectionCapture =
   | { kind: 'findings'; section: FindingSection; catalog: CatalogName; findingType: FindingType; noun: string }
-  | { kind: 'preexisting'; catalog: 'enfermedades' }
   | { kind: 'analysis' };
 
 export interface ClinicalSection {
@@ -50,7 +47,7 @@ type SectionDefinition = Omit<ClinicalSection, 'status'>;
 
 /**
  * Secciones alineadas con las entradas de la máquina de inferencia (decisión de Lucía, P-103):
- * antecedentes (enfermedad preexistente y comorbilidades), evaluación clínica (síntomas, signos y
+ * antecedentes (comorbilidades), evaluación clínica (síntomas, signos y
  * estudios) y, al final, el análisis.
  */
 const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: readonly SectionDefinition[] }[] = [
@@ -58,12 +55,6 @@ const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: reado
     id: 'history',
     label: 'Antecedentes',
     sections: [
-      {
-        id: 'pre-existing-conditions',
-        label: 'Enfermedades preexistentes',
-        icon: ClipboardList,
-        capture: { kind: 'preexisting', catalog: 'enfermedades' },
-      },
       {
         id: 'comorbidities',
         label: 'Comorbilidades',
@@ -138,15 +129,13 @@ export function buildSectionGroups(completed: ReadonlySet<string>): readonly Cli
 
 /**
  * Secciones que ya tienen datos guardados en el expediente (para retomar a un paciente).
- * @post Incluye la de enfermedades preexistentes si tiene una, y cada sección de hallazgos con al
- *       menos un hallazgo de su tipo. El análisis nunca se da por hecho.
+ * @post Incluye cada sección de hallazgos con al menos un hallazgo de su tipo. El análisis nunca se da por hecho.
  */
 export function sectionsWithData(record: PatientRecord): Set<string> {
   const done = new Set<string>();
   for (const group of SECTION_DEFINITIONS) {
     for (const section of group.sections) {
       const { capture } = section;
-      if (capture.kind === 'preexisting' && record.idEnfermedadPreexistente) done.add(section.id);
       if (capture.kind === 'findings' && record.hallazgos.some((h) => h.tipoHallazgo === capture.findingType)) {
         done.add(section.id);
       }
