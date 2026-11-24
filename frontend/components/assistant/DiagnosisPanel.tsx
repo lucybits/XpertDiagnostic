@@ -81,15 +81,15 @@ export default function DiagnosisPanel({
   const analyzeLabel = isRunning
     ? 'Analizando…'
     : result === null
-      ? 'Analizar expediente'
+      ? 'Generar diagnóstico y tratamiento'
       : isStale
-        ? 'Volver a analizar'
+        ? 'Guardar'
         : 'Análisis al día';
 
   return (
     <section
       aria-labelledby={`${ids}-title`}
-      className="mx-auto w-full max-w-4xl px-4 pb-2 transition-opacity duration-300 starting:opacity-0 motion-reduce:transition-none sm:px-8"
+      className="mx-auto w-full max-w-4xl px-4 pb-2 transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none sm:px-8"
     >
       <div className="rounded-2xl border-2 border-slate-200 bg-white">
         <header className="flex flex-wrap items-start gap-3 border-b-2 border-slate-100 px-5 pt-4 pb-3">
@@ -106,27 +106,25 @@ export default function DiagnosisPanel({
         </header>
 
         <div className="space-y-3 px-5 py-4">
-          {/* Antes del primer análisis se dice qué hacer: sin esto la tarjeta se veía vacía (P-137). */}
-          {result === null && (
-            <p className="flex items-start gap-2 text-slate-900">
-              <Microscope aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
-              <span>
-                Pulsa <span className="font-semibold">Analizar expediente</span> para ver las enfermedades más probables.
-              </span>
-            </p>
-          )}
           {/* Diagnóstico ya confirmado (P-135): se dice cuál es, que ya está en el expediente y cómo verlo. */}
           {confirmedName && (
             <div
               role="status"
               className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-slate-100 px-4 py-3"
             >
-              <p className="flex min-w-0 flex-1 items-start gap-2 text-slate-900">
+              <div className="flex min-w-0 flex-1 items-start gap-2 text-slate-900">
                 <CircleCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
-                <span>
-                  <span className="font-semibold">{confirmedName}</span> confirmado y guardado en el expediente.
-                </span>
-              </p>
+                <div className="space-y-0.5">
+                  <p>
+                    <span className="font-semibold">{confirmedName}</span>: enviado a validación por el médico
+                    internista.
+                  </p>
+                  {/* SIMULADO: todavía no existe la validación del comité; el texto se muestra siempre. */}
+                  <p className="text-sm text-slate-700">
+                    Con diagnóstico validado por el Comité de Interconsulta de Especialidad.
+                  </p>
+                </div>
+              </div>
               <Link
                 href={`/patients/${patientId}/result`}
                 className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-teal-700 px-3.5 py-1.5 font-semibold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
@@ -140,7 +138,7 @@ export default function DiagnosisPanel({
           {result && isStale && (
             <p role="status" className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-amber-900">
               <CircleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-              Los hallazgos cambiaron. Vuelve a analizar antes de confirmar.
+              Los hallazgos cambiaron. Actualiza el expediente antes de confirmar.
             </p>
           )}
           {result === null ? null : result.candidatos.length === 0 ? (
@@ -153,7 +151,8 @@ export default function DiagnosisPanel({
                 return (
                   <li
                     key={candidate.idEnfermedad}
-                    className={`rounded-xl border-2 px-4 py-3 ${isConfirmed ? 'border-teal-700' : 'border-slate-100'}`}
+                    className={`rounded-xl border-2 px-4 py-3 transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none ${isConfirmed ? 'border-teal-700' : 'border-slate-100'}`}
+                    style={{ transitionDelay: `${Math.min(index * 70, 210)}ms` }}
                   >
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <span className="text-sm font-semibold text-slate-700 tabular-nums">{index + 1}.</span>
@@ -177,14 +176,21 @@ export default function DiagnosisPanel({
                       className="mt-2 flex items-center gap-3"
                     >
                       <span className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                        <span className="block h-full rounded-full bg-[#1e47c5]" style={{ width: `${percent}%` }} />
+                        <span
+                          className="block h-full rounded-full bg-[#1e47c5] transition-[width] duration-700 ease-out starting:w-0 motion-reduce:transition-none"
+                          style={{ width: `${percent}%`, transitionDelay: `${120 + Math.min(index * 70, 210)}ms` }}
+                        />
                       </span>
                       <span className="w-10 text-right text-sm font-medium text-slate-700 tabular-nums">{percent}%</span>
                     </div>
                     {candidate.apoyos.length > 0 && (
                       <ul aria-label="Hallazgos que lo apoyan" className="mt-2 flex flex-wrap gap-1.5">
-                        {candidate.apoyos.map((apoyo) => (
-                          <li key={apoyo} className="rounded-md bg-slate-100 px-2 py-0.5 text-sm text-slate-700">
+                        {candidate.apoyos.map((apoyo, supportIndex) => (
+                          <li
+                            key={apoyo}
+                            className="rounded-md bg-slate-100 px-2 py-0.5 text-sm text-slate-700 transition-[opacity,translate] duration-250 ease-out starting:translate-y-1 starting:opacity-0 motion-reduce:transition-none"
+                            style={{ transitionDelay: `${Math.min(index * 70 + supportIndex * 25, 350)}ms` }}
+                          >
                             {apoyo}
                           </li>
                         ))}

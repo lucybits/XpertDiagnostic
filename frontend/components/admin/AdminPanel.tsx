@@ -3,18 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import {
-  CircleAlert,
-  CircleCheck,
-  KeyRound,
-  LogOut,
-  Pencil,
-  RotateCw,
-  Search,
-  UserRoundCheck,
-  UserRoundPlus,
-  UserRoundX,
-} from 'lucide-react';
+import { KeyRound, LogOut } from 'lucide-react';
 import LoadingDots from '@/components/ui/LoadingDots';
 import DoctorFormDialog, { type SaveOutcome } from './DoctorFormDialog';
 import PasswordDialog from './PasswordDialog';
@@ -214,20 +203,22 @@ export default function AdminPanel() {
         </button>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 border-b-2 border-slate-900 pb-3">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <h1 className="text-2xl font-semibold text-slate-900">Médicos</h1>
-            <p className="mt-1 text-slate-700">
-              Registra médicos con su cédula profesional y administra sus cuentas de acceso.
-            </p>
+            {list.status === 'ready' && (
+              <p className="text-slate-700" aria-live="polite">
+                {doctors.length} {doctors.length === 1 ? 'registrado' : 'registrados'}, {activeCount}{' '}
+                {activeCount === 1 ? 'activo' : 'activos'}
+              </p>
+            )}
           </div>
           <button
             type="button"
             onClick={() => setDialog({ kind: 'create' })}
-            className={`flex items-center gap-2 rounded-lg bg-[#0b1533] px-4 py-2.5 font-medium text-white transition-colors hover:bg-[#1a2650] ${FOCUS_RING} focus-visible:ring-offset-2`}
+            className={`rounded-md bg-blue-900 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-800 ${FOCUS_RING} focus-visible:ring-offset-2`}
           >
-            <UserRoundPlus aria-hidden="true" className="h-5 w-5" />
             Registrar médico
           </button>
         </div>
@@ -235,51 +226,38 @@ export default function AdminPanel() {
         {notice && (
           <div
             role={notice.tone === 'success' ? 'status' : 'alert'}
-            className={`mt-6 flex items-start gap-3 rounded-xl border-2 p-4 ${
-              notice.tone === 'success' ? 'border-green-200 bg-green-50 text-green-900' : 'border-red-200 bg-red-50 text-red-900'
+            className={`mt-5 flex items-start gap-4 border-2 px-4 py-3 ${
+              notice.tone === 'success' ? 'border-green-700 text-green-900' : 'border-red-700 text-red-900'
             }`}
           >
-            {notice.tone === 'success' ? (
-              <CircleCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
-            ) : (
-              <CircleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
-            )}
             <p className="flex-1">{notice.text}</p>
             <button
               type="button"
               onClick={() => setNotice(null)}
-              className={`rounded-md px-2 text-sm font-medium underline underline-offset-2 ${FOCUS_RING}`}
+              className={`text-sm font-medium underline underline-offset-2 ${FOCUS_RING}`}
             >
               Ocultar
             </button>
           </div>
         )}
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <div className="relative min-w-0 flex-1 basis-72">
-            <label htmlFor="admin-search" className="sr-only">
-              Buscar médico
-            </label>
-            <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-700" />
-            <input
-              id="admin-search"
-              type="search"
-              value={query}
-              maxLength={120}
-              autoComplete="off"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar por nombre, especialidad, ID o cédula"
-              className="w-full rounded-lg border-2 border-slate-200 bg-white py-2.5 pr-3 pl-10 text-base text-slate-900 transition-colors placeholder:text-slate-500 hover:border-slate-300 focus:border-[#116ee6] focus:outline-none"
-            />
-          </div>
-          {list.status === 'ready' && (
-            <p className="text-slate-800" aria-live="polite">
-              {doctors.length} {doctors.length === 1 ? 'médico' : 'médicos'} | {activeCount} {activeCount === 1 ? 'activo' : 'activos'}
-            </p>
-          )}
+        <div className="mt-5">
+          <label htmlFor="admin-search" className="mb-1 block text-sm font-medium text-slate-800">
+            Buscar
+          </label>
+          <input
+            id="admin-search"
+            type="search"
+            value={query}
+            maxLength={120}
+            autoComplete="off"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Nombre, especialidad, ID o cédula"
+            className="w-full max-w-md rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-500 focus:border-[#116ee6] focus:outline-none"
+          />
         </div>
 
-        <section aria-label="Lista de médicos" className="mt-4">
+        <section aria-label="Lista de médicos" className="mt-6">
           {list.status === 'loading' && (
             <div className="flex justify-center py-16">
               <LoadingDots className="h-16 w-16" label="Cargando médicos" />
@@ -287,8 +265,7 @@ export default function AdminPanel() {
           )}
 
           {list.status === 'error' && (
-            <div role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 p-4 text-red-900">
-              <CircleAlert aria-hidden="true" className="h-5 w-5 shrink-0" />
+            <div role="alert" className="flex flex-wrap items-center gap-4 border-2 border-red-700 px-4 py-3 text-red-900">
               <p className="flex-1">{list.message}</p>
               <button
                 type="button"
@@ -296,16 +273,15 @@ export default function AdminPanel() {
                   setList({ status: 'loading' });
                   void loadDoctors(query);
                 }}
-                className={`flex items-center gap-2 rounded-lg border-2 border-red-300 px-3 py-1.5 font-medium hover:bg-red-100 ${FOCUS_RING}`}
+                className={`font-medium underline underline-offset-2 ${FOCUS_RING}`}
               >
-                <RotateCw aria-hidden="true" className="h-4 w-4" />
                 Reintentar
               </button>
             </div>
           )}
 
           {list.status === 'ready' && doctors.length === 0 && (
-            <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-12 text-center text-slate-700">
+            <p className="py-10 text-slate-700">
               {query.trim()
                 ? `Ningún médico coincide con «${query.trim()}».`
                 : 'Aún no hay médicos registrados. Usa «Registrar médico» para crear la primera cuenta.'}
@@ -313,31 +289,20 @@ export default function AdminPanel() {
           )}
 
           {list.status === 'ready' && doctors.length > 0 && (
-            <ul className="space-y-3 md:hidden">
+            <ul className="divide-y-2 divide-slate-200 border-y-2 border-slate-200 md:hidden">
               {doctors.map((doctor) => (
-                <li key={doctor.idMedico} className="rounded-xl border-2 border-slate-200 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-medium text-slate-900">{doctor.nombreCompleto}</p>
-                      <p className="text-slate-700">{doctor.especialidad}</p>
-                    </div>
-                    <StatusBadge activo={doctor.activo} />
-                  </div>
-                  <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
-                    <div>
-                      <dt className="text-slate-700">ID</dt>
-                      <dd className="font-mono text-slate-800">{doctor.idMedico}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-slate-700">Cédula</dt>
-                      <dd className="font-mono text-slate-800">{doctor.cedulaProfesional}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-slate-700">Alta</dt>
-                      <dd className="text-slate-800">{dateFormatter.format(new Date(doctor.fechaRegistro))}</dd>
-                    </div>
-                  </dl>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
+                <li key={doctor.idMedico} className="py-4">
+                  <p className="font-medium text-slate-900">
+                    {doctor.nombreCompleto}
+                    {!doctor.activo && <span className="font-normal text-slate-700"> (desactivada)</span>}
+                  </p>
+                  <p className="text-slate-700">{doctor.especialidad}</p>
+                  <p className="mt-1 text-sm text-slate-800">
+                    ID <span className="font-mono">{doctor.idMedico}</span>, cédula{' '}
+                    <span className="font-mono">{doctor.cedulaProfesional}</span>, alta{' '}
+                    {dateFormatter.format(new Date(doctor.fechaRegistro))}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
                     <RowActions doctor={doctor} onOpen={setDialog} />
                   </div>
                 </li>
@@ -346,35 +311,37 @@ export default function AdminPanel() {
           )}
 
           {list.status === 'ready' && doctors.length > 0 && (
-            <div className="hidden overflow-x-auto rounded-xl border-2 border-slate-200 md:block">
-              <table className="w-full min-w-208 border-collapse text-left">
-                <thead className="bg-slate-50 text-slate-800">
-                  <tr>
-                    <th scope="col" className="px-4 py-3 font-semibold">ID</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Médico</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Cédula</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Alta</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Estado</th>
-                    <th scope="col" className="px-4 py-3 text-right font-semibold">Acciones</th>
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full border-collapse text-left">
+                <thead className="text-sm text-slate-700">
+                  <tr className="border-b-2 border-slate-300">
+                    <th scope="col" className="py-2 pr-4 font-medium">Médico</th>
+                    <th scope="col" className="py-2 pr-4 font-medium">ID</th>
+                    <th scope="col" className="py-2 pr-4 font-medium">Cédula</th>
+                    <th scope="col" className="py-2 pr-4 font-medium">Fecha de alta</th>
+                    <th scope="col" className="py-2 pr-4 font-medium">Estado</th>
+                    <th scope="col" className="py-2 font-medium">
+                      <span className="sr-only">Acciones</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {doctors.map((doctor) => (
-                    <tr key={doctor.idMedico} className="border-t-2 border-slate-100 align-top">
-                      <td className="px-4 py-3 font-mono text-slate-700">{doctor.idMedico}</td>
-                      <td className="px-4 py-3">
+                    <tr key={doctor.idMedico} className="border-b-2 border-slate-200 align-top">
+                      <td className="py-3 pr-4">
                         <p className="font-medium text-slate-900">{doctor.nombreCompleto}</p>
                         <p className="text-slate-700">{doctor.especialidad}</p>
                       </td>
-                      <td className="px-4 py-3 font-mono text-slate-700">{doctor.cedulaProfesional}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-slate-800">
+                      <td className="py-3 pr-4 font-mono text-slate-800">{doctor.idMedico}</td>
+                      <td className="py-3 pr-4 font-mono text-slate-800">{doctor.cedulaProfesional}</td>
+                      <td className="py-3 pr-4 whitespace-nowrap text-slate-800">
                         {dateFormatter.format(new Date(doctor.fechaRegistro))}
                       </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge activo={doctor.activo} />
+                      <td className={`py-3 pr-4 ${doctor.activo ? 'text-green-800' : 'text-slate-700'}`}>
+                        {doctor.activo ? 'Activa' : 'Desactivada'}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap justify-end gap-1.5">
+                      <td className="py-3">
+                        <div className="flex justify-end gap-x-4 whitespace-nowrap">
                           <RowActions doctor={doctor} onOpen={setDialog} />
                         </div>
                       </td>
@@ -426,36 +393,21 @@ export default function AdminPanel() {
   );
 }
 
-function StatusBadge({ activo }: { activo: boolean }) {
-  return (
-    <span
-      className={`inline-flex shrink-0 rounded-full border-2 px-2.5 py-0.5 text-sm font-semibold text-slate-900 ${
-        activo ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-100'
-      }`}
-    >
-      {activo ? 'Activa' : 'Desactivada'}
-    </span>
-  );
-}
-
-/** Editar, contraseña y activar/desactivar: las mismas acciones en la tabla y en las tarjetas. */
+/** Editar, contraseña y activar/desactivar: las mismas acciones en la tabla y en la lista móvil. */
 function RowActions({ doctor, onOpen }: { doctor: DoctorAccount; onOpen: (dialog: DialogState) => void }) {
   return (
     <>
       <RowAction
-        icon={Pencil}
         label="Editar"
         description={`Editar datos de ${doctor.nombreCompleto}`}
         onClick={() => onOpen({ kind: 'edit', doctor })}
       />
       <RowAction
-        icon={KeyRound}
         label="Contraseña"
         description={`Asignar contraseña nueva a ${doctor.nombreCompleto}`}
         onClick={() => onOpen({ kind: 'password', doctor })}
       />
       <RowAction
-        icon={doctor.activo ? UserRoundX : UserRoundCheck}
         label={doctor.activo ? 'Desactivar' : 'Activar'}
         description={`${doctor.activo ? 'Desactivar' : 'Activar'} la cuenta de ${doctor.nombreCompleto}`}
         tone={doctor.activo ? 'danger' : 'default'}
@@ -466,13 +418,11 @@ function RowActions({ doctor, onOpen }: { doctor: DoctorAccount; onOpen: (dialog
 }
 
 function RowAction({
-  icon: Icon,
   label,
   description,
   tone = 'default',
   onClick,
 }: {
-  icon: typeof Pencil;
   label: string;
   description: string;
   tone?: 'default' | 'danger';
@@ -483,13 +433,10 @@ function RowAction({
       type="button"
       onClick={onClick}
       aria-label={description}
-      className={`flex items-center gap-1.5 rounded-lg border-2 px-2.5 py-1.5 text-sm font-medium transition-colors ${FOCUS_RING} ${
-        tone === 'danger'
-          ? 'border-red-200 text-red-800 hover:bg-red-50'
-          : 'border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+      className={`text-sm font-medium underline-offset-2 hover:underline ${FOCUS_RING} ${
+        tone === 'danger' ? 'text-red-800' : 'text-blue-900'
       }`}
     >
-      <Icon aria-hidden="true" className="h-4 w-4" />
       {label}
     </button>
   );
