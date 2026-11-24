@@ -15,7 +15,7 @@ public class JwtTokenServiceTests
     {
         // Given una configuración JWT válida y un usuario con rol
         var servicio = CrearServicio();
-        var usuario = new User { Id = 123456, Rol = "M", PasswordHash = "x" };
+        var usuario = new User { Id = 123456, Rol = UserRoles.MedicoTratante, PasswordHash = "x" };
 
         // When se genera su token
         var resultado = servicio.GenerarToken(usuario);
@@ -25,7 +25,7 @@ public class JwtTokenServiceTests
         Assert.Equal("XpertDiagnostic.Api", jwt.Issuer);
         Assert.Contains("XpertDiagnostic.Frontend", jwt.Audiences);
         Assert.Contains(jwt.Claims, c => c.Value == "123456");
-        Assert.Contains(jwt.Claims, c => c.Value == "M");
+        Assert.Contains(jwt.Claims, c => c.Value == UserRoles.MedicoTratante);
         Assert.Equal(Ahora.UtcDateTime.AddMinutes(120), resultado.ExpiraEn);
     }
 

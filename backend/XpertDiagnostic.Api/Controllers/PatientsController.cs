@@ -14,7 +14,7 @@ namespace XpertDiagnostic.Api.Controllers;
 [ApiController]
 [Route("api/patients")]
 [Produces("application/json")]
-[Authorize(Roles = UserRoles.Medico)]
+[Authorize(Roles = UserRoles.RolesMedicos)]
 public class PatientsController(IPatientService pacientes) : ControllerBase
 {
     /// <summary>Pacientes registrados para el buscador.</summary>

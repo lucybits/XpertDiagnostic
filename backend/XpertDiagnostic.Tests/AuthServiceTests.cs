@@ -25,15 +25,28 @@ public class AuthServiceTests
         var servicio = CrearServicio(repositorio);
 
         // When inicia sesión desde el apartado Médico con su ID y contraseña correctos
-        var resultado = await servicio.LoginAsync(IdExistente, "securePass123", UserRoles.Medico);
+        var resultado = await servicio.LoginAsync(IdExistente, "securePass123", UserRoles.MedicoTratante);
 
         // Then recibe su ID, su rol y un token
         Assert.Equal(LoginStatus.Exitoso, resultado.Estado);
         Assert.NotNull(resultado.Respuesta);
         Assert.Equal(IdExistente, resultado.Respuesta.UsuarioId);
-        Assert.Equal("M", resultado.Respuesta.Rol);
+        Assert.Equal(UserRoles.MedicoTratante, resultado.Respuesta.Rol);
         Assert.Equal("token-de-prueba", resultado.Respuesta.Token);
         Assert.Equal(0, repositorio.Actualizaciones);
+    }
+
+    [Fact]
+    public async Task LoginAsync_InternistaDesdeApartadoMedico_DevuelveTokenYConservaRol()
+    {
+        var usuario = CrearUsuario(BCrypt.Net.BCrypt.HashPassword("securePass123"));
+        usuario.Rol = UserRoles.MedicoInternista;
+        var servicio = CrearServicio(new RepositorioFalso(usuario));
+
+        var resultado = await servicio.LoginAsync(IdExistente, "securePass123", UserRoles.MedicoTratante);
+
+        Assert.Equal(LoginStatus.Exitoso, resultado.Estado);
+        Assert.Equal(UserRoles.MedicoInternista, resultado.Respuesta!.Rol);
     }
 
     [Fact]
@@ -45,7 +58,7 @@ public class AuthServiceTests
         var servicio = CrearServicio(repositorio);
 
         // When inicia sesión con una contraseña incorrecta
-        var resultado = await servicio.LoginAsync(IdExistente, "Incorrecta123", UserRoles.Medico);
+        var resultado = await servicio.LoginAsync(IdExistente, "Incorrecta123", UserRoles.MedicoTratante);
 
         // Then no se autentica y no se modifican datos
         Assert.Equal(LoginStatus.CredencialesInvalidas, resultado.Estado);
@@ -60,7 +73,7 @@ public class AuthServiceTests
         var servicio = CrearServicio(new RepositorioFalso(null));
 
         // When alguien intenta iniciar sesión con ese ID
-        var resultado = await servicio.LoginAsync(999999, "cualquiera", UserRoles.Medico);
+        var resultado = await servicio.LoginAsync(999999, "cualquiera", UserRoles.MedicoTratante);
 
         // Then no se autentica
         Assert.Equal(LoginStatus.CredencialesInvalidas, resultado.Estado);
@@ -75,7 +88,7 @@ public class AuthServiceTests
         var servicio = CrearServicio(repositorio);
 
         // When inicia sesión con la contraseña correcta
-        var resultado = await servicio.LoginAsync(IdExistente, "pass1234", UserRoles.Medico);
+        var resultado = await servicio.LoginAsync(IdExistente, "pass1234", UserRoles.MedicoTratante);
 
         // Then se autentica y la contraseña queda guardada como hash BCrypt
         Assert.Equal(LoginStatus.Exitoso, resultado.Estado);
@@ -97,7 +110,7 @@ public class AuthServiceTests
         // Then no recibe token y se le indica que su cuenta es de médico
         Assert.Equal(LoginStatus.ApartadoIncorrecto, resultado.Estado);
         Assert.Null(resultado.Respuesta);
-        Assert.Equal(UserRoles.Medico, resultado.RolDeLaCuenta);
+        Assert.Equal(UserRoles.MedicoTratante, resultado.RolDeLaCuenta);
     }
 
     [Fact]
@@ -109,7 +122,7 @@ public class AuthServiceTests
         var servicio = CrearServicio(new RepositorioFalso(admin));
 
         // When intenta entrar desde el apartado Médico
-        var resultado = await servicio.LoginAsync(654321, "admin", UserRoles.Medico);
+        var resultado = await servicio.LoginAsync(654321, "admin", UserRoles.MedicoTratante);
 
         // Then no recibe token y se le indica que su cuenta es de administrador
         Assert.Equal(LoginStatus.ApartadoIncorrecto, resultado.Estado);
@@ -141,7 +154,7 @@ public class AuthServiceTests
         var servicio = CrearServicio(new RepositorioFalso(usuario));
 
         // When inicia sesión con su contraseña correcta
-        var resultado = await servicio.LoginAsync(IdExistente, "securePass123", UserRoles.Medico);
+        var resultado = await servicio.LoginAsync(IdExistente, "securePass123", UserRoles.MedicoTratante);
 
         // Then no recibe token
         Assert.Equal(LoginStatus.CuentaInactiva, resultado.Estado);
@@ -157,7 +170,7 @@ public class AuthServiceTests
         var servicio = CrearServicio(new RepositorioFalso(usuario));
 
         // When alguien prueba una contraseña incorrecta
-        var resultado = await servicio.LoginAsync(IdExistente, "Incorrecta123", UserRoles.Medico);
+        var resultado = await servicio.LoginAsync(IdExistente, "Incorrecta123", UserRoles.MedicoTratante);
 
         // Then solo ve "credenciales inválidas": el estado de la cuenta no se revela
         Assert.Equal(LoginStatus.CredencialesInvalidas, resultado.Estado);
@@ -183,7 +196,7 @@ public class AuthServiceTests
         var servicio = CrearServicio(new RepositorioFalso(null));
 
         await Assert.ThrowsAnyAsync<ArgumentException>(
-            () => servicio.LoginAsync(IdExistente, new string('a', 73), UserRoles.Medico));
+            () => servicio.LoginAsync(IdExistente, new string('a', 73), UserRoles.MedicoTratante));
     }
 
     [Fact]
@@ -236,7 +249,7 @@ public class AuthServiceTests
     {
         Id = IdExistente,
         PasswordHash = passwordGuardada,
-        Rol = "M",
+        Rol = UserRoles.MedicoTratante,
         IdMedico = IdExistente,
         IdArea = 900001,
         Activo = true

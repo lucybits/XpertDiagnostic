@@ -4586,3 +4586,30 @@ Criterio: se quita lo que repite algo visible, lo que explica algo que la interf
 **Verificación automática:** no se ejecutaron `tsc` ni `eslint`.
 
 **Revisión humana:** Pendiente de revisión visual.
+
+### P-143. Pantalla de inicio según el rol: tratante e internista
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | (por confirmar) |
+| Objetivo | Que cada rol médico tenga su propia pantalla según sus credenciales, con el internista aplazado |
+| Especificación / tarea | 3.2 Login y rutas; ESP-007 (RF-52) |
+
+**Prompt**
+
+> Volviendo al tema de los roles, dejemos todo listo para médico tratante y para internista; hay que dejarlo listo ya que, según las credenciales, es como se mostrará la página. Mientras tanto, el internista se aplazará por el momento.
+
+**Resultado de la IA:**
+
+- `HOME_ROUTE_BY_ROLE`: `T → /home`, `I → /internista`, `A → /admin`. El login lleva a cada cuenta a la pantalla de su rol y la capa de carga dice a cuál va.
+- `proxy.ts`: `/home` y `/patients` quedan solo para el tratante; la nueva `/internista` solo para el internista. Quien abre una pantalla de otro rol vuelve a la suya.
+- Nueva ruta `/internista` (`components/internist/InternistScreen.tsx`): saluda con el nombre del médico, avisa que su espacio está en preparación y permite cerrar sesión.
+- `HomeScreen` y `AdminPanel` también mandan a la pantalla del rol si la sesión trae otro rol (cubre un rol que cambió con la sesión abierta).
+- El backend no cambió: los endpoints médicos siguen aceptando `T` e `I`.
+
+**Archivos afectados:** `frontend/types/auth.ts`, `frontend/proxy.ts`, `frontend/app/(internista)/internista/page.tsx`, `frontend/components/internist/InternistScreen.tsx`, `frontend/components/home/HomeScreen.tsx`, `frontend/components/admin/AdminPanel.tsx`, `frontend/components/auth/LoginForm.tsx`, `specs/especificaciones/03-inicio-sesion.md`, `specs/especificaciones/10-panel-administrador.md`.
+
+**Verificación automática:** `tsc --noEmit` y `eslint` sin errores. Por HTTP contra el frontend: el tratante 123456 abre `/home` y `/patients` (200) y es redirigido desde `/internista` y `/admin` (307); el internista 654322 abre `/internista` (200) y es redirigido desde `/home`, `/patients` y `/admin` (307).
+
+**Revisión humana:** pendiente.

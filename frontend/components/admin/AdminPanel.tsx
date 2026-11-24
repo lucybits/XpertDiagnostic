@@ -19,6 +19,7 @@ import {
 } from '@/services/adminService';
 import { getSessionState, logoutAndGoToLogin } from '@/services/doctorService';
 import type { AdminFailure, DoctorAccount } from '@/types/admin';
+import { HOME_ROUTE_BY_ROLE } from '@/types/auth';
 import { USER_ROLES, type SessionProfile } from '@/types/doctor';
 
 const SEARCH_DELAY_MS = 250;
@@ -86,7 +87,7 @@ export default function AdminPanel() {
       if (state.status === 'unauthenticated') {
         void endSession();
       } else if (state.status === 'ok' && state.profile.rol !== USER_ROLES.admin) {
-        router.replace('/home');
+        router.replace(HOME_ROUTE_BY_ROLE[state.profile.rol] ?? '/login');
       } else if (state.status === 'ok') {
         setProfile(state.profile);
       }
