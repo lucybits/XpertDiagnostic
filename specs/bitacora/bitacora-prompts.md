@@ -4613,3 +4613,321 @@ Criterio: se quita lo que repite algo visible, lo que explica algo que la interf
 **Verificación automática:** `tsc --noEmit` y `eslint` sin errores. Por HTTP contra el frontend: el tratante 123456 abre `/home` y `/patients` (200) y es redirigido desde `/internista` y `/admin` (307); el internista 654322 abre `/internista` (200) y es redirigido desde `/home`, `/patients` y `/admin` (307).
 
 **Revisión humana:** pendiente.
+
+### P-144. Quitar "Enfermedades preexistentes"
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Axel |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Eliminar la enfermedad preexistente de la base de datos, el backend, el frontend y las pruebas |
+| Especificación / tarea | Tarea 2.1; P-103 |
+
+**Prompt**
+
+> Necesito hacer esto:
+>
+> 2.1 Quitar "Enfermedades preexistentes"
+> BD: script SQL nuevo en backend/XpertDiagnostic.Api/Sql/ que elimine la columna PACIENTES.IdEnfermedadPreexistente y su FK. Que se pueda correr varias veces sin error, con IF EXISTS.
+> Backend: quitar el endpoint PUT preexisting-disease de PatientRecordController.cs y además:
+> SetPreexistingDiseaseRequest en Models/DTOs/SaveFindingsRequest.cs
+> IdEnfermedadPreexistente en Models/Entities/Patient.cs
+> los campos de preexistente en Models/Results/PatientRecord.cs
+> AsignarPreexistenteAsync en el repositorio y el servicio
+> Frontend: quitar el tipo preexisting y su sección en clinicalSections.ts, en SectionCapture.tsx, en types/record.ts y en el servicio que llama al endpoint.
+> Ajustar las pruebas en XpertDiagnostic.Tests que usen preexistente.
+
+**Resultado de la IA:**
+
+- Axel ya había quitado la parte de la entidad, el resultado, el repositorio y el servicio; la IA completó el resto.
+- Nuevo `DropPreexistingDiseaseColumn.sql`: quita la FK (buscándola por columna, no por nombre) y la columna, con `IF EXISTS` en cada paso.
+- Se quitaron el endpoint `PUT preexisting-disease`, `SetPreexistingDiseaseRequest`, la ruta del frontend `app/api/patients/[id]/preexisting-disease`, `setPreexistingDisease` y la selección única de `SectionCapture`.
+- También se quitó la enfermedad preexistente del panel del expediente, de la tarjeta "Historia clínica" y del tour de bienvenida.
+- Se corrigió `generate_clinical_seed.py`, que seguía mandando `Id_Enfermp` (8 valores para 7 columnas).
+- Pruebas: se quitó PT53 y se ajustaron los dobles.
+- Al correr el script en la base apareció el error "The object 'FK_PACIENTES_ENFERMEDAD_PREEX' is dependent on column", porque el `DROP COLUMN` se había corrido antes de quitar la FK. La IA indicó el orden correcto.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Sql/DropPreexistingDiseaseColumn.sql` (nuevo), `Controllers/PatientRecordController.cs`, `Models/DTOs/SaveFindingsRequest.cs`, `Models/Entities/Patient.cs`, `Sql/Tools/generate_clinical_seed.py`, `XpertDiagnostic.Tests/PatientRecordServiceTests.cs`, `XpertDiagnostic.Tests/PatientResultServiceTests.cs`, `frontend/app/api/patients/[id]/preexisting-disease/route.ts` (borrado), `frontend/components/assistant/SectionCapture.tsx`, `frontend/components/home/clinicalSections.ts`, `frontend/components/home/HomeScreen.tsx`, `frontend/components/home/PatientRecordPanel.tsx`, `frontend/components/result/ResultSections.tsx`, `frontend/lib/welcomeTour.ts`, `frontend/services/recordService.ts`, `frontend/types/record.ts`.
+
+**Verificación automática:** `dotnet build` sin errores; pruebas unitarias aprobadas (las 10 de integración fallaban igual que antes del cambio, sin base conectada); `tsc` y `eslint` sin errores. Con la base ya conectada, una consulta confirmó que no existen la columna ni la FK.
+
+**Revisión humana:** pendiente de revisión visual (la API no corre en el equipo de Axel por Smart App Control de Windows).
+
+### P-145. Nuevas tablas IO_ en el esquema
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Axel |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Llevar al código las tablas IO_ (antecedentes, complicaciones y resultados esperados) que reemplazan a COMPLICACIONES y RESULTADOS_ESPERADOS |
+| Especificación / tarea | Tarea 2.2 (base de datos) |
+
+**Prompt**
+
+> ```sql
+> SET NOCOUNT ON;
+> SET XACT_ABORT ON;
+>
+> IF DB_NAME() IN (N'master', N'model', N'msdb', N'tempdb')
+>     THROW 50010, 'Selecciona la base de datos XpertDiagnostic antes de ejecutar este script.', 1;
+>
+> BEGIN TRANSACTION;
+>
+> -- 1. Antecedentes No Patológicos
+> IF OBJECT_ID(N'dbo.IO_AntecNoPatolPacientes', N'U') IS NULL
+> CREATE TABLE dbo.IO_AntecNoPatolPacientes (
+>     IdPaciente VARCHAR(10) NOT NULL CONSTRAINT PK_IO_AntecNoPatol PRIMARY KEY
+>                            CONSTRAINT FK_IO_AntecNoPatol_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+>     Tabaquismo BIT         NOT NULL,
+>     Alcoholism BIT         NULL,
+>     Toxicomans BIT         NULL,
+>     Biomasa    INT         NULL,
+>     TatuajPerf BIT         NULL,
+>     Herbolaria BIT         NULL,
+>     Transfusio BIT         NULL
+> );
+>
+> -- 2. Antecedentes Patológicos
+> IF OBJECT_ID(N'dbo.IO_AntecPatolPacientes', N'U') IS NULL
+> CREATE TABLE dbo.IO_AntecPatolPacientes (
+>     IdPaciente  VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecPatol PRIMARY KEY
+>                               CONSTRAINT FK_IO_AntecPatol_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+>     Alergias    NVARCHAR(255) NULL,
+>     CroniDegen  NVARCHAR(255) NULL,
+>     Endocrinol  NVARCHAR(255) NULL,
+>     Pulmonar    NVARCHAR(255) NULL,
+>     Cardiologic NVARCHAR(255) NULL,
+>     Dislipidem  NVARCHAR(255) NULL,
+>     Dermatolog  NVARCHAR(255) NULL,
+>     Neurologic  NVARCHAR(255) NULL,
+>     Reumatolog  NVARCHAR(255) NULL,
+>     Otorrinola  NVARCHAR(255) NULL,
+>     Neumologic  NVARCHAR(255) NULL,
+>     Psiquiatri  NVARCHAR(255) NULL,
+>     Gastrointe  NVARCHAR(255) NULL,
+>     Osteomuscu  NVARCHAR(255) NULL,
+>     UroloRenal  NVARCHAR(255) NULL,
+>     Oftalmolog  NVARCHAR(255) NULL,
+>     Infectolog  NVARCHAR(255) NULL,
+>     Hematologi  NVARCHAR(255) NULL,
+>     Oncologico  NVARCHAR(255) NULL,
+>     Ginecologi  NVARCHAR(255) NULL,
+>     Traumatism  NVARCHAR(255) NULL
+> );
+>
+> -- 3. Antecedentes Perinatales
+> IF OBJECT_ID(N'dbo.IO_AntecPerinatPacientes', N'U') IS NULL
+> CREATE TABLE dbo.IO_AntecPerinatPacientes (
+>     IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecPerinat PRIMARY KEY
+>                              CONSTRAINT FK_IO_AntecPerinat_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+>     ProductEmb NVARCHAR(255) NOT NULL,
+>     PartCesare NVARCHAR(255) NOT NULL,
+>     PesoNacer  INT           NOT NULL,
+>     TallaNacer DECIMAL(5,2)  NOT NULL,
+>     CrecYDesar NVARCHAR(255) NOT NULL,
+>     Vacunacion NVARCHAR(255) NOT NULL
+> );
+>
+> -- 4. Antecedentes Quirúrgicos y Anestésicos
+> IF OBJECT_ID(N'dbo.IO_AntecQuiruAnestesPacientes', N'U') IS NULL
+> CREATE TABLE dbo.IO_AntecQuiruAnestesPacientes (
+>     IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecQuiru PRIMARY KEY
+>                              CONSTRAINT FK_IO_AntecQuiru_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+>     Cirugias   NVARCHAR(255) NOT NULL,
+>     Hospitaliz NVARCHAR(255) NOT NULL,
+>     Medicament NVARCHAR(255) NOT NULL
+> );
+>
+> -- 5. Antecedentes Paraclínicos
+> IF OBJECT_ID(N'dbo.IO_AntecParaClinicPacientes', N'U') IS NULL
+> CREATE TABLE dbo.IO_AntecParaClinicPacientes (
+>     IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecParaClinic PRIMARY KEY
+>                              CONSTRAINT FK_IO_AntecParaClinic_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+>     ProductEmb NVARCHAR(255) NULL,
+>     PartCesare NVARCHAR(255) NULL,
+>     PesoNacer  INT           NULL,
+>     TallaNacer DECIMAL(5,2)  NULL,
+>     CrecYDesar NVARCHAR(255) NULL,
+>     Vacunacion NVARCHAR(255) NULL
+> );
+>
+> -- 6. Resultados Esperados (Reemplaza a dbo.RESULTADOS_ESPERADOS)
+> IF OBJECT_ID(N'dbo.IO_ResultadosEsperados', N'U') IS NULL
+> CREATE TABLE dbo.IO_ResultadosEsperados (
+>     IdPaciente   VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_ResultadosEsperados PRIMARY KEY
+>                                CONSTRAINT FK_IO_Resultados_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+>     IdEnfermedad VARCHAR(10)   NOT NULL CONSTRAINT FK_IO_Resultados_Enfermedades REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
+>     Enfeespera   NVARCHAR(150) NOT NULL
+> );
+>
+> -- 7. Complicaciones (Nueva tabla de complicaciones vinculada a ENFERMEDADES y PACIENTES)
+> IF OBJECT_ID(N'dbo.IO_Complicaciones', N'U') IS NULL
+> CREATE TABLE dbo.IO_Complicaciones (
+>     Id_Complic   VARCHAR(20)   NOT NULL CONSTRAINT PK_IO_Complicaciones PRIMARY KEY,
+>     Complicac    NVARCHAR(255) NOT NULL,
+>     IdEnfermedad VARCHAR(10)   NOT NULL CONSTRAINT FK_IO_Complic_Enfermedades REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
+>     IdPaciente   VARCHAR(10)   NULL     CONSTRAINT FK_IO_Complic_Pacientes REFERENCES dbo.PACIENTES (IdPaciente)
+> );
+>
+> COMMIT TRANSACTION;
+>
+> PRINT 'Tablas IO_ creadas y vinculadas correctamente con dbo.PACIENTES y dbo.ENFERMEDADES.';
+> ```
+>
+> Estas son las nuevas tablas, ponlas donde van aquí en el código. Se cambió complicaciones por IO_Complicaciones y se cambió resultados por IO_ResultadosEsperados.
+
+**Resultado de la IA:**
+
+- `CreateClinicalTables.sql`: `IO_Complicaciones` e `IO_ResultadosEsperados` sustituyen a `COMPLICACIONES` y `RESULTADOS_ESPERADOS` (van después de `PACIENTES` porque ahora tienen FK a esa tabla) y se agregan las cinco tablas de antecedentes.
+- `generate_clinical_seed.py` carga las tablas IO_ y vacía las de antecedentes antes de borrar pacientes; `SeedClinicalData.sql` regenerado.
+- `PatientRecordRepository` lee las complicaciones de `IO_Complicaciones` (`Id_Complic`, `Complicac`) y PT57 lee `IO_ResultadosEsperados`.
+- Nuevo `DropReplacedClinicalTables.sql` para quitar las tablas viejas en bases existentes.
+- La IA señaló que `IO_AntecParaClinicPacientes` tenía las mismas columnas que perinatales (se corrigió en P-149).
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Sql/CreateClinicalTables.sql`, `Sql/DropReplacedClinicalTables.sql` (nuevo), `Sql/SeedClinicalData.sql`, `Sql/Tools/generate_clinical_seed.py`, `Repositories/PatientRecordRepository.cs`, `Services/Interfaces/IInferenceEngine.cs`, `XpertDiagnostic.Tests/ClinicalDataIntegrationTests.cs`.
+
+**Verificación automática:** `dotnet build` sin errores ni advertencias.
+
+**Revisión humana:** Axel ya había creado las tablas en su base con el script.
+
+### P-146. Datos de IO_Complicaciones
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Axel |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Cargar las 56 complicaciones en IO_Complicaciones |
+| Especificación / tarea | Tarea 2.2 (base de datos), P-145 |
+
+**Prompt**
+
+> (Se adjuntó `IO_Complicaciones.csv`, con encabezado `Id_Complic,Complicac,Id_Enferme,Id_Pacient` y 56 filas.)
+>
+> Ponles esta info a complicaciones.
+
+**Resultado de la IA:**
+
+- Las 56 filas eran idénticas al `IO_Complicaciones.csv` del repositorio; solo cambiaba el encabezado `Complicaciones` → `Complicac`. Se cambió solo el encabezado, sin reescribir el archivo, porque en el texto pegado los acentos llegaron como `�` y el original (Windows-1252) los tiene bien.
+- `generate_clinical_seed.py` lee la columna `Complicac`; el seed regenerado salió idéntico.
+- En la base de Axel se insertaron las 56 filas solo en `IO_Complicaciones` (estaba vacía), sin tocar otras tablas: 24 tienen paciente, igual que las 24 complicaciones de `HALLAZGOS_PACIENTE`.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Sql/ClinicalData/IO_Complicaciones.csv`, `Sql/Tools/generate_clinical_seed.py`.
+
+**Verificación automática:** pruebas de integración contra la base: 8 de 9 aprobadas. Falla PT57 porque `IO_ResultadosEsperados` sigue vacía en la base de Axel.
+
+**Revisión humana:** pendiente.
+
+### P-147. Orden nuevo de las secciones del menú izquierdo
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Axel |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Reordenar las secciones de captura y comprobar que el bloqueo por secciones siga funcionando |
+| Especificación / tarea | Tarea 2.3 |
+
+**Prompt**
+
+> Lo estoy checando, ¿puedes ir haciendo lo que falta? Reordenar SECTION_DEFINITIONS y revisar que el bloqueo (isSectionLocked) siga funcionando.
+
+**Resultado de la IA:**
+
+- Orden nuevo: Signos, Síntomas, Resultados de estudios y laboratorios, Comorbilidades y Diagnóstico diferencial. "Estudios de laboratorio" cambia de nombre a "Resultados de estudios y laboratorios".
+- Comorbilidades sale del grupo "Antecedentes", que queda fuera hasta que llegue el interrogatorio de la tarea 2.2.
+- `isSectionLocked` y el paso a la siguiente sección no cambiaron: siguen el orden del arreglo.
+- El tour de bienvenida lista las secciones en el orden nuevo.
+
+**Archivos afectados:** `frontend/components/home/clinicalSections.ts`, `frontend/lib/welcomeTour.ts`.
+
+**Verificación automática:** se ejecutaron `buildSectionGroups`, `isSectionLocked` y `sectionsWithData` con varios casos (ninguna completada, una, todas, y un paciente con datos fuera de orden): la primera sin completar queda en proceso y las siguientes bloqueadas. `tsc` y `eslint` sin errores.
+
+**Revisión humana:** pendiente de revisión visual.
+
+### P-148. Casillas de antecedentes no patológicos al registrar al paciente
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Axel |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Preguntar sí/no los antecedentes no patológicos en la ventana "Nuevo paciente" y guardarlos en IO_AntecNoPatolPacientes |
+| Especificación / tarea | ESP-004 (nuevo paciente), tarea 2.2 |
+
+**Prompt**
+
+> ¿En dónde se ingresan los datos del paciente? ¿Puedes agregar una opción que diga si fuma o bebe, que sea check, o sea, sí o no?
+
+Mensaje enviado durante la tarea:
+
+> ```sql
+> Tabaquismo BIT         NOT NULL,
+>     Alcoholism BIT         NULL,
+>     Toxicomans BIT         NULL,
+>     Biomasa    INT         NULL,
+>     TatuajPerf BIT         NULL,
+>     Herbolaria BIT         NULL,
+>     Transfusio BIT
+> ```
+>
+> Pon un check por cada una de estas.
+
+**Resultado de la IA:**
+
+- La ventana "Nuevo paciente" tiene siete casillas, una por columna de `IO_AntecNoPatolPacientes`: ¿Fuma?, ¿Consume alcohol?, ¿Consume drogas?, ¿Exposición a humo de leña o biomasa?, ¿Tiene tatuajes o perforaciones?, ¿Usa herbolaria o remedios naturales? y ¿Ha recibido transfusiones? Sin marcar cuenta como "no".
+- Nueva entidad `NonPathologicalHistory`, relacionada uno a uno con `PACIENTES`; el paciente y sus antecedentes se guardan en un solo `SaveChanges` (los dos o ninguno).
+- `Biomasa` es `INT` en la tabla: se guarda 1 (sí) o 0 (no). Queda por confirmar con Lucía si es otra medida.
+- Los textos de las preguntas los redactó la IA (`NON_PATHOLOGICAL_QUESTIONS`); falta confirmarlos con Lucía.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Models/Entities/NonPathologicalHistory.cs` (nuevo), `Data/AppDbContext.cs`, `Models/DTOs/CreatePatientRequest.cs`, `Repositories/IPatientRepository.cs`, `Repositories/PatientRepository.cs`, `Services/PatientService.cs`, `Services/Interfaces/IPatientService.cs`, `XpertDiagnostic.Tests/PatientServiceTests.cs`, `frontend/types/patient.ts`, `frontend/lib/newPatient.ts`, `frontend/app/api/patients/route.ts`, `frontend/services/patientService.ts`, `frontend/components/home/NewPatientDialog.tsx`.
+
+**Verificación automática:** 89 pruebas unitarias aprobadas, incluida una nueva para las casillas. Contra la base real, dentro de una transacción que después se deshizo: `PACIE00011: Tabaquismo=True, Alcoholism=False, Biomasa=1, Herbolaria=True`. `tsc` y `eslint` sin errores.
+
+**Revisión humana:** pendiente de revisión visual.
+
+### P-149. Columnas nuevas de IO_AntecParaClinicPacientes
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Axel |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Reemplazar las columnas de IO_AntecParaClinicPacientes, que eran una copia de las de perinatales |
+| Especificación / tarea | Tarea 2.2 (base de datos), P-145 |
+
+**Prompt**
+
+> ```sql
+> CREATE TABLE dbo.IO_AntecParaClinicPacientes (
+>     IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecParaClinic PRIMARY KEY
+>                              CONSTRAINT FK_IO_AntecParaClinic_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+>     Consciente NVARCHAR(100) NULL,
+>     Alerta     NVARCHAR(100) NULL,
+>     Cavidoral  NVARCHAR(150) NULL,
+>     AperturaOr NVARCHAR(100) NULL,
+>     DentadComp NVARCHAR(150) NULL,
+>     Traquea    NVARCHAR(150) NULL,
+>     Pulmovent  NVARCHAR(255) NULL,
+>     RuidosCard NVARCHAR(255) NULL,
+>     Abdombland NVARCHAR(255) NULL,
+>     Miembpelvi NVARCHAR(255) NULL
+> );
+> ```
+>
+> Esta es la de clínicos, reemplázala.
+
+**Resultado de la IA:**
+
+- `CreateClinicalTables.sql` define la tabla con `Consciente`, `Alerta`, `Cavidoral`, `AperturaOr`, `DentadComp`, `Traquea`, `Pulmovent`, `RuidosCard`, `Abdombland` y `Miembpelvi`.
+- Nuevo `UpgradeParaClinicTable.sql`: reemplaza la tabla solo si todavía tiene la columna vieja `ProductEmb`, y se detiene si tiene datos en lugar de borrarlos.
+- Se corrió en la base de Axel (la tabla estaba vacía).
+- La IA comentó que estas columnas son de exploración física; queda por confirmar con Lucía dónde se muestran.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Sql/CreateClinicalTables.sql`, `Sql/UpgradeParaClinicTable.sql` (nuevo).
+
+**Verificación automática:** el script se corrió dos veces: la primera reemplazó la tabla y la segunda no hizo nada. La tabla quedó con las 10 columnas nuevas.
+
+**Revisión humana:** columnas definidas por Axel.
