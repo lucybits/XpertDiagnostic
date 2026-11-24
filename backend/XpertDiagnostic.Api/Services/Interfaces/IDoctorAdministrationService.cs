@@ -16,9 +16,9 @@ public interface IDoctorAdministrationService
     /// <remarks>@pre idMedico &gt; 0. @post La cuenta, o null si no existe. No modifica datos.</remarks>
     Task<DoctorAccount?> ObtenerAsync(int idMedico, CancellationToken cancellationToken = default);
 
-    /// <summary>Edita nombre, especialidad y cédula (con espacios normalizados).</summary>
+    /// <summary>Edita nombre, especialidad, cédula (con espacios normalizados) y tipo de médico.</summary>
     /// <remarks>
-    /// @pre idMedico &gt; 0 y solicitud cumple <see cref="UpdateDoctorRequest"/>.
+    /// @pre idMedico &gt; 0 y solicitud cumple <see cref="UpdateDoctorRequest"/> (Rol es T o I).
     /// @post Actualizado con la cuenta guardada; NoEncontrado o CedulaDuplicada sin cambios.
     /// </remarks>
     Task<DoctorUpdateResult> ActualizarAsync(int idMedico, UpdateDoctorRequest solicitud, CancellationToken cancellationToken = default);
@@ -30,4 +30,8 @@ public interface IDoctorAdministrationService
     /// <summary>Activa o desactiva la cuenta. Una cuenta inactiva no puede entrar y sus sesiones dejan de valer.</summary>
     /// <remarks>@pre idMedico &gt; 0. @post La cuenta con el estado nuevo, o null si no existe.</remarks>
     Task<DoctorAccount?> CambiarEstadoAsync(int idMedico, bool activo, CancellationToken cancellationToken = default);
+
+    /// <summary>Borra de forma definitiva al médico y su cuenta (P-144). Para solo bloquearlo, se desactiva.</summary>
+    /// <remarks>@pre idMedico &gt; 0. @post true si se borró; false si no existía o no es de rol médico (sin cambios).</remarks>
+    Task<bool> EliminarAsync(int idMedico, CancellationToken cancellationToken = default);
 }

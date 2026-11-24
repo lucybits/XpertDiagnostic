@@ -1,4 +1,4 @@
-import { getJson, postJson, putJson, type ApiResponse } from '@/lib/apiClient';
+import { deleteJson, getJson, postJson, putJson, type ApiResponse } from '@/lib/apiClient';
 import type { AdminFailure, AdminResult, DoctorAccount } from '@/types/admin';
 import type { DoctorRegistration, DoctorUpdate } from '@/types/doctor';
 
@@ -36,6 +36,16 @@ export function resetDoctorPassword(idMedico: number, password: string): Promise
 /** Activa o desactiva la cuenta (baja lógica: no se borra nada). */
 export function setDoctorStatus(idMedico: number, activo: boolean): Promise<AdminResult<DoctorAccount>> {
   return run(() => putJson<DoctorAccount>(`${BASE}/${idMedico}/status`, { activo }));
+}
+
+/** Elimina de forma definitiva al médico y su cuenta (P-144). @post 404 → 'not-found'. */
+export function deleteDoctor(idMedico: number): Promise<AdminResult<null>> {
+  return run(() => deleteJson<null>(`${BASE}/${idMedico}`), true);
+}
+
+/** Elimina de forma definitiva al paciente y su expediente (P-144). @post 404 → 'not-found'. */
+export function deletePatient(idPaciente: string): Promise<AdminResult<null>> {
+  return run(() => deleteJson<null>(`/api/patients/${encodeURIComponent(idPaciente)}`), true);
 }
 
 /**

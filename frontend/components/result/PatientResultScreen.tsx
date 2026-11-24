@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, CircleAlert, CircleCheck, CircleDashed, Download, Printer, Search, UserPlus, UserRound } from 'lucide-react';
+import { ArrowLeft, CircleAlert, CircleCheck, CircleDashed, Download, Printer, Search, UserRound } from 'lucide-react';
 import LoadingDots from '@/components/ui/LoadingDots';
 import { getResult } from '@/services/resultService';
 import type { PatientResult } from '@/types/result';
@@ -61,14 +61,6 @@ export default function PatientResultScreen({ patientId }: { patientId: string }
         >
           <Search aria-hidden="true" className="h-4 w-4" />
           Buscar paciente
-        </Link>
-        {/* Igual que en la interfaz de entrada: acción secundaria con borde (P-109). */}
-        <Link
-          href="/home?nuevo=1"
-          className="mb-3 flex items-center justify-center gap-2 rounded-lg border-2 border-white/25 px-3 py-2 font-medium text-white transition-colors hover:border-white/50 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-        >
-          <UserPlus aria-hidden="true" className="h-4 w-4" />
-          Nuevo paciente
         </Link>
         <Link href={`/home?paciente=${patientId}`} className={NAV_ITEM}>
           <ArrowLeft aria-hidden="true" className="h-5 w-5" />

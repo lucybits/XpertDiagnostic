@@ -17,7 +17,8 @@ export async function GET(request: NextRequest) {
 /**
  * Registra un médico con su cuenta. Valida con las mismas reglas que el formulario y reenvía.
  *
- * @pre El cuerpo es JSON con { idMedico, nombreCompleto, especialidad, cedulaProfesional, password }.
+ * @pre El cuerpo es JSON con { idMedico, nombreCompleto, especialidad, cedulaProfesional, password, rol }
+ *      (rol 'T' tratante o 'I' internista).
  * @post 400 si los datos no cumplen las reglas (sin llamar al backend).
  * @post 201/401/403/409/5xx: el código y el cuerpo del backend.
  */
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
     cedulaProfesional: text(body.cedulaProfesional),
     password,
     confirmPassword: password,
+    rol: text(body.rol),
   });
   if (!result.ok) return errorResponse(400, 'Datos inválidos');
 

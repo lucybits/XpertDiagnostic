@@ -8,13 +8,12 @@ import { MOCK_DOCTOR, toDoctorProfile, type DoctorProfile } from './currentDocto
 import AssistantChat from '@/components/assistant/AssistantChat';
 import PatientRecordPanel from './PatientRecordPanel';
 import PatientSearchDialog from './PatientSearchDialog';
-import NewPatientDialog from './NewPatientDialog';
-import { listPatients, registerPatient } from '@/services/patientService';
+import { listPatients } from '@/services/patientService';
 import { getRecord } from '@/services/recordService';
 import { getSessionState, logoutAndGoToLogin, markWelcomeSeen } from '@/services/doctorService';
 import { HOME_ROUTE_BY_ROLE } from '@/types/auth';
 import { USER_ROLES, type SessionProfile } from '@/types/doctor';
-import type { NewPatient, Patient } from '@/types/patient';
+import type { Patient } from '@/types/patient';
 import type { DiagnosisResult, PatientRecord } from '@/types/record';
 import type { FindingType, PatientFinding } from './PatientRecordPanel';
 
@@ -36,12 +35,11 @@ export default function HomeScreen() {
   const [isDiagnosisStale, setIsDiagnosisStale] = useState(false);
   // Paciente pedido en la URL (?paciente=ID), p. ej. al volver de la interfaz de salida (P-105).
   const requestedPatientRef = useRef<string | null>(null);
-  // ?buscar=1 / ?nuevo=1: abrir el buscador o el alta en cuanto se confirme la sesión.
+  // ?buscar=1: abrir el buscador en cuanto se confirme la sesión. El alta de pacientes la hace el
+  // administrador (P-144), así que el tratante solo busca y captura.
   const wantsSearchRef = useRef(false);
-  const wantsNewPatientRef = useRef(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isPatientSearchOpen, setIsPatientSearchOpen] = useState<boolean>(false);
-  const [isNewPatientOpen, setIsNewPatientOpen] = useState<boolean>(false);
   // Pacientes de la base de datos (PACIENTES), para el buscador (P-102).
   const [patients, setPatients] = useState<readonly Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -73,7 +71,6 @@ export default function HomeScreen() {
     const requested = query.get('paciente');
     if (requested) requestedPatientRef.current = requested;
     if (query.get('buscar') === '1') wantsSearchRef.current = true;
-    if (query.get('nuevo') === '1') wantsNewPatientRef.current = true;
     if (query.size > 0) window.history.replaceState(null, '', window.location.pathname);
     getSessionState().then((state) => {
       if (!isActive) return;
@@ -92,10 +89,6 @@ export default function HomeScreen() {
       if (wantsSearchRef.current) {
         wantsSearchRef.current = false;
         setIsPatientSearchOpen(true);
-      }
-      if (wantsNewPatientRef.current) {
-        wantsNewPatientRef.current = false;
-        setIsNewPatientOpen(true);
       }
       setSession(profile);
       if (profile) {
@@ -126,16 +119,8 @@ export default function HomeScreen() {
     setIsSidebarOpen(false);
     setIsRecordOpen(false);
     setIsPatientSearchOpen(true);
-    // Al abrir el buscador se actualiza la lista (otro médico pudo registrar pacientes).
+    // Al abrir el buscador se actualiza la lista (el administrador pudo registrar pacientes).
     refreshPatients();
-  };
-
-  // "Nuevo paciente" (ESP-004): desde la barra lateral, el buscador o el último paso del recorrido.
-  const openNewPatient = () => {
-    setIsSidebarOpen(false);
-    setIsRecordOpen(false);
-    setIsPatientSearchOpen(false);
-    setIsNewPatientOpen(true);
   };
 
   // En cuanto llega la lista, abre el paciente pedido en la URL (una sola vez).
@@ -230,17 +215,6 @@ export default function HomeScreen() {
     return groups;
   }, [patientRecord]);
 
-  // Registra en la base de datos (el servidor asigna el IdPaciente). Devuelve el mensaje de error,
-  // o null si se registró; la ventana lo muestra sin cerrarse.
-  const handleCreatePatient = async (data: NewPatient): Promise<string | null> => {
-    const result = await registerPatient(data);
-    if (!result.ok) return result.message;
-    setPatients((current) => [...current, result.patient]);
-    setIsNewPatientOpen(false);
-    startWithPatient(result.patient);
-    return null;
-  };
-
   const handleSelectSection = (id: string) => {
     setActiveSectionId(id);
     setIsSidebarOpen(false);
@@ -273,7 +247,6 @@ export default function HomeScreen() {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onSearchPatient={openPatientSearch}
-        onNewPatient={openNewPatient}
         selectedPatientName={selectedPatient?.fullName ?? null}
       />
 
@@ -285,13 +258,6 @@ export default function HomeScreen() {
           setIsPatientSearchOpen(false);
           startWithPatient(patient);
         }}
-        onNewPatient={openNewPatient}
-      />
-
-      <NewPatientDialog
-        open={isNewPatientOpen}
-        onClose={() => setIsNewPatientOpen(false)}
-        onCreate={handleCreatePatient}
       />
 
       {isSidebarOpen && (
@@ -328,7 +294,6 @@ export default function HomeScreen() {
               doctorName={session?.nombreCompleto ?? doctor.displayName}
               onWelcomeAccepted={handleWelcomeAccepted}
               onSearchPatient={openPatientSearch}
-              onNewPatient={openNewPatient}
               record={patientRecord}
               onSectionSaved={handleSectionSaved}
               diagnosis={diagnosis}
