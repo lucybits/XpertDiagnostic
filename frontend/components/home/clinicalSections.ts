@@ -46,15 +46,41 @@ export function isSectionLocked(section: ClinicalSection): boolean {
 type SectionDefinition = Omit<ClinicalSection, 'status'>;
 
 /**
- * Secciones alineadas con las entradas de la máquina de inferencia (decisión de Lucía, P-103):
- * antecedentes (comorbilidades), evaluación clínica (síntomas, signos y
- * estudios) y, al final, el análisis.
+ * Secciones alineadas con las entradas de la máquina de inferencia (decisión de Lucía, P-103), en el
+ * orden en que se capturan: signos (exploración física), síntomas, resultados de estudios y
+ * laboratorios, comorbilidades y, al final, el análisis. El orden del arreglo es el de captura:
+ * buildSectionGroups desbloquea la primera sección sin completar y bloquea las siguientes.
+ * Pendiente (tarea 2.2): "Antecedentes del paciente" irá antes de todas.
  */
 const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: readonly SectionDefinition[] }[] = [
   {
-    id: 'history',
-    label: 'Antecedentes',
+    id: 'evaluation',
+    label: 'Evaluación clínica',
     sections: [
+      {
+        id: 'signs',
+        label: 'Signos',
+        icon: Activity,
+        capture: { kind: 'findings', section: 'signos', catalog: 'signos', findingType: 'Signo', noun: 'signos' },
+      },
+      {
+        id: 'symptoms',
+        label: 'Síntomas',
+        icon: Thermometer,
+        capture: { kind: 'findings', section: 'sintomas', catalog: 'sintomas', findingType: 'Sintoma', noun: 'síntomas' },
+      },
+      {
+        id: 'lab-studies',
+        label: 'Resultados de estudios y laboratorios',
+        icon: FlaskConical,
+        capture: {
+          kind: 'findings',
+          section: 'estudios-laboratorio',
+          catalog: 'estudios-laboratorio',
+          findingType: 'Estudio_lab',
+          noun: 'estudios',
+        },
+      },
       {
         id: 'comorbidities',
         label: 'Comorbilidades',
@@ -65,36 +91,6 @@ const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: reado
           catalog: 'comorbilidades',
           findingType: 'Comorbilidad',
           noun: 'comorbilidades',
-        },
-      },
-    ],
-  },
-  {
-    id: 'evaluation',
-    label: 'Evaluación clínica',
-    sections: [
-      {
-        id: 'symptoms',
-        label: 'Síntomas',
-        icon: Thermometer,
-        capture: { kind: 'findings', section: 'sintomas', catalog: 'sintomas', findingType: 'Sintoma', noun: 'síntomas' },
-      },
-      {
-        id: 'signs',
-        label: 'Signos',
-        icon: Activity,
-        capture: { kind: 'findings', section: 'signos', catalog: 'signos', findingType: 'Signo', noun: 'signos' },
-      },
-      {
-        id: 'lab-studies',
-        label: 'Estudios de laboratorio',
-        icon: FlaskConical,
-        capture: {
-          kind: 'findings',
-          section: 'estudios-laboratorio',
-          catalog: 'estudios-laboratorio',
-          findingType: 'Estudio_lab',
-          noun: 'estudios',
         },
       },
     ],
