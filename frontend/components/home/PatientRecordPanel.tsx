@@ -361,7 +361,7 @@ export default function PatientRecordPanel({
           )}
           {diagnosis && isDiagnosisStale && (
             <p id={`${ids}-record-diagnosis-stale`} className="mt-2 text-sm text-amber-900">
-              Los hallazgos cambiaron: vuelve a analizar en «Diagnóstico diferencial».
+              Los hallazgos cambiaron: actualiza el expediente en «Diagnóstico diferencial».
             </p>
           )}
           {/* Interfaz de salida (P-110, P-111): solo existe resultado después de confirmar un diagnóstico,
