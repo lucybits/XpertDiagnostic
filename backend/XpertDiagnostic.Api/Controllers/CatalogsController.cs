@@ -14,7 +14,7 @@ namespace XpertDiagnostic.Api.Controllers;
 [ApiController]
 [Route("api/catalogs")]
 [Produces("application/json")]
-[Authorize(Roles = UserRoles.Medico)]
+[Authorize(Roles = UserRoles.RolesMedicos)]
 public class CatalogsController(ICatalogService catalogos) : ControllerBase
 {
     /// <summary>Elementos de un catálogo.</summary>

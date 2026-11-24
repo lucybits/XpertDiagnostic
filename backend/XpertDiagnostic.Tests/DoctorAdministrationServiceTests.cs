@@ -20,6 +20,7 @@ public class DoctorAdministrationServiceTests
         var repositorio = new RepositorioMedicosFalso()
             .ConMedico(2, "Zoe Ruiz", "2222222")
             .ConMedico(3, "Ana López", "3333333");
+        repositorio.Usuarios.Single(u => u.Id == 2).Rol = UserRoles.MedicoInternista;
         repositorio.Medicos.Add(new Doctor { Id = 1, NombreCompleto = "Admin Dev", Especialidad = "X", CedulaProfesional = "1111111" });
         repositorio.Usuarios.Add(new User { Id = 1, PasswordHash = "x", Rol = UserRoles.Administrador, IdMedico = 1 });
         var servicio = CrearServicio(repositorio);
@@ -27,7 +28,7 @@ public class DoctorAdministrationServiceTests
         // When el administrador abre la lista
         var lista = await servicio.ListarAsync(null);
 
-        // Then ve solo los médicos, por nombre, sin la cuenta de administrador
+        // Then ve tratantes e internistas por nombre, sin la cuenta de administrador
         Assert.Equal([3, 2], lista.Select(c => c.IdMedico));
     }
 

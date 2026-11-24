@@ -2,8 +2,8 @@
     Médicos y cuentas de usuario (las mapean Models/Entities/Doctor.cs y User.cs).
 
     - MEDICOS identifica al médico: nombre, especialidad y cédula profesional.
-    - USUARIOS es la cuenta de acceso. ROL: 'M' médico, 'A' administrador.
-        · Una cuenta de médico ('M') siempre apunta a su registro en MEDICOS y usa el mismo número
+    - USUARIOS es la cuenta de acceso. ROL: 'T' tratante, 'I' internista, 'A' administrador.
+        · Una cuenta médica ('T' o 'I') siempre apunta a su registro en MEDICOS y usa el mismo número
           (IdUSUARIO = IdMEDICO): con ese número inicia sesión.
         · Una cuenta de administrador ('A') no necesita registro en MEDICOS (IdMEDICO NULL), así no se
           inventan cédulas para cuentas que no son de médicos (P-116).
@@ -16,8 +16,8 @@
       - si USUARIOS ya existía (versión anterior de este script o esquema anterior), la adapta sin perder
         registros: IdAREA e IdMEDICO opcionales, BienvenidaVista, Activo, FechaRegistro, reglas de ROL y
         llave foránea a MEDICOS. Todo dentro de una transacción: si algo falla, no queda a medias.
-    No inserta registros: las cuentas de médicos se crean desde el panel de administración y la cuenta de
-    administrador de prueba, con SeedAdminAccount.sql.
+    No inserta registros: las cuentas se crean desde el panel de administración o mediante los seeds de
+    prueba SeedAdminAccount.sql y SeedInternistAccount.sql.
 */
 
 SET NOCOUNT ON;
@@ -41,13 +41,13 @@ IF OBJECT_ID(N'dbo.USUARIOS', N'U') IS NULL
 CREATE TABLE dbo.USUARIOS (
     IdUSUARIO       INT          NOT NULL CONSTRAINT PK_USUARIOS PRIMARY KEY,
     PASS            VARCHAR(60)  NOT NULL, -- hash BCrypt
-    ROL             VARCHAR(1)   NOT NULL CONSTRAINT CK_USUARIOS_ROL CHECK (ROL IN ('M', 'A')),
+    ROL             VARCHAR(1)   NOT NULL CONSTRAINT CK_USUARIOS_ROL CHECK (ROL IN ('T', 'I', 'A')),
     IdMEDICO        INT          NULL CONSTRAINT FK_USUARIOS_MEDICOS REFERENCES dbo.MEDICOS (IdMedico),
     IdAREA          INT          NULL,
     BienvenidaVista BIT          NOT NULL CONSTRAINT DF_USUARIOS_BIENVENIDA DEFAULT (0), -- bienvenida guiada (ESP-003)
     Activo          BIT          NOT NULL CONSTRAINT DF_USUARIOS_ACTIVO DEFAULT (1),
     FechaRegistro   DATETIME2(0) NOT NULL CONSTRAINT DF_USUARIOS_FECHA_REGISTRO DEFAULT (SYSUTCDATETIME()),
-    CONSTRAINT CK_USUARIOS_MEDICO_ROL CHECK (ROL = 'A' OR IdMEDICO IS NOT NULL),
+    CONSTRAINT CK_USUARIOS_MEDICO_ROL CHECK ((ROL IN ('T', 'I') AND IdMEDICO IS NOT NULL) OR ROL = 'A'),
     CONSTRAINT CK_USUARIOS_MEDICO_ID CHECK (IdMEDICO IS NULL OR IdMEDICO = IdUSUARIO)
 );
 
@@ -66,8 +66,18 @@ IF COL_LENGTH(N'dbo.USUARIOS', N'FechaRegistro') IS NULL
     ALTER TABLE dbo.USUARIOS ADD FechaRegistro DATETIME2(0) NOT NULL
         CONSTRAINT DF_USUARIOS_FECHA_REGISTRO DEFAULT (SYSUTCDATETIME());
 
-IF OBJECT_ID(N'dbo.CK_USUARIOS_ROL', N'C') IS NULL
-    ALTER TABLE dbo.USUARIOS ADD CONSTRAINT CK_USUARIOS_ROL CHECK (ROL IN ('M', 'A'));
+IF OBJECT_ID(N'dbo.CK_USUARIOS_ROL', N'C') IS NOT NULL
+    ALTER TABLE dbo.USUARIOS DROP CONSTRAINT CK_USUARIOS_ROL;
+
+IF OBJECT_ID(N'dbo.CK_USUARIOS_MEDICO_ROL', N'C') IS NOT NULL
+    ALTER TABLE dbo.USUARIOS DROP CONSTRAINT CK_USUARIOS_MEDICO_ROL;
+
+UPDATE dbo.USUARIOS
+SET ROL = 'T'
+WHERE ROL = 'M';
+
+ALTER TABLE dbo.USUARIOS WITH CHECK
+    ADD CONSTRAINT CK_USUARIOS_ROL CHECK (ROL IN ('T', 'I', 'A'));
 
 -- IdMEDICO opcional (solo para administradores). SQL Server no deja cambiar una columna con llave
 -- foránea, así que se quita la llave, se cambia la columna y la llave se vuelve a crear abajo.
@@ -87,8 +97,7 @@ BEGIN
 END
 
 -- Reglas entre columnas. Se crean con SQL dinámico porque IdMEDICO pudo cambiar en este mismo lote.
-IF OBJECT_ID(N'dbo.CK_USUARIOS_MEDICO_ROL', N'C') IS NULL
-    EXEC (N'ALTER TABLE dbo.USUARIOS ADD CONSTRAINT CK_USUARIOS_MEDICO_ROL CHECK (ROL = ''A'' OR IdMEDICO IS NOT NULL);');
+EXEC (N'ALTER TABLE dbo.USUARIOS WITH CHECK ADD CONSTRAINT CK_USUARIOS_MEDICO_ROL CHECK ((ROL IN (''T'', ''I'') AND IdMEDICO IS NOT NULL) OR ROL = ''A'');');
 
 IF OBJECT_ID(N'dbo.CK_USUARIOS_MEDICO_ID', N'C') IS NULL
 BEGIN
