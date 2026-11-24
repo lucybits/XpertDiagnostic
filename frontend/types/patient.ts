@@ -44,10 +44,43 @@ export const PATIENT_LIMITS = {
   ageMax: 130,
 } as const;
 
+/**
+ * Preguntas sí/no de antecedentes no patológicos que se hacen al registrar al paciente.
+ * Cada key es el nombre que espera el backend (CreatePatientRequest) y va a una columna de
+ * IO_AntecNoPatolPacientes.
+ */
+export const NON_PATHOLOGICAL_QUESTIONS = [
+  { key: 'tabaquismo', label: '¿Fuma?' },
+  { key: 'alcoholismo', label: '¿Consume alcohol?' },
+  { key: 'toxicomanias', label: '¿Consume drogas?' },
+  { key: 'biomasa', label: '¿Exposición a humo de leña o biomasa?' },
+  { key: 'tatuajesPerforaciones', label: '¿Tiene tatuajes o perforaciones?' },
+  { key: 'herbolaria', label: '¿Usa herbolaria o remedios naturales?' },
+  { key: 'transfusiones', label: '¿Ha recibido transfusiones?' },
+] as const;
+
+export type NonPathologicalKey = (typeof NON_PATHOLOGICAL_QUESTIONS)[number]['key'];
+
+/** Respuestas sí (true) / no (false) a NON_PATHOLOGICAL_QUESTIONS. */
+export type NonPathologicalHistory = Record<NonPathologicalKey, boolean>;
+
+/** Todas las respuestas en "no": así empieza el formulario. */
+export const EMPTY_NON_PATHOLOGICAL_HISTORY: NonPathologicalHistory = {
+  tabaquismo: false,
+  alcoholismo: false,
+  toxicomanias: false,
+  biomasa: false,
+  tatuajesPerforaciones: false,
+  herbolaria: false,
+  transfusiones: false,
+};
+
 /** Datos del alta de un paciente ya validados. */
 export interface NewPatient {
   fullName: string;
   age: number;
+  history: NonPathologicalHistory;
 }
 
-export type NewPatientField = keyof NewPatient;
+/** Campos de texto del alta que pueden tener error (las casillas no fallan). */
+export type NewPatientField = 'fullName' | 'age';

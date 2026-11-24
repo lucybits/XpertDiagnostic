@@ -9,8 +9,6 @@ public sealed record FindingView(string TipoHallazgo, string IdRegistro, string 
 /// <remarks>@inv Hallazgos sin repetir descripción dentro de un mismo tipo (se agrupan los IDs equivalentes).</remarks>
 public sealed record PatientRecord(
     string IdPaciente,
-    string? IdEnfermedadPreexistente,
-    string? EnfermedadPreexistente,
     IReadOnlyList<FindingView> Hallazgos);
 
 public enum SaveFindingsStatus

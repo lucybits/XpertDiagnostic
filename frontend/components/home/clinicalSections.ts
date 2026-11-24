@@ -1,6 +1,5 @@
 import {
   Activity,
-  ClipboardList,
   ClipboardPlus,
   FlaskConical,
   Stethoscope,
@@ -16,12 +15,10 @@ export type SectionStatus = 'pending' | 'in-progress' | 'complete';
 /**
  * Qué captura una sección y dónde se guarda (P-103):
  * - findings: elementos de un catálogo → HALLAZGOS_PACIENTE con su TipoHallazgo.
- * - preexisting: una enfermedad de ENFERMEDADES → PACIENTES.IdEnfermedadPreexistente.
  * - analysis: no captura; ejecuta la máquina de inferencia con lo capturado.
  */
 export type SectionCapture =
   | { kind: 'findings'; section: FindingSection; catalog: CatalogName; findingType: FindingType; noun: string }
-  | { kind: 'preexisting'; catalog: 'enfermedades' }
   | { kind: 'analysis' };
 
 export interface ClinicalSection {
@@ -49,20 +46,40 @@ export function isSectionLocked(section: ClinicalSection): boolean {
 type SectionDefinition = Omit<ClinicalSection, 'status'>;
 
 /**
- * Secciones alineadas con las entradas de la máquina de inferencia (decisión de Lucía, P-103):
- * antecedentes (enfermedad preexistente y comorbilidades), evaluación clínica (síntomas, signos y
- * estudios) y, al final, el análisis.
+ * Secciones alineadas con las entradas de la máquina de inferencia (decisión de Lucía, P-103), en el
+ * orden en que se capturan: signos (exploración física), síntomas, resultados de estudios y
+ * laboratorios, comorbilidades y, al final, el análisis. El orden del arreglo es el de captura:
+ * buildSectionGroups desbloquea la primera sección sin completar y bloquea las siguientes.
+ * Pendiente (tarea 2.2): "Antecedentes del paciente" irá antes de todas.
  */
 const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: readonly SectionDefinition[] }[] = [
   {
-    id: 'history',
-    label: 'Antecedentes',
+    id: 'evaluation',
+    label: 'Evaluación clínica',
     sections: [
       {
-        id: 'pre-existing-conditions',
-        label: 'Enfermedades preexistentes',
-        icon: ClipboardList,
-        capture: { kind: 'preexisting', catalog: 'enfermedades' },
+        id: 'signs',
+        label: 'Signos',
+        icon: Activity,
+        capture: { kind: 'findings', section: 'signos', catalog: 'signos', findingType: 'Signo', noun: 'signos' },
+      },
+      {
+        id: 'symptoms',
+        label: 'Síntomas',
+        icon: Thermometer,
+        capture: { kind: 'findings', section: 'sintomas', catalog: 'sintomas', findingType: 'Sintoma', noun: 'síntomas' },
+      },
+      {
+        id: 'lab-studies',
+        label: 'Resultados de estudios y laboratorios',
+        icon: FlaskConical,
+        capture: {
+          kind: 'findings',
+          section: 'estudios-laboratorio',
+          catalog: 'estudios-laboratorio',
+          findingType: 'Estudio_lab',
+          noun: 'estudios',
+        },
       },
       {
         id: 'comorbidities',
@@ -74,36 +91,6 @@ const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: reado
           catalog: 'comorbilidades',
           findingType: 'Comorbilidad',
           noun: 'comorbilidades',
-        },
-      },
-    ],
-  },
-  {
-    id: 'evaluation',
-    label: 'Evaluación clínica',
-    sections: [
-      {
-        id: 'symptoms',
-        label: 'Síntomas',
-        icon: Thermometer,
-        capture: { kind: 'findings', section: 'sintomas', catalog: 'sintomas', findingType: 'Sintoma', noun: 'síntomas' },
-      },
-      {
-        id: 'signs',
-        label: 'Signos',
-        icon: Activity,
-        capture: { kind: 'findings', section: 'signos', catalog: 'signos', findingType: 'Signo', noun: 'signos' },
-      },
-      {
-        id: 'lab-studies',
-        label: 'Estudios de laboratorio',
-        icon: FlaskConical,
-        capture: {
-          kind: 'findings',
-          section: 'estudios-laboratorio',
-          catalog: 'estudios-laboratorio',
-          findingType: 'Estudio_lab',
-          noun: 'estudios',
         },
       },
     ],
@@ -138,15 +125,13 @@ export function buildSectionGroups(completed: ReadonlySet<string>): readonly Cli
 
 /**
  * Secciones que ya tienen datos guardados en el expediente (para retomar a un paciente).
- * @post Incluye la de enfermedades preexistentes si tiene una, y cada sección de hallazgos con al
- *       menos un hallazgo de su tipo. El análisis nunca se da por hecho.
+ * @post Incluye cada sección de hallazgos con al menos un hallazgo de su tipo. El análisis nunca se da por hecho.
  */
 export function sectionsWithData(record: PatientRecord): Set<string> {
   const done = new Set<string>();
   for (const group of SECTION_DEFINITIONS) {
     for (const section of group.sections) {
       const { capture } = section;
-      if (capture.kind === 'preexisting' && record.idEnfermedadPreexistente) done.add(section.id);
       if (capture.kind === 'findings' && record.hallazgos.some((h) => h.tipoHallazgo === capture.findingType)) {
         done.add(section.id);
       }

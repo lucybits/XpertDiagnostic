@@ -46,7 +46,6 @@ public sealed class PatientRecordService(IPatientRecordRepository expedientes, I
         if (!await _expedientes.ExistePacienteAsync(idPaciente, cancellationToken))
             return null;
 
-        var (idPreexistente, preexistente) = await _expedientes.ObtenerPreexistenteAsync(idPaciente, cancellationToken);
         var filas = await _expedientes.ListarHallazgosAsync(idPaciente, cancellationToken);
 
         // Los IDs equivalentes (misma descripción en el mismo tipo) se muestran una sola vez.
@@ -55,7 +54,7 @@ public sealed class PatientRecordService(IPatientRecordRepository expedientes, I
             .Select(grupo => grupo.First())
             .ToList();
 
-        return new PatientRecord(idPaciente, idPreexistente, preexistente, hallazgos);
+        return new PatientRecord(idPaciente, hallazgos);
     }
 
     public async Task<SaveFindingsStatus> GuardarHallazgosAsync(
@@ -98,27 +97,6 @@ public sealed class PatientRecordService(IPatientRecordRepository expedientes, I
         }
 
         await _expedientes.ReemplazarHallazgosAsync(idPaciente, tipoHallazgo, [.. guardar.Values], cancellationToken);
-        return SaveFindingsStatus.Guardado;
-    }
-
-    public async Task<SaveFindingsStatus> AsignarPreexistenteAsync(
-        string idPaciente,
-        string? idEnfermedad,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(idPaciente);
-
-        if (!await _expedientes.ExistePacienteAsync(idPaciente, cancellationToken))
-            return SaveFindingsStatus.PacienteNoExiste;
-
-        if (idEnfermedad is not null)
-        {
-            var enfermedades = await _catalogos.ListarAsync(CatalogType.Enfermedades, cancellationToken);
-            if (!enfermedades.Any(e => e.Id == idEnfermedad))
-                return SaveFindingsStatus.RegistroInvalido;
-        }
-
-        await _expedientes.AsignarPreexistenteAsync(idPaciente, idEnfermedad, cancellationToken);
         return SaveFindingsStatus.Guardado;
     }
 

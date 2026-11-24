@@ -167,14 +167,11 @@ export default function HomeScreen() {
     return sections[index + 1]?.id ?? activeSectionId;
   };
 
-  // Huella de lo capturado (preexistente y hallazgos con su valor), para saber si un guardado cambió algo.
+  // Huella de lo capturado (hallazgos con su valor), para saber si un guardado cambió algo.
   const recordFingerprint = (record: PatientRecord | null) =>
     record === null
       ? ''
-      : JSON.stringify([
-          record.idEnfermedadPreexistente,
-          record.hallazgos.map((h) => `${h.tipoHallazgo}|${h.descripcion}|${h.valor}`).sort(),
-        ]);
+      : JSON.stringify(record.hallazgos.map((h) => `${h.tipoHallazgo}|${h.descripcion}|${h.valor}`).sort());
 
   // Elegir o registrar un paciente: se lee su expediente y se retoma en la primera sección sin datos.
   const startWithPatient = (patient: Patient) => {
@@ -352,7 +349,6 @@ export default function HomeScreen() {
               patient={selectedPatient}
               sectionGroups={sectionGroups}
               findings={recordFindings}
-              preexistingDisease={patientRecord?.enfermedadPreexistente ?? null}
               diagnosis={diagnosis}
               isDiagnosisStale={isDiagnosisStale}
               collapsed={isRecordCollapsed}
@@ -379,7 +375,6 @@ export default function HomeScreen() {
               patient={selectedPatient}
               sectionGroups={sectionGroups}
               findings={recordFindings}
-              preexistingDisease={patientRecord?.enfermedadPreexistente ?? null}
               diagnosis={diagnosis}
               isDiagnosisStale={isDiagnosisStale}
               onClose={() => setIsRecordOpen(false)}

@@ -27,12 +27,20 @@ public sealed class PatientRepository(AppDbContext db) : IPatientRepository
             .Select(p => p.Id)
             .FirstOrDefaultAsync(cancellationToken);
 
-    public async Task<bool> CrearAsync(Patient paciente, CancellationToken cancellationToken = default)
+    public async Task<bool> CrearAsync(
+        Patient paciente,
+        NonPathologicalHistory antecedentes,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(paciente);
+        ArgumentNullException.ThrowIfNull(antecedentes);
         ArgumentException.ThrowIfNullOrWhiteSpace(paciente.Id);
+        if (antecedentes.IdPaciente != paciente.Id)
+            throw new ArgumentException("Los antecedentes deben ser del mismo paciente.", nameof(antecedentes));
 
+        // Un solo SaveChanges = una transacción: se guardan los dos o ninguno.
         db.Pacientes.Add(paciente);
+        db.AntecedentesNoPatologicos.Add(antecedentes);
         try
         {
             await db.SaveChangesAsync(cancellationToken);

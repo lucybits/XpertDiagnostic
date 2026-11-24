@@ -3,7 +3,14 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { CircleAlert, Hash, UserPlus, X } from 'lucide-react';
 import { validateNewPatient, type NewPatientFieldErrors } from '@/lib/newPatient';
-import { PATIENT_LIMITS, type NewPatient } from '@/types/patient';
+import {
+  EMPTY_NON_PATHOLOGICAL_HISTORY,
+  NON_PATHOLOGICAL_QUESTIONS,
+  PATIENT_LIMITS,
+  type NewPatient,
+  type NonPathologicalHistory,
+  type NonPathologicalKey,
+} from '@/types/patient';
 
 type NewPatientDialogProps = {
   open: boolean;
@@ -20,8 +27,9 @@ const FIELD =
   'w-full rounded-lg border-2 bg-white px-3 py-2.5 text-base text-slate-900 transition-colors hover:border-slate-300 focus:outline-none';
 
 /**
- * Ventana para registrar un paciente nuevo (ESP-004). Solo pide lo que guarda la tabla PACIENTES:
- * nombre completo y edad. El ID se asigna solo, y el resto del expediente se captura en el chat.
+ * Ventana para registrar un paciente nuevo (ESP-004). Pide nombre completo y edad (tabla PACIENTES)
+ * y los antecedentes no patológicos como casillas sí/no (IO_AntecNoPatolPacientes). El ID se asigna
+ * solo, y el resto del expediente se captura en el chat.
  * Usa <dialog> nativo, como el buscador: atrapa el foco, se cierra con Escape y el fondo queda inerte.
  */
 export default function NewPatientDialog({ open, onClose, onCreate }: NewPatientDialogProps) {
@@ -65,6 +73,7 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
   const ids = useId();
   const [fullName, setFullName] = useState('');
   const [age, setAge] = useState('');
+  const [history, setHistory] = useState<NonPathologicalHistory>(EMPTY_NON_PATHOLOGICAL_HISTORY);
   const [errors, setErrors] = useState<NewPatientFieldErrors>({});
   // Guardando en el servidor; y el error del servidor, si lo hubo (P-102).
   const [isSaving, setIsSaving] = useState(false);
@@ -76,7 +85,7 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
     event.preventDefault();
     if (isSaving) return;
     setServerError(null);
-    const result = validateNewPatient({ fullName, age });
+    const result = validateNewPatient({ fullName, age, history });
     if (!result.ok) {
       setErrors(result.errors);
       // El foco va al primer campo con error, para corregirlo de inmediato.
@@ -95,6 +104,9 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
   // Al corregir un campo, su error desaparece.
   const clearError = (field: keyof NewPatientFieldErrors) =>
     setErrors((current) => (current[field] ? { ...current, [field]: undefined } : current));
+
+  const toggleHistory = (key: NonPathologicalKey) =>
+    setHistory((current) => ({ ...current, [key]: !current[key] }));
 
   const fieldBorder = (hasError: boolean) =>
     hasError ? 'border-red-600 focus:border-red-600' : 'border-slate-200 focus:border-[#116ee6]';
@@ -174,6 +186,32 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
           {errors.age && <FieldError id={`${ids}-age-error`} message={errors.age} />}
         </div>
 
+        <fieldset>
+          <legend className="mb-1 font-medium text-slate-700">Antecedentes no patológicos</legend>
+          <p id={`${ids}-history-hint`} className="mb-2 text-sm text-slate-700">
+            Marca las que apliquen; sin marcar cuenta como &ldquo;no&rdquo;.
+          </p>
+          <ul aria-describedby={`${ids}-history-hint`} className="grid gap-1 sm:grid-cols-2">
+            {NON_PATHOLOGICAL_QUESTIONS.map(({ key, label }) => (
+              <li key={key}>
+                <label
+                  className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-50 ${
+                    history[key] ? 'text-slate-900' : 'text-slate-800'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={history[key]}
+                    onChange={() => toggleHistory(key)}
+                    className="h-5 w-5 shrink-0 cursor-pointer rounded accent-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#116ee6]/60"
+                  />
+                  <span className="leading-snug">{label}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </fieldset>
+
         {serverError && (
           <p role="alert" className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-red-800">
             <CircleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
@@ -183,8 +221,8 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
 
         <p className="flex items-start gap-2 rounded-lg bg-slate-100 px-3 py-2.5 text-slate-800">
           <Hash aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
-          El número de expediente se asigna automáticamente. Síntomas, signos y antecedentes se capturan después, en
-          el chat.
+          El número de expediente se asigna automáticamente. Síntomas, signos y el resto de los antecedentes se
+          capturan después, en el chat.
         </p>
       </div>
 
