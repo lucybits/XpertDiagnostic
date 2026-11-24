@@ -48,6 +48,18 @@ export const PATIENT_LIMITS = {
   ageMax: 130,
 } as const;
 
+/** Sexo del paciente (PACIENTES.Sexo: CHAR(1) obligatorio, 'F' o 'M' en mayúscula). */
+export const SEX_OPTIONS = [
+  { value: 'F', label: 'Mujer' },
+  { value: 'M', label: 'Hombre' },
+] as const;
+
+export type Sex = (typeof SEX_OPTIONS)[number]['value'];
+
+export function isSex(value: string): value is Sex {
+  return SEX_OPTIONS.some((option) => option.value === value);
+}
+
 /**
  * Preguntas sí/no de antecedentes no patológicos. Las responde el médico tratante en la captura
  * (parte del interrogatorio, P-145); el administrador ya no las pregunta en el alta (P-144).
@@ -87,6 +99,7 @@ export interface NewPatient {
   maternalSurname: string | null;
   /** AAAA-MM-DD. */
   birthDate: string;
+  sex: Sex;
 }
 
 export type NewPatientField = keyof NewPatient;

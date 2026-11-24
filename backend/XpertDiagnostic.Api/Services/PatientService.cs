@@ -34,6 +34,8 @@ public sealed partial class PatientService(IPatientRepository pacientes) : IPati
         ArgumentException.ThrowIfNullOrWhiteSpace(solicitud.ApellidoPaterno);
         if (solicitud.FechaNacimiento is not { } nacimiento)
             throw new ArgumentException("La fecha de nacimiento es obligatoria.", nameof(solicitud));
+        if (solicitud.Sexo is not ("F" or "M"))
+            throw new ArgumentException("El sexo debe ser F o M.", nameof(solicitud));
 
         var nombres = Limpiar(solicitud.Nombres);
         var paterno = Limpiar(solicitud.ApellidoPaterno);
@@ -51,7 +53,8 @@ public sealed partial class PatientService(IPatientRepository pacientes) : IPati
                 Nombres = nombres,
                 ApellidoPaterno = paterno,
                 ApellidoMaterno = materno,
-                FechaNacimiento = nacimiento
+                FechaNacimiento = nacimiento,
+                Sexo = solicitud.Sexo,
             };
 
             if (await _pacientes.CrearAsync(paciente, cancellationToken))

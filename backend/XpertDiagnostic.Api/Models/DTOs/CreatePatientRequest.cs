@@ -10,6 +10,8 @@ namespace XpertDiagnostic.Api.Models.DTOs;
 /// @inv Nombres de 2 a 60 caracteres; ApellidoPaterno de 2 a 40; ApellidoMaterno vacío o de 2 a 40.
 ///      Todos con al menos una letra y sin dígitos (RF-31).
 /// @inv FechaNacimiento no es futura y corresponde a una edad de 0 a 130 años.
+/// @inv Sexo es exactamente "F" (mujer) o "M" (hombre): un carácter, nunca vacío. Se convierte a mayúscula
+///      al recibirlo ("f" → "F") (CK_PACIENTES_SEXO).
 /// </remarks>
 public class CreatePatientRequest : IValidatableObject
 {
@@ -31,6 +33,16 @@ public class CreatePatientRequest : IValidatableObject
 
     [Required]
     public DateOnly? FechaNacimiento { get; set; }
+
+    /// <summary>"F" = mujer, "M" = hombre. Se convierte a mayúscula al recibirlo ("f" → "F").</summary>
+    [Required, StringLength(1, MinimumLength = 1), RegularExpression("^[FM]$")]
+    public string Sexo
+    {
+        get => _sexo;
+        set => _sexo = value?.Trim().ToUpperInvariant() ?? string.Empty;
+    }
+
+    private string _sexo = string.Empty;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

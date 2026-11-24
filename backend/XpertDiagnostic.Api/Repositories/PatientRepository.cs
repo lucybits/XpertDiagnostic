@@ -77,11 +77,11 @@ public sealed class PatientRepository(AppDbContext db) : IPatientRepository
         {
             // El nombre de la tabla es una constante de esta clase; el ID va como parámetro.
             await db.Database.ExecuteSqlRawAsync(
-                "DELETE FROM dbo." + tabla + " WHERE IdPaciente = {0}", [idPaciente], cancellationToken);
+                "DELETE FROM dbo." + tabla + " WHERE Id_Paciente = {0}", [idPaciente], cancellationToken);
         }
         // IO_Complicaciones es un catálogo: solo se quita la marca del paciente de prueba.
         await db.Database.ExecuteSqlInterpolatedAsync(
-            $"UPDATE dbo.IO_Complicaciones SET IdPaciente = NULL WHERE IdPaciente = {idPaciente}", cancellationToken);
+            $"UPDATE dbo.IO_Complicaciones SET Id_Paciente = NULL WHERE Id_Paciente = {idPaciente}", cancellationToken);
         await db.Pacientes.Where(p => p.Id == idPaciente).ExecuteDeleteAsync(cancellationToken);
 
         if (idPlan.IdPlan is not null && !await db.Pacientes.AnyAsync(p => p.IdPlan == idPlan.IdPlan, cancellationToken))

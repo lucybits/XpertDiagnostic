@@ -49,6 +49,7 @@ public class PatientServiceTests
         Assert.Equal("López", guardado.ApellidoPaterno);
         Assert.Equal("Núñez", guardado.ApellidoMaterno);
         Assert.Equal(new DateOnly(1974, 3, 15), guardado.FechaNacimiento);
+        Assert.Equal("F", guardado.Sexo);
         Assert.Null(guardado.IdEnfermedadDiagnosticada);
         Assert.Null(guardado.IdTratamiento);
         Assert.Null(guardado.IdPlan);
@@ -96,10 +97,48 @@ public class PatientServiceTests
         Assert.Equal(esValido, valido);
     }
 
+    [Theory]
+    [InlineData("F", true)]
+    [InlineData("M", true)]
+    [InlineData("f", true)]   // se convierte a "F"
+    [InlineData(" m ", true)] // se convierte a "M"
+    [InlineData("", false)]
+    [InlineData(" ", false)]
+    [InlineData("X", false)]
+    [InlineData("FM", false)] // más de un carácter
+    public void CreatePatientRequest_Sexo_SoloFoM(string sexo, bool esValido)
+    {
+        // Given una solicitud de alta válida salvo, quizá, el sexo
+        var solicitud = Solicitud("Ana", "Ruiz", null, new DateOnly(1996, 1, 1), sexo);
+
+        // When ASP.NET Core la valida
+        var valido = Validator.TryValidateObject(solicitud, new ValidationContext(solicitud), [], validateAllProperties: true);
+
+        // Then solo se acepta un carácter F o M (en minúscula se convierte a mayúscula)
+        Assert.Equal(esValido, valido);
+    }
+
+    [Theory]
+    [InlineData("f", "F")]
+    [InlineData("m", "M")]
+    [InlineData(" m ", "M")]
+    public async Task RegistrarAsync_SexoEnMinuscula_SeGuardaEnMayuscula(string escrito, string guardado)
+    {
+        // Given un sexo escrito en minúscula o con espacios
+        var repositorio = new RepositorioPacientesFalso();
+        var servicio = new PatientService(repositorio);
+
+        // When se registra al paciente
+        await servicio.RegistrarAsync(Solicitud("Ana", "Ruiz", null, new DateOnly(1996, 1, 1), escrito));
+
+        // Then se guarda en mayúscula
+        Assert.Equal(guardado, Assert.Single(repositorio.Pacientes).Sexo);
+    }
+
     [Fact]
     public void CreatePatientRequest_SinFechaDeNacimiento_NoEsValida() // PT45
     {
-        var solicitud = new CreatePatientRequest { Nombres = "Ana", ApellidoPaterno = "Ruiz" };
+        var solicitud = new CreatePatientRequest { Nombres = "Ana", ApellidoPaterno = "Ruiz", Sexo = "F" };
 
         var valido = Validator.TryValidateObject(solicitud, new ValidationContext(solicitud), [], validateAllProperties: true);
 
@@ -184,10 +223,11 @@ public class PatientServiceTests
     }
 
     private static Patient Paciente(string id, string nombreCompleto) =>
-        new() { Id = id, NombreCompleto = nombreCompleto, FechaNacimiento = new DateOnly(1990, 1, 1) };
+        new() { Id = id, NombreCompleto = nombreCompleto, FechaNacimiento = new DateOnly(1990, 1, 1), Sexo = "F" };
 
-    private static CreatePatientRequest Solicitud(string nombres, string paterno, string? materno, DateOnly nacimiento) =>
-        new() { Nombres = nombres, ApellidoPaterno = paterno, ApellidoMaterno = materno, FechaNacimiento = nacimiento };
+    private static CreatePatientRequest Solicitud(
+        string nombres, string paterno, string? materno, DateOnly nacimiento, string sexo = "F") =>
+        new() { Nombres = nombres, ApellidoPaterno = paterno, ApellidoMaterno = materno, FechaNacimiento = nacimiento, Sexo = sexo };
 
     private sealed class RepositorioPacientesFalso : IPatientRepository
     {

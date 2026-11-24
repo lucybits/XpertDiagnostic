@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { CircleAlert, Hash, UserPlus, X } from 'lucide-react';
 import { oldestBirthDateIso, todayIso, validateNewPatient, type NewPatientFieldErrors, type NewPatientInput } from '@/lib/newPatient';
-import { PATIENT_LIMITS, type NewPatient, type NewPatientField } from '@/types/patient';
+import { PATIENT_LIMITS, SEX_OPTIONS, type NewPatient, type NewPatientField } from '@/types/patient';
 
 type NewPatientDialogProps = {
   open: boolean;
@@ -20,13 +20,13 @@ const FIELD =
   'w-full rounded-lg border-2 bg-white px-3 py-2.5 text-base text-slate-900 transition-colors hover:border-slate-300 focus:outline-none';
 
 // Orden del formulario: el foco va al primer campo con error.
-const FIELD_ORDER: NewPatientField[] = ['givenNames', 'paternalSurname', 'maternalSurname', 'birthDate'];
+const FIELD_ORDER: NewPatientField[] = ['givenNames', 'paternalSurname', 'maternalSurname', 'birthDate', 'sex'];
 
-const EMPTY_FORM: NewPatientInput = { givenNames: '', paternalSurname: '', maternalSurname: '', birthDate: '' };
+const EMPTY_FORM: NewPatientInput = { givenNames: '', paternalSurname: '', maternalSurname: '', birthDate: '', sex: '' };
 
 /**
  * Ventana del administrador para registrar un paciente nuevo (ESP-004, P-144). Pide nombre(s), apellido
- * paterno, apellido materno (opcional) y fecha de nacimiento. El ID se asigna solo y la edad se calcula
+ * paterno, apellido materno (opcional), fecha de nacimiento y sexo. El ID se asigna solo y la edad se calcula
  * de la fecha; el resto del expediente lo captura después el médico tratante.
  * Usa <dialog> nativo, como el buscador: atrapa el foco, se cierra con Escape y el fondo queda inerte.
  */
@@ -172,6 +172,34 @@ function NewPatientForm({ titleId, onClose, onCreate }: Omit<NewPatientDialogPro
             className={`${FIELD} ${fieldBorder(Boolean(errors.birthDate))}`}
           />
           {errors.birthDate && <FieldError id={`${fieldId('birthDate')}-error`} message={errors.birthDate} />}
+        </div>
+
+        <div role="radiogroup" aria-labelledby={`${fieldId('sex')}-label`} aria-describedby={errors.sex ? `${fieldId('sex')}-error` : undefined}>
+          <span id={`${fieldId('sex')}-label`} className="mb-1.5 block font-medium text-slate-700">
+            Sexo
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {SEX_OPTIONS.map(({ value, label }, index) => (
+              <label
+                key={value}
+                className={`flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border-2 px-4 py-2 transition-colors hover:border-slate-300 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#116ee6]/60 ${
+                  form.sex === value ? 'border-teal-700 bg-teal-50 text-slate-900' : errors.sex ? 'border-red-600' : 'border-slate-200 text-slate-800'
+                }`}
+              >
+                <input
+                  id={index === 0 ? fieldId('sex') : undefined}
+                  type="radio"
+                  name={fieldId('sex')}
+                  value={value}
+                  checked={form.sex === value}
+                  onChange={() => update('sex', value)}
+                  className="h-5 w-5 shrink-0 cursor-pointer accent-teal-700 focus:outline-none"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          {errors.sex && <FieldError id={`${fieldId('sex')}-error`} message={errors.sex} />}
         </div>
 
         {serverError && (
