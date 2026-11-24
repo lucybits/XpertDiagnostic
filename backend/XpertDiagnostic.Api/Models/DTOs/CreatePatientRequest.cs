@@ -18,4 +18,27 @@ public class CreatePatientRequest
 
     [Range(0, 130)]
     public int Edad { get; set; }
+
+    // ── Antecedentes no patológicos (IO_AntecNoPatolPacientes): casillas sí/no; sin marcar = no ──
+
+    /// <summary>¿Fuma? → Tabaquismo.</summary>
+    public bool Tabaquismo { get; set; }
+
+    /// <summary>¿Consume alcohol? → Alcoholism.</summary>
+    public bool Alcoholismo { get; set; }
+
+    /// <summary>¿Consume drogas? → Toxicomans.</summary>
+    public bool Toxicomanias { get; set; }
+
+    /// <summary>¿Exposición a humo de leña o biomasa? → Biomasa (INT: 1 sí, 0 no).</summary>
+    public bool Biomasa { get; set; }
+
+    /// <summary>¿Tatuajes o perforaciones? → TatuajPerf.</summary>
+    public bool TatuajesPerforaciones { get; set; }
+
+    /// <summary>¿Usa herbolaria? → Herbolaria.</summary>
+    public bool Herbolaria { get; set; }
+
+    /// <summary>¿Ha recibido transfusiones? → Transfusio.</summary>
+    public bool Transfusiones { get; set; }
 }

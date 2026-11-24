@@ -1,9 +1,26 @@
-import { PATIENT_LIMITS, type NewPatient, type NewPatientField } from '@/types/patient';
+import {
+  EMPTY_NON_PATHOLOGICAL_HISTORY,
+  NON_PATHOLOGICAL_QUESTIONS,
+  PATIENT_LIMITS,
+  type NewPatient,
+  type NewPatientField,
+  type NonPathologicalHistory,
+} from '@/types/patient';
 
 /** Datos del formulario tal como se escriben (texto), antes de convertirlos. */
 export interface NewPatientInput {
   fullName: string;
   age: string;
+  /** Casillas de antecedentes no patológicos; si falta o una respuesta no es true, cuenta como "no". */
+  history?: unknown;
+}
+
+/** Respuestas sí/no a partir de un valor cualquiera: solo true cuenta como "sí". */
+export function toNonPathologicalHistory(value: unknown): NonPathologicalHistory {
+  const answers = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+  const history = { ...EMPTY_NON_PATHOLOGICAL_HISTORY };
+  for (const { key } of NON_PATHOLOGICAL_QUESTIONS) history[key] = answers[key] === true;
+  return history;
 }
 
 export type NewPatientFieldErrors = Partial<Record<NewPatientField, string>>;
@@ -18,7 +35,8 @@ const HAS_DIGIT = /\d/;
  *
  * @pre input.fullName e input.age son cadenas (pueden estar vacías).
  * @post ok == true  → data.fullName sin espacios en los extremos ni dobles, de nameMin a nameMax
- *   caracteres, con al menos una letra y sin números; data.age entero entre ageMin y ageMax.
+ *   caracteres, con al menos una letra y sin números; data.age entero entre ageMin y ageMax;
+ *   data.history con una respuesta sí/no por pregunta.
  * @post ok == false → errors tiene un mensaje por cada campo inválido.
  */
 export function validateNewPatient(
@@ -38,5 +56,5 @@ export function validateNewPatient(
     errors.age = `Escribe la edad en años, un número entero de ${PATIENT_LIMITS.ageMin} a ${PATIENT_LIMITS.ageMax}.`;
   }
 
-  return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, data: { fullName, age } };
+  return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, data: { fullName, age, history: toNonPathologicalHistory(input.history) } };
 }
