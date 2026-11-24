@@ -75,11 +75,10 @@ export const WELCOME_STEPS: readonly WelcomeStep[] = [
   },
   {
     action: 'Buscar paciente',
-    secondaryAction: 'Nuevo paciente',
     bubbles: [
       {
         text: () =>
-          'Para empezar, **busca a un paciente registrado** o **registra uno nuevo**: solo necesito su **nombre completo** y su **edad**. El resto lo iremos capturando juntos, sección por sección.',
+          'Para empezar, **busca al paciente** que registró el administrador. Después iremos capturando juntos su expediente, sección por sección: antecedentes, síntomas, signos y estudios.',
         thinkingMs: 1000,
         wordDelayMs: 95,
       },

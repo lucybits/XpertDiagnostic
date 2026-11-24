@@ -22,6 +22,8 @@ SQL_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = SQL_DIR / "ClinicalData"
 OUTPUT = SQL_DIR / "SeedClinicalData.sql"
 SOURCE_ENCODING = "cp1252"
+# Año contra el que se convierte la edad del CSV en fecha de nacimiento (P-144).
+ANIO_REFERENCIA = 2026
 
 # Correcciones de caracteres perdidos. Solo las que no admiten otra lectura.
 CHARACTER_FIXES = [
@@ -232,9 +234,18 @@ def main() -> int:
             errors.append(f"{where}: plan {p['Id_Plan']} no existe")
         if not p["Edad"].isdigit():
             errors.append(f"{where}: edad '{p['Edad']}' inválida")
-        patient_values.append([p["Id_Pacient"], p["Nombre"], int(p["Edad"]) if p["Edad"].isdigit() else None,
+        # P-144: el CSV trae nombre completo y edad; la tabla guarda nombre(s), apellidos y fecha de
+        # nacimiento. Las dos últimas palabras (sin "(ficticio)") son los apellidos; la fecha es el
+        # 1 de enero del año que da la edad respecto a ANIO_REFERENCIA (fijo: el seed no cambia solo).
+        palabras = p["Nombre"].replace("(ficticio)", "").split()
+        if len(palabras) < 3:
+            errors.append(f"{where}: el nombre '{p['Nombre']}' no tiene nombre(s) y dos apellidos")
+        nombres, paterno, materno = (" ".join(palabras[:-2]), palabras[-2], palabras[-1]) if len(palabras) >= 3 else (None, None, None)
+        nacimiento = f"{ANIO_REFERENCIA - int(p['Edad'])}-01-01" if p["Edad"].isdigit() else None
+        patient_values.append([p["Id_Pacient"], p["Nombre"], nombres, paterno, materno, nacimiento,
                                p["Id_Enferme"], p["Id_comorb"], p["Id_Tratam"], p["Id_Plan"]])
-    tables["PACIENTES"] = (["IdPaciente", "NombreCompleto", "Edad", "IdEnfermedadDiagnosticada",
+    tables["PACIENTES"] = (["IdPaciente", "NombreCompleto", "Nombres", "ApellidoPaterno", "ApellidoMaterno",
+                            "FechaNacimiento", "IdEnfermedadDiagnosticada",
                             "IdComorbilidad", "IdTratamiento", "IdPlan"], patient_values)
 
     # IO_Complicaciones: catálogo por enfermedad que además marca al paciente de prueba (va después de PACIENTES).

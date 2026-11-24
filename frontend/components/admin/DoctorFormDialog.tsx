@@ -10,7 +10,14 @@ import {
   type DoctorRegistrationInput,
 } from '@/lib/doctorValidation';
 import type { DoctorAccount } from '@/types/admin';
-import { DOCTOR_LIMITS, type DoctorRegistration, type DoctorRegistrationField, type DoctorUpdate } from '@/types/doctor';
+import {
+  DOCTOR_LIMITS,
+  DOCTOR_ROLE_OPTIONS,
+  USER_ROLES,
+  type DoctorRegistration,
+  type DoctorRegistrationField,
+  type DoctorUpdate,
+} from '@/types/doctor';
 
 /** Resultado de guardar: null si se guardó; si no, el mensaje y, si aplica, el campo a corregir. */
 export type SaveOutcome = null | { message: string; field?: DoctorRegistrationField };
@@ -27,6 +34,7 @@ type DoctorFormDialogProps =
 
 // Orden del formulario: el foco va al primer campo con error.
 const FIELD_ORDER: DoctorRegistrationField[] = [
+  'rol',
   'idMedico',
   'cedulaProfesional',
   'nombreCompleto',
@@ -36,8 +44,9 @@ const FIELD_ORDER: DoctorRegistrationField[] = [
 ];
 
 /**
- * Alta (cuenta nueva de médico con contraseña inicial) o edición (nombre, especialidad y cédula)
- * de un médico desde el panel de administración (ESP-007). Valida con las mismas reglas que el backend.
+ * Alta (cuenta nueva de médico con contraseña inicial) o edición (tipo, nombre, especialidad y cédula)
+ * de un médico desde el panel de administración (ESP-007). El tipo (tratante o internista) decide la
+ * pantalla a la que entra el médico (P-144). Valida con las mismas reglas que el backend.
  */
 export default function DoctorFormDialog(props: DoctorFormDialogProps) {
   const isCreate = props.mode === 'create';
@@ -70,6 +79,7 @@ function DoctorForm(props: DoctorFormDialogProps) {
     cedulaProfesional: editing?.cedulaProfesional ?? '',
     password: '',
     confirmPassword: '',
+    rol: editing?.rol ?? USER_ROLES.doctor,
   }));
   const [errors, setErrors] = useState<DoctorFieldErrors>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -122,6 +132,46 @@ function DoctorForm(props: DoctorFormDialogProps) {
     <form noValidate onSubmit={handleSubmit} aria-busy={isSaving}>
       <fieldset disabled={isSaving} className="grid gap-5 px-6 py-5 sm:grid-cols-2">
         <legend className="sr-only">Datos del médico</legend>
+        <fieldset className="sm:col-span-2" aria-describedby={errors.rol ? `${fieldId('rol')}-error` : undefined}>
+          <legend className="mb-1 text-sm font-medium text-slate-800">Tipo de médico</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {DOCTOR_ROLE_OPTIONS.map((option, index) => {
+              const checked = form.rol === option.value;
+              return (
+                <label
+                  key={option.value}
+                  className={`flex cursor-pointer items-start gap-3 rounded-md border-2 px-3 py-2.5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#116ee6]/60 ${
+                    checked ? 'border-blue-900 bg-blue-50' : 'border-slate-300 hover:border-slate-400'
+                  }`}
+                >
+                  <input
+                    id={index === 0 ? fieldId('rol') : undefined}
+                    type="radio"
+                    name={`${ids}-rol`}
+                    value={option.value}
+                    checked={checked}
+                    onChange={() => update('rol', option.value)}
+                    className="mt-1 h-4 w-4 accent-blue-900"
+                  />
+                  <span>
+                    <span className="block font-medium text-slate-900">{option.label}</span>
+                    <span className="block text-sm text-slate-700">{option.hint}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          {errors.rol && (
+            <p id={`${fieldId('rol')}-error`} className="mt-1 text-sm text-red-700">
+              {errors.rol}
+            </p>
+          )}
+          {!isCreate && editing && form.rol !== editing.rol && (
+            <p className="mt-2 text-sm text-slate-700">
+              Al cambiar el tipo, se cerrarán las sesiones abiertas del médico y entrará a la pantalla de su nuevo tipo.
+            </p>
+          )}
+        </fieldset>
         <TextField
           id={fieldId('idMedico')}
           label="ID del médico"

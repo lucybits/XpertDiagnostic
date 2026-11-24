@@ -14,10 +14,18 @@ public interface IPatientRepository
     /// <remarks>@post No modifica datos.</remarks>
     Task<string?> ObtenerUltimoIdAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>Guarda el paciente y sus antecedentes no patológicos en una sola operación.</summary>
+    /// <summary>Guarda el paciente (solo sus datos de alta, P-144).</summary>
     /// <remarks>
-    /// @pre paciente.Id no está vacío y antecedentes.IdPaciente == paciente.Id.
-    /// @post true si se guardaron ambos; false si el ID ya existía (no se guardó nada).
+    /// @pre paciente.Id no está vacío.
+    /// @post true si se guardó; false si el ID ya existía (no se guardó nada).
     /// </remarks>
-    Task<bool> CrearAsync(Patient paciente, NonPathologicalHistory antecedentes, CancellationToken cancellationToken = default);
+    Task<bool> CrearAsync(Patient paciente, CancellationToken cancellationToken = default);
+
+    /// <summary>Borra de forma definitiva al paciente y todo su expediente (P-144).</summary>
+    /// <remarks>
+    /// @post true si existía: en una sola transacción se borran sus hallazgos, atenciones, antecedentes
+    ///       (IO_Antec*Pacientes), resultado esperado (IO_ResultadosEsperados), la marca en IO_Complicaciones,
+    ///       el paciente y su plan (PLANES) si ningún otro paciente lo usa. false si no existía (no se borra nada).
+    /// </remarks>
+    Task<bool> EliminarAsync(string idPaciente, CancellationToken cancellationToken = default);
 }

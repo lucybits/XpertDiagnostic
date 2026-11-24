@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { KeyRound, LogOut } from 'lucide-react';
 import LoadingDots from '@/components/ui/LoadingDots';
+import AdminPatientsSection from './AdminPatientsSection';
+import DeleteDialog from './DeleteDialog';
 import DoctorFormDialog, { type SaveOutcome } from './DoctorFormDialog';
 import PasswordDialog from './PasswordDialog';
 import StatusDialog from './StatusDialog';
@@ -12,6 +14,7 @@ import { FOCUS_RING } from './AdminDialog';
 import {
   changeOwnPassword,
   createDoctor,
+  deleteDoctor,
   listDoctors,
   resetDoctorPassword,
   setDoctorStatus,
@@ -20,7 +23,7 @@ import {
 import { getSessionState, logoutAndGoToLogin } from '@/services/doctorService';
 import type { AdminFailure, DoctorAccount } from '@/types/admin';
 import { HOME_ROUTE_BY_ROLE } from '@/types/auth';
-import { USER_ROLES, type SessionProfile } from '@/types/doctor';
+import { USER_ROLES, doctorRoleLabel, type SessionProfile } from '@/types/doctor';
 
 const SEARCH_DELAY_MS = 250;
 
@@ -39,20 +42,29 @@ type DialogState =
   | { kind: 'edit'; doctor: DoctorAccount }
   | { kind: 'password'; doctor: DoctorAccount }
   | { kind: 'status'; doctor: DoctorAccount }
+  | { kind: 'delete'; doctor: DoctorAccount }
   | { kind: 'own-password' }
   | null;
 
 type ListState = { status: 'loading' } | { status: 'ready'; doctors: DoctorAccount[] } | { status: 'error'; message: string };
 
+/** Secciones del panel (P-144): cuentas de médicos y alta/baja de pacientes. */
+type Section = 'doctors' | 'patients';
+const SECTIONS: readonly { id: Section; label: string }[] = [
+  { id: 'doctors', label: 'Médicos' },
+  { id: 'patients', label: 'Pacientes' },
+];
+
 const dateFormatter = new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium' });
 
 /**
- * Panel de administración (ESP-007): alta y gestión de las cuentas de médicos.
- * Toda la información viene de la base de datos a través del backend; después de cada cambio se
- * vuelve a leer la lista, así lo que se ve es siempre lo que quedó guardado.
+ * Panel de administración (ESP-007, P-144): alta, edición y baja de médicos (tratantes e internistas)
+ * y alta y baja de pacientes. Toda la información viene de la base de datos a través del backend;
+ * después de cada cambio se vuelve a leer la lista, así lo que se ve es siempre lo que quedó guardado.
  */
 export default function AdminPanel() {
   const router = useRouter();
+  const [section, setSection] = useState<Section>('doctors');
   const [profile, setProfile] = useState<SessionProfile | null>(null);
   const [list, setList] = useState<ListState>({ status: 'loading' });
   const [query, setQuery] = useState('');
@@ -120,7 +132,9 @@ export default function AdminPanel() {
   const handleCreate = async (data: Parameters<typeof createDoctor>[0]): Promise<SaveOutcome> => {
     const result = await createDoctor(data);
     if (result.ok) {
-      finish(`Se registró a ${result.data.nombreCompleto}. Ya puede iniciar sesión con el ID ${result.data.idMedico}.`);
+      finish(
+        `Se registró a ${result.data.nombreCompleto} como médico ${doctorRoleLabel(result.data.rol).toLowerCase()}. Ya puede iniciar sesión con el ID ${result.data.idMedico}.`,
+      );
       return null;
     }
     const message = failureMessage(result.reason, result.message);
@@ -157,6 +171,15 @@ export default function AdminPanel() {
           ? `La cuenta de ${doctor.nombreCompleto} está activa de nuevo.`
           : `La cuenta de ${doctor.nombreCompleto} quedó desactivada.`,
       );
+      return null;
+    }
+    return failureMessage(result.reason, result.message);
+  };
+
+  const handleDelete = async (doctor: DoctorAccount) => {
+    const result = await deleteDoctor(doctor.idMedico);
+    if (result.ok) {
+      finish(`Se eliminó a ${doctor.nombreCompleto} (ID ${doctor.idMedico}) y su cuenta.`);
       return null;
     }
     return failureMessage(result.reason, result.message);
@@ -204,9 +227,40 @@ export default function AdminPanel() {
       </header>
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+        <h1 className="sr-only">Panel de administración</h1>
+        <div role="tablist" aria-label="Secciones del panel" className="mb-6 flex gap-1 rounded-lg bg-slate-100 p-1 sm:w-fit">
+          {SECTIONS.map((item) => {
+            const selected = section === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                id={`admin-tab-${item.id}`}
+                aria-selected={selected}
+                aria-controls={`admin-panel-${item.id}`}
+                onClick={() => setSection(item.id)}
+                className={`flex-1 rounded-md px-5 py-2 font-medium transition-colors sm:flex-none ${FOCUS_RING} ${
+                  selected ? 'bg-blue-900 text-white' : 'text-slate-800 hover:bg-white'
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {section === 'patients' && (
+          <div role="tabpanel" id="admin-panel-patients" aria-labelledby="admin-tab-patients">
+            <AdminPatientsSection onSessionEnded={endSession} />
+          </div>
+        )}
+
+        {section === 'doctors' && (
+        <div role="tabpanel" id="admin-panel-doctors" aria-labelledby="admin-tab-doctors">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 border-b-2 border-slate-900 pb-3">
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <h1 className="text-2xl font-semibold text-slate-900">Médicos</h1>
+            <h2 className="text-2xl font-semibold text-slate-900">Médicos</h2>
             {list.status === 'ready' && (
               <p className="text-slate-700" aria-live="polite">
                 {doctors.length} {doctors.length === 1 ? 'registrado' : 'registrados'}, {activeCount}{' '}
@@ -296,7 +350,9 @@ export default function AdminPanel() {
                     {doctor.nombreCompleto}
                     {!doctor.activo && <span className="font-normal text-slate-700"> (desactivada)</span>}
                   </p>
-                  <p className="text-slate-700">{doctor.especialidad}</p>
+                  <p className="text-slate-700">
+                    {doctorRoleLabel(doctor.rol)} | {doctor.especialidad}
+                  </p>
                   <p className="mt-1 text-sm text-slate-800">
                     ID <span className="font-mono">{doctor.idMedico}</span>, cédula{' '}
                     <span className="font-mono">{doctor.cedulaProfesional}</span>, alta{' '}
@@ -316,6 +372,7 @@ export default function AdminPanel() {
                 <thead className="text-sm text-slate-700">
                   <tr className="border-b-2 border-slate-300">
                     <th scope="col" className="py-2 pr-4 font-medium">Médico</th>
+                    <th scope="col" className="py-2 pr-4 font-medium">Tipo</th>
                     <th scope="col" className="py-2 pr-4 font-medium">ID</th>
                     <th scope="col" className="py-2 pr-4 font-medium">Cédula</th>
                     <th scope="col" className="py-2 pr-4 font-medium">Fecha de alta</th>
@@ -332,6 +389,7 @@ export default function AdminPanel() {
                         <p className="font-medium text-slate-900">{doctor.nombreCompleto}</p>
                         <p className="text-slate-700">{doctor.especialidad}</p>
                       </td>
+                      <td className="py-3 pr-4 text-slate-800">{doctorRoleLabel(doctor.rol)}</td>
                       <td className="py-3 pr-4 font-mono text-slate-800">{doctor.idMedico}</td>
                       <td className="py-3 pr-4 font-mono text-slate-800">{doctor.cedulaProfesional}</td>
                       <td className="py-3 pr-4 whitespace-nowrap text-slate-800">
@@ -352,6 +410,8 @@ export default function AdminPanel() {
             </div>
           )}
         </section>
+        </div>
+        )}
       </main>
 
       <DoctorFormDialog mode="create" open={dialog?.kind === 'create'} onClose={closeDialog} onSubmit={handleCreate} />
@@ -381,6 +441,22 @@ export default function AdminPanel() {
         onClose={closeDialog}
         onConfirm={handleStatus}
       />
+      <DeleteDialog
+        open={dialog?.kind === 'delete'}
+        title="Eliminar médico"
+        question={
+          dialog?.kind === 'delete' && (
+            <>
+              ¿Eliminar a <strong className="font-semibold">{dialog.doctor.nombreCompleto}</strong> (ID{' '}
+              {dialog.doctor.idMedico})?
+            </>
+          )
+        }
+        consequence="Se borran su registro de médico y su cuenta; ya no podrá iniciar sesión. Si solo quieres bloquearlo por un tiempo, mejor desactiva su cuenta."
+        confirmLabel="Eliminar médico"
+        onClose={closeDialog}
+        onConfirm={() => (dialog?.kind === 'delete' ? handleDelete(dialog.doctor) : Promise.resolve(null))}
+      />
       <PasswordDialog
         open={dialog?.kind === 'own-password'}
         title="Cambiar mi contraseña"
@@ -393,7 +469,7 @@ export default function AdminPanel() {
   );
 }
 
-/** Editar, contraseña y activar/desactivar: las mismas acciones en la tabla y en la lista móvil. */
+/** Editar, contraseña, activar/desactivar y eliminar: las mismas acciones en la tabla y en la lista móvil. */
 function RowActions({ doctor, onOpen }: { doctor: DoctorAccount; onOpen: (dialog: DialogState) => void }) {
   return (
     <>
@@ -412,6 +488,12 @@ function RowActions({ doctor, onOpen }: { doctor: DoctorAccount; onOpen: (dialog
         description={`${doctor.activo ? 'Desactivar' : 'Activar'} la cuenta de ${doctor.nombreCompleto}`}
         tone={doctor.activo ? 'danger' : 'default'}
         onClick={() => onOpen({ kind: 'status', doctor })}
+      />
+      <RowAction
+        label="Eliminar"
+        description={`Eliminar a ${doctor.nombreCompleto}`}
+        tone="danger"
+        onClick={() => onOpen({ kind: 'delete', doctor })}
       />
     </>
   );

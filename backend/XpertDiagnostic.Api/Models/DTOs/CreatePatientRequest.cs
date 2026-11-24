@@ -3,42 +3,43 @@ using System.ComponentModel.DataAnnotations;
 namespace XpertDiagnostic.Api.Models.DTOs;
 
 /// <summary>
-/// Datos para registrar un paciente (ESP-004). Solo lo que el médico conoce al abrir el expediente;
-/// el ID lo asigna el servidor. ASP.NET Core los valida antes de llegar al controlador (400 si no).
+/// Datos con los que el administrador da de alta a un paciente (ESP-004, P-144); el ID lo asigna el
+/// servidor. ASP.NET Core los valida antes de llegar al controlador (400 si no).
 /// </summary>
 /// <remarks>
-/// @inv NombreCompleto de 3 a 150 caracteres, con al menos una letra y sin dígitos (RF-31).
-/// @inv Edad entre 0 y 130 (CK_PACIENTES_EDAD).
+/// @inv Nombres de 2 a 60 caracteres; ApellidoPaterno de 2 a 40; ApellidoMaterno vacío o de 2 a 40.
+///      Todos con al menos una letra y sin dígitos (RF-31).
+/// @inv FechaNacimiento no es futura y corresponde a una edad de 0 a 130 años.
 /// </remarks>
-public class CreatePatientRequest
+public class CreatePatientRequest : IValidatableObject
 {
-    [Required, StringLength(150, MinimumLength = 3)]
-    [RegularExpression(@"^(?=.*\p{L})[^\d]+$")]
-    public string NombreCompleto { get; set; } = string.Empty;
+    public const int EdadMaxima = 130;
+    private const string SoloLetras = @"^(?=.*\p{L})[^\d]+$";
 
-    [Range(0, 130)]
-    public int Edad { get; set; }
+    [Required, StringLength(60, MinimumLength = 2)]
+    [RegularExpression(SoloLetras)]
+    public string Nombres { get; set; } = string.Empty;
 
-    // ── Antecedentes no patológicos (IO_AntecNoPatolPacientes): casillas sí/no; sin marcar = no ──
+    [Required, StringLength(40, MinimumLength = 2)]
+    [RegularExpression(SoloLetras)]
+    public string ApellidoPaterno { get; set; } = string.Empty;
 
-    /// <summary>¿Fuma? → Tabaquismo.</summary>
-    public bool Tabaquismo { get; set; }
+    /// <summary>Opcional: hay personas con un solo apellido.</summary>
+    [StringLength(40, MinimumLength = 2)]
+    [RegularExpression(SoloLetras)]
+    public string? ApellidoMaterno { get; set; }
 
-    /// <summary>¿Consume alcohol? → Alcoholism.</summary>
-    public bool Alcoholismo { get; set; }
+    [Required]
+    public DateOnly? FechaNacimiento { get; set; }
 
-    /// <summary>¿Consume drogas? → Toxicomans.</summary>
-    public bool Toxicomanias { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (FechaNacimiento is not { } fecha) yield break;
 
-    /// <summary>¿Exposición a humo de leña o biomasa? → Biomasa (INT: 1 sí, 0 no).</summary>
-    public bool Biomasa { get; set; }
-
-    /// <summary>¿Tatuajes o perforaciones? → TatuajPerf.</summary>
-    public bool TatuajesPerforaciones { get; set; }
-
-    /// <summary>¿Usa herbolaria? → Herbolaria.</summary>
-    public bool Herbolaria { get; set; }
-
-    /// <summary>¿Ha recibido transfusiones? → Transfusio.</summary>
-    public bool Transfusiones { get; set; }
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        if (fecha > hoy)
+            yield return new ValidationResult("La fecha de nacimiento no puede ser futura.", [nameof(FechaNacimiento)]);
+        else if (fecha < hoy.AddYears(-EdadMaxima))
+            yield return new ValidationResult($"La edad no puede pasar de {EdadMaxima} años.", [nameof(FechaNacimiento)]);
+    }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using XpertDiagnostic.Api.Configuration;
 using XpertDiagnostic.Api.Models.DTOs;
 using XpertDiagnostic.Api.Models.Entities;
@@ -161,13 +162,48 @@ public class DoctorServiceTests
         Assert.True(perfil.BienvenidaVista);
     }
 
-    private static CreateDoctorRequest CrearSolicitud() => new()
+    [Fact]
+    public async Task RegistrarAsync_TipoInternista_CreaCuentaConRolI() // PT95
+    {
+        // Given un ID y una cédula libres
+        var repositorio = new RepositorioMedicosFalso();
+        var servicio = new DoctorService(repositorio, new HasherFalso());
+
+        // When el administrador registra al médico eligiendo el tipo Internista
+        var resultado = await servicio.RegistrarAsync(CrearSolicitud(UserRoles.MedicoInternista));
+
+        // Then la cuenta queda con rol I y la respuesta lo informa
+        Assert.Equal(DoctorRegistrationStatus.Creado, resultado.Estado);
+        Assert.Equal(UserRoles.MedicoInternista, Assert.Single(repositorio.Usuarios).Rol);
+        Assert.Equal(UserRoles.MedicoInternista, resultado.Cuenta!.Rol);
+    }
+
+    [Theory] // PT95
+    [InlineData("T", true)]
+    [InlineData("I", true)]
+    [InlineData("A", false)]
+    [InlineData("", false)]
+    [InlineData("M", false)]
+    public void CreateDoctorRequest_Tipo_SoloAdmiteTratanteOInternista(string rol, bool esValido)
+    {
+        // Given una solicitud de alta con ese tipo
+        var solicitud = CrearSolicitud(rol);
+
+        // When ASP.NET Core la valida
+        var valido = Validator.TryValidateObject(solicitud, new ValidationContext(solicitud), [], validateAllProperties: true);
+
+        // Then el panel no puede crear administradores ni roles desconocidos
+        Assert.Equal(esValido, valido);
+    }
+
+    private static CreateDoctorRequest CrearSolicitud(string rol = UserRoles.MedicoTratante) => new()
     {
         IdMedico = 500,
         NombreCompleto = "Ana López",
         Especialidad = "Cardiología",
         CedulaProfesional = "1234567",
-        Password = "ClaveSegura1"
+        Password = "ClaveSegura1",
+        Rol = rol
     };
 
     [Fact]

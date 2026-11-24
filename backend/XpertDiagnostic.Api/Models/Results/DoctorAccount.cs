@@ -1,12 +1,16 @@
 namespace XpertDiagnostic.Api.Models.Results;
 
 /// <summary>Médico con el estado de su cuenta, tal como lo ve el panel de administración.</summary>
-/// <remarks>@inv IdMedico == ID de inicio de sesión del médico. Nunca incluye la contraseña ni su hash.</remarks>
+/// <remarks>
+/// @inv IdMedico == ID de inicio de sesión del médico. Nunca incluye la contraseña ni su hash.
+/// @inv Rol es "T" (tratante) o "I" (internista).
+/// </remarks>
 public sealed record DoctorAccount(
     int IdMedico,
     string NombreCompleto,
     string Especialidad,
     string CedulaProfesional,
+    string Rol,
     bool Activo,
     DateTime FechaRegistro);
 

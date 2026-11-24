@@ -30,6 +30,8 @@ public sealed partial class DoctorService(IDoctorRepository medicos, IPasswordHa
         ArgumentNullException.ThrowIfNull(solicitud);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(solicitud.IdMedico);
         ArgumentException.ThrowIfNullOrWhiteSpace(solicitud.Password);
+        if (!UserRoles.EsMedico(solicitud.Rol))
+            throw new ArgumentException("El tipo de médico debe ser T o I.", nameof(solicitud));
 
         var cedula = solicitud.CedulaProfesional.Trim();
 
@@ -47,12 +49,12 @@ public sealed partial class DoctorService(IDoctorRepository medicos, IPasswordHa
             CedulaProfesional = cedula
         };
 
-        // Siempre rol de médico: el panel de administración no crea administradores (P-116).
+        // Tratante o internista, según lo elija el administrador (P-144). Nunca administrador (P-116).
         var usuario = new User
         {
             Id = solicitud.IdMedico,
             PasswordHash = _hasher.Hash(solicitud.Password),
-            Rol = UserRoles.MedicoTratante,
+            Rol = solicitud.Rol,
             IdMedico = solicitud.IdMedico,
             Activo = true
         };
@@ -63,7 +65,7 @@ public sealed partial class DoctorService(IDoctorRepository medicos, IPasswordHa
 
         return DoctorRegistrationResult.Creado(new DoctorAccount(
             medico.Id, medico.NombreCompleto, medico.Especialidad, medico.CedulaProfesional,
-            usuario.Activo, usuario.FechaRegistro));
+            usuario.Rol, usuario.Activo, usuario.FechaRegistro));
     }
 
     public Task<bool> MarcarBienvenidaVistaAsync(int usuarioId, CancellationToken cancellationToken = default)

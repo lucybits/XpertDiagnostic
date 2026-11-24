@@ -9,6 +9,8 @@ export interface DoctorAccount {
   nombreCompleto: string;
   especialidad: string;
   cedulaProfesional: string;
+  /** 'T' tratante o 'I' internista. */
+  rol: string;
   activo: boolean;
   /** Fecha de alta en ISO 8601 (UTC). */
   fechaRegistro: string;

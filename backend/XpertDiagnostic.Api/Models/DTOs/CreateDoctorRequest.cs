@@ -12,6 +12,7 @@ namespace XpertDiagnostic.Api.Models.DTOs;
 /// @inv NombreCompleto de 3 a 120 caracteres; Especialidad de 2 a 80.
 /// @inv CedulaProfesional de 7 u 8 dígitos.
 /// @inv Password de 8 a 72 caracteres (72 es el límite de BCrypt).
+/// @inv Rol es "T" (tratante) o "I" (internista) (P-144).
 /// </remarks>
 public class CreateDoctorRequest
 {
@@ -29,4 +30,8 @@ public class CreateDoctorRequest
 
     [Required, StringLength(72, MinimumLength = 8)]
     public string Password { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Indica el tipo de médico.")]
+    [RegularExpression("^[TI]$", ErrorMessage = "El tipo de médico debe ser T (tratante) o I (internista).")]
+    public string Rol { get; set; } = string.Empty;
 }
