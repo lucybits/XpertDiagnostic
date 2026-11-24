@@ -20,7 +20,7 @@ public interface IInferenceEngine
     /// <remarks>
     /// @pre hallazgos son filas de HALLAZGOS_PACIENTE (sin agrupar), con su IdRegistro.
     /// @post Hasta 3 candidatos con al menos una coincidencia, de mayor a menor puntaje. No modifica datos.
-    /// @post No consulta RESULTADOS_ESPERADOS (es solo para evaluar al sistema).
+    /// @post No consulta IO_ResultadosEsperados (es solo para evaluar al sistema).
     /// </remarks>
     Task<IReadOnlyList<DiagnosisCandidate>> InferirAsync(
         IReadOnlyList<FindingView> hallazgos,

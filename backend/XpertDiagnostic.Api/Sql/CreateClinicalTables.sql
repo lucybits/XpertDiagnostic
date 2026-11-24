@@ -77,13 +77,6 @@ CREATE TABLE dbo.COMORBILIDADES (
     Descripcion    NVARCHAR(300) NOT NULL
 );
 
-IF OBJECT_ID(N'dbo.COMPLICACIONES', N'U') IS NULL
-CREATE TABLE dbo.COMPLICACIONES (
-    IdComplicacion VARCHAR(20)   NOT NULL CONSTRAINT PK_COMPLICACIONES PRIMARY KEY,
-    IdEnfermedad   VARCHAR(10)   NOT NULL CONSTRAINT FK_COMPLICACIONES_ENFERMEDADES REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
-    Descripcion    NVARCHAR(300) NOT NULL
-);
-
 IF OBJECT_ID(N'dbo.DEFECTOS_CONGENITOS', N'U') IS NULL
 CREATE TABLE dbo.DEFECTOS_CONGENITOS (
     IdDefecto    VARCHAR(20)   NOT NULL CONSTRAINT PK_DEFECTOS_CONGENITOS PRIMARY KEY,
@@ -140,7 +133,6 @@ CREATE TABLE dbo.PACIENTES (
     ApellidoMaterno           NVARCHAR(40)  NULL,
     FechaNacimiento           DATE          NOT NULL CONSTRAINT CK_PACIENTES_FECHA_NACIMIENTO CHECK (FechaNacimiento >= '1890-01-01'),
     IdEnfermedadDiagnosticada VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_ENFERMEDAD_DIAG REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
-    IdEnfermedadPreexistente  VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_ENFERMEDAD_PREEX REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
     IdComorbilidad            VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_COMORBILIDADES REFERENCES dbo.COMORBILIDADES (IdComorbilidad),
     IdTratamiento             VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_TRATAMIENTOS REFERENCES dbo.TRATAMIENTOS (IdTratamiento),
     IdPlan                    VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_PLANES REFERENCES dbo.PLANES (IdPlan)
@@ -169,13 +161,103 @@ CREATE TABLE dbo.ATENCIONES_PACIENTE (
     Motivo     NVARCHAR(200) NOT NULL
 );
 
-/* Respuesta correcta de cada paciente de prueba. Solo para evaluar al sistema experto:
-   el motor de diagnóstico no debe leer esta tabla. */
-IF OBJECT_ID(N'dbo.RESULTADOS_ESPERADOS', N'U') IS NULL
-CREATE TABLE dbo.RESULTADOS_ESPERADOS (
-    IdPaciente           VARCHAR(10) NOT NULL CONSTRAINT PK_RESULTADOS_ESPERADOS PRIMARY KEY
-                                     CONSTRAINT FK_RESULTADOS_ESPERADOS_PACIENTES REFERENCES dbo.PACIENTES (IdPaciente),
-    IdEnfermedadEsperada VARCHAR(10) NOT NULL CONSTRAINT FK_RESULTADOS_ESPERADOS_ENFERMEDADES REFERENCES dbo.ENFERMEDADES (IdEnfermedad)
+/* Complicaciones (reemplaza a COMPLICACIONES). Catálogo por enfermedad; IdPaciente indica a qué
+   paciente de prueba se le registró (la relación que usa el sistema sigue en HALLAZGOS_PACIENTE). */
+IF OBJECT_ID(N'dbo.IO_Complicaciones', N'U') IS NULL
+CREATE TABLE dbo.IO_Complicaciones (
+    Id_Complic   VARCHAR(20)   NOT NULL CONSTRAINT PK_IO_Complicaciones PRIMARY KEY,
+    Complicac    NVARCHAR(255) NOT NULL,
+    IdEnfermedad VARCHAR(10)   NOT NULL CONSTRAINT FK_IO_Complic_Enfermedades REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
+    IdPaciente   VARCHAR(10)   NULL     CONSTRAINT FK_IO_Complic_Pacientes REFERENCES dbo.PACIENTES (IdPaciente)
+);
+
+/* Respuesta correcta de cada paciente de prueba (reemplaza a RESULTADOS_ESPERADOS). Solo para
+   evaluar al sistema experto: el motor de diagnóstico no debe leer esta tabla. */
+IF OBJECT_ID(N'dbo.IO_ResultadosEsperados', N'U') IS NULL
+CREATE TABLE dbo.IO_ResultadosEsperados (
+    IdPaciente   VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_ResultadosEsperados PRIMARY KEY
+                               CONSTRAINT FK_IO_Resultados_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+    IdEnfermedad VARCHAR(10)   NOT NULL CONSTRAINT FK_IO_Resultados_Enfermedades REFERENCES dbo.ENFERMEDADES (IdEnfermedad),
+    Enfeespera   NVARCHAR(150) NOT NULL
+);
+
+/* ---------- Interrogatorio de antecedentes (uno por paciente) ---------- */
+
+IF OBJECT_ID(N'dbo.IO_AntecNoPatolPacientes', N'U') IS NULL
+CREATE TABLE dbo.IO_AntecNoPatolPacientes (
+    IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecNoPatol PRIMARY KEY
+                             CONSTRAINT FK_IO_AntecNoPatol_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+    Tabaquismo BIT           NOT NULL,
+    Alcoholism BIT           NULL,
+    Toxicomans BIT           NULL,
+    Biomasa    INT           NULL,
+    TatuajPerf BIT           NULL,
+    Herbolaria BIT           NULL,
+    Transfusio BIT           NULL
+);
+
+IF OBJECT_ID(N'dbo.IO_AntecPatolPacientes', N'U') IS NULL
+CREATE TABLE dbo.IO_AntecPatolPacientes (
+    IdPaciente  VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecPatol PRIMARY KEY
+                              CONSTRAINT FK_IO_AntecPatol_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+    Alergias    NVARCHAR(255) NULL,
+    CroniDegen  NVARCHAR(255) NULL,
+    Endocrinol  NVARCHAR(255) NULL,
+    Pulmonar    NVARCHAR(255) NULL,
+    Cardiologic NVARCHAR(255) NULL,
+    Dislipidem  NVARCHAR(255) NULL,
+    Dermatolog  NVARCHAR(255) NULL,
+    Neurologic  NVARCHAR(255) NULL,
+    Reumatolog  NVARCHAR(255) NULL,
+    Otorrinola  NVARCHAR(255) NULL,
+    Neumologic  NVARCHAR(255) NULL,
+    Psiquiatri  NVARCHAR(255) NULL,
+    Gastrointe  NVARCHAR(255) NULL,
+    Osteomuscu  NVARCHAR(255) NULL,
+    UroloRenal  NVARCHAR(255) NULL,
+    Oftalmolog  NVARCHAR(255) NULL,
+    Infectolog  NVARCHAR(255) NULL,
+    Hematologi  NVARCHAR(255) NULL,
+    Oncologico  NVARCHAR(255) NULL,
+    Ginecologi  NVARCHAR(255) NULL,
+    Traumatism  NVARCHAR(255) NULL
+);
+
+IF OBJECT_ID(N'dbo.IO_AntecPerinatPacientes', N'U') IS NULL
+CREATE TABLE dbo.IO_AntecPerinatPacientes (
+    IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecPerinat PRIMARY KEY
+                             CONSTRAINT FK_IO_AntecPerinat_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+    ProductEmb NVARCHAR(255) NOT NULL,
+    PartCesare NVARCHAR(255) NOT NULL,
+    PesoNacer  INT           NOT NULL,
+    TallaNacer DECIMAL(5,2)  NOT NULL,
+    CrecYDesar NVARCHAR(255) NOT NULL,
+    Vacunacion NVARCHAR(255) NOT NULL
+);
+
+IF OBJECT_ID(N'dbo.IO_AntecQuiruAnestesPacientes', N'U') IS NULL
+CREATE TABLE dbo.IO_AntecQuiruAnestesPacientes (
+    IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecQuiru PRIMARY KEY
+                             CONSTRAINT FK_IO_AntecQuiru_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+    Cirugias   NVARCHAR(255) NOT NULL,
+    Hospitaliz NVARCHAR(255) NOT NULL,
+    Medicament NVARCHAR(255) NOT NULL
+);
+
+IF OBJECT_ID(N'dbo.IO_AntecParaClinicPacientes', N'U') IS NULL
+CREATE TABLE dbo.IO_AntecParaClinicPacientes (
+    IdPaciente VARCHAR(10)   NOT NULL CONSTRAINT PK_IO_AntecParaClinic PRIMARY KEY
+                             CONSTRAINT FK_IO_AntecParaClinic_Pacientes REFERENCES dbo.PACIENTES (IdPaciente),
+    Consciente NVARCHAR(100) NULL,
+    Alerta     NVARCHAR(100) NULL,
+    Cavidoral  NVARCHAR(150) NULL,
+    AperturaOr NVARCHAR(100) NULL,
+    DentadComp NVARCHAR(150) NULL,
+    Traquea    NVARCHAR(150) NULL,
+    Pulmovent  NVARCHAR(255) NULL,
+    RuidosCard NVARCHAR(255) NULL,
+    Abdombland NVARCHAR(255) NULL,
+    Miembpelvi NVARCHAR(255) NULL
 );
 
 PRINT 'Tablas clínicas listas.';

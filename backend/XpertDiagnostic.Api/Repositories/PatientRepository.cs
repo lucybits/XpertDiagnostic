@@ -11,6 +11,18 @@ public sealed class PatientRepository(AppDbContext db) : IPatientRepository
 {
     private const int ViolacionLlavePrimaria = 2627;
 
+    /// <summary>Tablas con una fila (o varias) por paciente, además de HALLAZGOS_PACIENTE (P-144).</summary>
+    private static readonly string[] TablasDelPaciente =
+    [
+        "ATENCIONES_PACIENTE",
+        "IO_ResultadosEsperados",
+        "IO_AntecNoPatolPacientes",
+        "IO_AntecPatolPacientes",
+        "IO_AntecPerinatPacientes",
+        "IO_AntecQuiruAnestesPacientes",
+        "IO_AntecParaClinicPacientes",
+    ];
+
     public async Task<IReadOnlyList<PatientSummary>> ListarAsync(CancellationToken cancellationToken = default) =>
         await (from p in db.Pacientes.AsNoTracking()
                join e in db.Enfermedades on p.IdEnfermedadDiagnosticada equals e.Id into diagnosticos
@@ -32,6 +44,7 @@ public sealed class PatientRepository(AppDbContext db) : IPatientRepository
         ArgumentNullException.ThrowIfNull(paciente);
         ArgumentException.ThrowIfNullOrWhiteSpace(paciente.Id);
 
+        // Solo los datos de alta (P-144); los antecedentes los captura después el médico tratante.
         db.Pacientes.Add(paciente);
         try
         {
@@ -60,10 +73,15 @@ public sealed class PatientRepository(AppDbContext db) : IPatientRepository
 
         // Primero lo que apunta al paciente (llaves foráneas), después el paciente y al final su plan.
         await db.Hallazgos.Where(h => h.IdPaciente == idPaciente).ExecuteDeleteAsync(cancellationToken);
+        foreach (var tabla in TablasDelPaciente)
+        {
+            // El nombre de la tabla es una constante de esta clase; el ID va como parámetro.
+            await db.Database.ExecuteSqlRawAsync(
+                "DELETE FROM dbo." + tabla + " WHERE IdPaciente = {0}", [idPaciente], cancellationToken);
+        }
+        // IO_Complicaciones es un catálogo: solo se quita la marca del paciente de prueba.
         await db.Database.ExecuteSqlInterpolatedAsync(
-            $"DELETE FROM dbo.ATENCIONES_PACIENTE WHERE IdPaciente = {idPaciente}", cancellationToken);
-        await db.Database.ExecuteSqlInterpolatedAsync(
-            $"DELETE FROM dbo.RESULTADOS_ESPERADOS WHERE IdPaciente = {idPaciente}", cancellationToken);
+            $"UPDATE dbo.IO_Complicaciones SET IdPaciente = NULL WHERE IdPaciente = {idPaciente}", cancellationToken);
         await db.Pacientes.Where(p => p.Id == idPaciente).ExecuteDeleteAsync(cancellationToken);
 
         if (idPlan.IdPlan is not null && !await db.Pacientes.AnyAsync(p => p.IdPlan == idPlan.IdPlan, cancellationToken))

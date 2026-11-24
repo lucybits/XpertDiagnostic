@@ -3,7 +3,7 @@ using XpertDiagnostic.Api.Models.Results;
 
 namespace XpertDiagnostic.Api.Services.Interfaces;
 
-/// <summary>Captura del expediente: hallazgos por sección y enfermedad preexistente (P-103).</summary>
+/// <summary>Captura del expediente: hallazgos por sección (P-103).</summary>
 public interface IPatientRecordService
 {
     /// <summary>Convierte el nombre de la URL en el catálogo de una sección con hallazgos.</summary>
@@ -25,12 +25,5 @@ public interface IPatientRecordService
         string idPaciente,
         CatalogType catalogo,
         IReadOnlyList<FindingInput> hallazgos,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>Asigna (o quita) la enfermedad preexistente del paciente.</summary>
-    /// <remarks>@post RegistroInvalido si la enfermedad no existe; PacienteNoExiste si el paciente no existe.</remarks>
-    Task<SaveFindingsStatus> AsignarPreexistenteAsync(
-        string idPaciente,
-        string? idEnfermedad,
         CancellationToken cancellationToken = default);
 }

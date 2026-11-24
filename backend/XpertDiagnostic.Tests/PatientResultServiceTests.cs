@@ -111,12 +111,9 @@ public class PatientResultServiceTests
         public bool TryParseSeccion(string nombre, out CatalogType catalogo) { catalogo = default; return false; }
 
         public Task<PatientRecord?> ObtenerAsync(string idPaciente, CancellationToken cancellationToken = default) =>
-            Task.FromResult<PatientRecord?>(new PatientRecord(idPaciente, null, null, []));
+            Task.FromResult<PatientRecord?>(new PatientRecord(idPaciente, []));
 
         public Task<SaveFindingsStatus> GuardarHallazgosAsync(string idPaciente, CatalogType catalogo, IReadOnlyList<FindingInput> hallazgos, CancellationToken cancellationToken = default) =>
-            Task.FromResult(SaveFindingsStatus.Guardado);
-
-        public Task<SaveFindingsStatus> AsignarPreexistenteAsync(string idPaciente, string? idEnfermedad, CancellationToken cancellationToken = default) =>
             Task.FromResult(SaveFindingsStatus.Guardado);
     }
 
