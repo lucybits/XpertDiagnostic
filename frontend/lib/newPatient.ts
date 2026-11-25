@@ -1,4 +1,4 @@
-import { PATIENT_LIMITS, type NewPatient, type NewPatientField } from '@/types/patient';
+import { PATIENT_LIMITS, isSex, type NewPatient, type NewPatientField } from '@/types/patient';
 
 /** Datos del formulario tal como se escriben (texto), antes de convertirlos. */
 export interface NewPatientInput {
@@ -7,6 +7,8 @@ export interface NewPatientInput {
   maternalSurname: string;
   /** Valor de <input type="date">: AAAA-MM-DD, o vacío. */
   birthDate: string;
+  /** "F" o "M"; vacío si no se eligió. Se acepta en minúscula y se convierte a mayúscula. */
+  sex: string;
 }
 
 export type NewPatientFieldErrors = Partial<Record<NewPatientField, string>>;
@@ -55,7 +57,7 @@ function namePartError(value: string, label: string, max: number, required: bool
  * @pre Todos los campos de input son cadenas (pueden estar vacías).
  * @post ok == true  → nombre(s) y apellido paterno limpios (sin espacios dobles ni en los extremos), con
  *   letras y sin números; apellido materno igual o null si se dejó vacío; birthDate es una fecha real,
- *   no futura y de hace como mucho ageMax años.
+ *   no futura y de hace como mucho ageMax años; sex es "F" o "M" (en mayúscula aunque se haya escrito en minúscula).
  * @post ok == false → errors tiene un mensaje por cada campo inválido.
  */
 export function validateNewPatient(
@@ -67,6 +69,7 @@ export function validateNewPatient(
   const paternalSurname = clean(input.paternalSurname);
   const maternalSurname = clean(input.maternalSurname);
   const birthDate = input.birthDate.trim();
+  const sex = input.sex.trim().toUpperCase();
 
   const givenError = namePartError(givenNames, 'el nombre o los nombres', PATIENT_LIMITS.givenNamesMax, true);
   if (givenError) errors.givenNames = givenError;
@@ -86,9 +89,11 @@ export function validateNewPatient(
     errors.birthDate = `La edad no puede pasar de ${PATIENT_LIMITS.ageMax} años.`;
   }
 
-  if (Object.keys(errors).length > 0) return { ok: false, errors };
+  if (!isSex(sex)) errors.sex = 'Elige el sexo del paciente.';
+
+  if (Object.keys(errors).length > 0 || !isSex(sex)) return { ok: false, errors };
   return {
     ok: true,
-    data: { givenNames, paternalSurname, maternalSurname: maternalSurname || null, birthDate },
+    data: { givenNames, paternalSurname, maternalSurname: maternalSurname || null, birthDate, sex },
   };
 }

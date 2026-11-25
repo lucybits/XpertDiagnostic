@@ -17,7 +17,7 @@ public class SaveNonPathologicalHistoryRequest
     /// <summary>¿Consume drogas? → Toxicomans.</summary>
     public bool Toxicomanias { get; set; }
 
-    /// <summary>¿Exposición a humo de leña o biomasa? → Biomasa (INT: 1 sí, 0 no).</summary>
+    /// <summary>¿Exposición a humo de leña o biomasa? → Biomasa.</summary>
     public bool Biomasa { get; set; }
 
     /// <summary>¿Tatuajes o perforaciones? → TatuajPerf.</summary>

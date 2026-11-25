@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     paternalSurname: text(body.paternalSurname),
     maternalSurname: text(body.maternalSurname),
     birthDate: text(body.birthDate),
+    sex: text(body.sex),
   });
   if (!result.ok) return errorResponse(400, 'Datos inválidos');
 
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
       apellidoPaterno: result.data.paternalSurname,
       apellidoMaterno: result.data.maternalSurname,
       fechaNacimiento: result.data.birthDate,
+      sexo: result.data.sex,
     },
   });
 }

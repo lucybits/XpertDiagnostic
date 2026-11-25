@@ -75,7 +75,7 @@ public sealed class PatientRecordService(IPatientRecordRepository expedientes, I
             Tabaquismo = respuestas.Tabaquismo,
             Alcoholism = respuestas.Alcoholismo,
             Toxicomans = respuestas.Toxicomanias,
-            Biomasa = respuestas.Biomasa ? 1 : 0,
+            Biomasa = respuestas.Biomasa,
             TatuajPerf = respuestas.TatuajesPerforaciones,
             Herbolaria = respuestas.Herbolaria,
             Transfusio = respuestas.Transfusiones,

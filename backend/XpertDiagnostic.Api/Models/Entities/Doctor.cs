@@ -15,7 +15,7 @@ namespace XpertDiagnostic.Api.Models.Entities;
 public class Doctor
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
-    [Column("IdMedico")]
+    [Column("Id_Medico")]
     public int Id { get; set; }
 
     [StringLength(120)]

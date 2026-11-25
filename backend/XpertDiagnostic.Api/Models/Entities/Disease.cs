@@ -9,7 +9,7 @@ namespace XpertDiagnostic.Api.Models.Entities;
 public class Disease
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
-    [Column("IdEnfermedad", TypeName = "varchar(10)")]
+    [Column("Id_Enfermedad", TypeName = "varchar(10)")]
     public string Id { get; set; } = string.Empty;
 
     [StringLength(150)]

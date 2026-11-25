@@ -56,7 +56,7 @@ export async function registerPatient(data: NewPatient): Promise<RegisterPatient
       case 401:
         return { ok: false, message: 'Tu sesión terminó. Vuelve a iniciar sesión para registrar al paciente.' };
       case 400:
-        return { ok: false, message: 'Revisa el nombre, los apellidos y la fecha de nacimiento e inténtalo de nuevo.' };
+        return { ok: false, message: 'Revisa el nombre, los apellidos, la fecha de nacimiento y el sexo e inténtalo de nuevo.' };
       case 403:
         return { ok: false, message: 'Solo un administrador puede registrar pacientes.' };
       default:

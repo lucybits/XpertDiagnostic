@@ -149,7 +149,7 @@ public class PatientRecordServiceTests
 
         // Then se guardan (biomasa como 1) y el expediente los muestra; lo no marcado cuenta como no
         Assert.Equal(SaveFindingsStatus.Guardado, estado);
-        Assert.Equal(1, expedientes.Antecedentes!.Biomasa);
+        Assert.True(expedientes.Antecedentes!.Biomasa);
         var vista = (await servicio.ObtenerAsync("PACIE00001"))!.AntecedentesNoPatologicos!;
         Assert.True(vista.Tabaquismo);
         Assert.True(vista.Biomasa);
@@ -247,7 +247,7 @@ public class PatientRecordServiceTests
                     ? null
                     : new NonPathologicalHistoryView(
                         Antecedentes.Tabaquismo, Antecedentes.Alcoholism == true, Antecedentes.Toxicomans == true,
-                        Antecedentes.Biomasa == 1, Antecedentes.TatuajPerf == true, Antecedentes.Herbolaria == true,
+                        Antecedentes.Biomasa == true, Antecedentes.TatuajPerf == true, Antecedentes.Herbolaria == true,
                         Antecedentes.Transfusio == true)));
 
         public Task GuardarAntecedentesNoPatologicosAsync(NonPathologicalHistory antecedentes, CancellationToken cancellationToken = default)

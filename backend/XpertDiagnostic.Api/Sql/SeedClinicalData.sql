@@ -37,7 +37,7 @@ DELETE FROM dbo.SINTOMAS;
 DELETE FROM dbo.ENFERMEDADES;
 
 -- ENFERMEDADES: 10 filas
-INSERT INTO dbo.ENFERMEDADES (IdEnfermedad, Nombre) VALUES
+INSERT INTO dbo.ENFERMEDADES (Id_Enfermedad, Nombre) VALUES
     (N'CARDI00017', N'Miocardiopatía dilatada'),
     (N'ENDOC00015', N'Tirotoxicosis'),
     (N'NEUMO00008', N'Asma'),
@@ -50,7 +50,7 @@ INSERT INTO dbo.ENFERMEDADES (IdEnfermedad, Nombre) VALUES
     (N'INFEC00033', N'Endocarditis infecciosa');
 
 -- SINTOMAS: 71 filas
-INSERT INTO dbo.SINTOMAS (IdSintoma, IdEnfermedad, Descripcion, LimiteInferior, LimiteSuperior, Unidades) VALUES
+INSERT INTO dbo.SINTOMAS (Id_Sintoma, Id_Enfermedad, Descripcion, LimiteInferior, LimiteSuperior, Unidades) VALUES
     (N'DIGES00017SINTO00001', N'DIGES00017', N'Obnubilación', NULL, NULL, NULL),
     (N'DIGES00017SINTO00002', N'DIGES00017', N'Disnea', NULL, NULL, NULL),
     (N'DIGES00017SINTO00003', N'DIGES00017', N'Síncope', NULL, NULL, NULL),
@@ -124,7 +124,7 @@ INSERT INTO dbo.SINTOMAS (IdSintoma, IdEnfermedad, Descripcion, LimiteInferior, 
     (N'NEURO00085SINTO00007', N'NEURO00085', N'Convulsiones (20 a 40%)', NULL, NULL, NULL);
 
 -- SIGNOS: 76 filas
-INSERT INTO dbo.SIGNOS (IdSigno, IdEnfermedad, Descripcion, LimiteInferior, LimiteSuperior, Unidades) VALUES
+INSERT INTO dbo.SIGNOS (Id_Signo, Id_Enfermedad, Descripcion, LimiteInferior, LimiteSuperior, Unidades) VALUES
     (N'DIGES00017SIGNO00001', N'DIGES00017', N'Vómito de sangre o en posos de café', NULL, NULL, NULL),
     (N'DIGES00017SIGNO00002', N'DIGES00017', N'Melena (más de 100 ml de sangre)', NULL, NULL, NULL),
     (N'DIGES00017SIGNO00003', N'DIGES00017', N'Descenso ortostático de la presión (mmHg, mayor)', 10, NULL, N'mmHg'),
@@ -203,7 +203,7 @@ INSERT INTO dbo.SIGNOS (IdSigno, IdEnfermedad, Descripcion, LimiteInferior, Limi
     (N'NEURO00085SIGNO00004', N'NEURO00085', N'Papiledema', NULL, NULL, NULL);
 
 -- ESTUDIOS_LABORATORIO: 90 filas
-INSERT INTO dbo.ESTUDIOS_LABORATORIO (IdEstudio, IdEnfermedad, Descripcion, LimiteInferior, LimiteSuperior, Unidades) VALUES
+INSERT INTO dbo.ESTUDIOS_LABORATORIO (Id_Estudio, Id_Enfermedad, Descripcion, LimiteInferior, LimiteSuperior, Unidades) VALUES
     (N'DIGES00017LABOR00001', N'DIGES00017', N'Hematócrito (descenso tardío)', NULL, NULL, NULL),
     (N'DIGES00017LABOR00002', N'DIGES00017', N'BUN aumentado', NULL, NULL, NULL),
     (N'DIGES00017LABOR00003', N'DIGES00017', N'Leucocitosis y trombocitosis leves', NULL, NULL, NULL),
@@ -296,7 +296,7 @@ INSERT INTO dbo.ESTUDIOS_LABORATORIO (IdEstudio, IdEnfermedad, Descripcion, Limi
     (N'NEURO00085LABOR00011', N'NEURO00085', N'Hemocultivos', NULL, NULL, NULL);
 
 -- ESTUDIOS_DIAGNOSTICO_DIFERENCIAL: 61 filas
-INSERT INTO dbo.ESTUDIOS_DIAGNOSTICO_DIFERENCIAL (IdEstudio, IdEnfermedad, Descripcion, LimiteInferior, LimiteSuperior, Unidades) VALUES
+INSERT INTO dbo.ESTUDIOS_DIAGNOSTICO_DIFERENCIAL (Id_Estudio, Id_Enfermedad, Descripcion, LimiteInferior, LimiteSuperior, Unidades) VALUES
     (N'DIGES00017DIAGD00001', N'DIGES00017', N'Endoscopia superior (exactitud >90%)', NULL, NULL, NULL),
     (N'DIGES00017DIAGD00002', N'DIGES00017', N'Radiografía de tubo digestivo alto con bario', NULL, NULL, NULL),
     (N'DIGES00017DIAGD00003', N'DIGES00017', N'Arteriografía mesentérica selectiva', NULL, NULL, NULL),
@@ -360,7 +360,7 @@ INSERT INTO dbo.ESTUDIOS_DIAGNOSTICO_DIFERENCIAL (IdEstudio, IdEnfermedad, Descr
     (N'NEURO00085DIAGD00006', N'NEURO00085', N'Encefalomielitis diseminada aguda', NULL, NULL, NULL);
 
 -- COMORBILIDADES: 107 filas
-INSERT INTO dbo.COMORBILIDADES (IdComorbilidad, IdEnfermedad, Descripcion) VALUES
+INSERT INTO dbo.COMORBILIDADES (Id_Comorbilidad, Id_Enfermedad, Descripcion) VALUES
     (N'DIGES00017COMOR00001', N'DIGES00017', N'Ácido acetilsalicílico y NSAID'),
     (N'DIGES00017COMOR00002', N'DIGES00017', N'Alcohol'),
     (N'DIGES00017COMOR00003', N'DIGES00017', N'Estrés'),
@@ -470,7 +470,7 @@ INSERT INTO dbo.COMORBILIDADES (IdComorbilidad, IdEnfermedad, Descripcion) VALUE
     (N'NEURO00085COMOR00013', N'NEURO00085', N'Traumatismo craneal con fuga de LCR');
 
 -- DEFECTOS_CONGENITOS: 43 filas
-INSERT INTO dbo.DEFECTOS_CONGENITOS (IdDefecto, IdEnfermedad, Descripcion) VALUES
+INSERT INTO dbo.DEFECTOS_CONGENITOS (Id_Defecto, Id_Enfermedad, Descripcion) VALUES
     (N'DIGES00017DEFEC00001', N'DIGES00017', N'Hematemesis'),
     (N'DIGES00017DEFEC00002', N'DIGES00017', N'Melena'),
     (N'DIGES00017DEFEC00003', N'DIGES00017', N'Rectorragia'),
@@ -516,7 +516,7 @@ INSERT INTO dbo.DEFECTOS_CONGENITOS (IdDefecto, IdEnfermedad, Descripcion) VALUE
     (N'ENDOC00015DEFEC00004', N'ENDOC00015', N'Hipertiroidismo secundario');
 
 -- TRATAMIENTOS: 135 filas
-INSERT INTO dbo.TRATAMIENTOS (IdTratamiento, IdEnfermedad, Descripcion, DosisMinima, DosisMaxima, Unidades) VALUES
+INSERT INTO dbo.TRATAMIENTOS (Id_Tratamiento, Id_Enfermedad, Descripcion, DosisMinima, DosisMaxima, Unidades) VALUES
     (N'DIGES00017TRATA00001', N'DIGES00017', N'Catéter IV de calibre grande (14 a 18)', NULL, NULL, NULL),
     (N'DIGES00017TRATA00002', N'DIGES00017', N'Líquidos isotónicos', NULL, NULL, NULL),
     (N'DIGES00017TRATA00003', N'DIGES00017', N'Concentrados eritrocitarios para mantener hematócrito >25 a 30', NULL, NULL, NULL),
@@ -654,18 +654,18 @@ INSERT INTO dbo.TRATAMIENTOS (IdTratamiento, IdEnfermedad, Descripcion, DosisMin
     (N'NEURO00085TRATA00017', N'NEURO00085', N'Ceftriaxona 250 mg IM como profilaxis', NULL, NULL, NULL);
 
 -- REGIONES: 2 filas
-INSERT INTO dbo.REGIONES (IdRegion, Nombre) VALUES
+INSERT INTO dbo.REGIONES (Id_Region, Nombre) VALUES
     (N'REGIO00001', N'Países en desarrollo'),
     (N'REGIO00002', N'Centroamérica y Sudamérica');
 
 -- ENFERMEDADES_ENDEMICAS: 3 filas
-INSERT INTO dbo.ENFERMEDADES_ENDEMICAS (IdEndemica, IdRegion, IdEnfermedad, Descripcion) VALUES
+INSERT INTO dbo.ENFERMEDADES_ENDEMICAS (Id_Endemica, Id_Region, Id_Enfermedad, Descripcion) VALUES
     (N'CARDI00010ENDEM00001', N'REGIO00001', N'CARDI00010', N'La estenosis mitral suele causar discapacidad grave a menor edad'),
     (N'CARDI00020ENDEM00001', N'REGIO00002', N'CARDI00020', N'La enfermedad de Chagas es causa frecuente de miocarditis en regiones endémicas'),
     (N'CARDI00023ENDEM00001', N'REGIO00001', N'CARDI00023', N'La tuberculosis es causa de pericarditis constrictiva sobre todo en países en desarrollo');
 
 -- PLANES: 10 filas
-INSERT INTO dbo.PLANES (IdPlan, PlanIndicado, Pronostico, Seguimiento) VALUES
+INSERT INTO dbo.PLANES (Id_Plan, PlanIndicado, Pronostico, Seguimiento) VALUES
     (N'PLAN_00001', N'Tratamiento indicado: Diurético para sobrecarga de volumen; Inhibidor de la ACE; Antagonista del receptor de angiotensina', N'Reservado; depende de la respuesta al tratamiento (dato ficticio)', N'Control médico periódico (dato ficticio)'),
     (N'PLAN_00002', N'Tratamiento indicado: Metimazol o carbimazol inicial dos a tres veces al día (mg); Metimazol o carbimazol de mantenimiento (mg/día); Propiltiouracilo inicial cada 8 h (mg)', N'Reservado; depende de la respuesta al tratamiento (dato ficticio)', N'Control médico periódico (dato ficticio)'),
     (N'PLAN_00003', N'Tratamiento indicado: Eliminar desencadenantes; Agonistas β2 de acción corta (albuterol) de rescate; Agonistas β2 de acción prolongada (salmeterol, formoterol) siempre con corticoesteroide inhalado', N'Reservado; depende de la respuesta al tratamiento (dato ficticio)', N'Control médico periódico (dato ficticio)'),
@@ -678,20 +678,20 @@ INSERT INTO dbo.PLANES (IdPlan, PlanIndicado, Pronostico, Seguimiento) VALUES
     (N'PLAN_00010', N'Tratamiento indicado: Penicilina G IV c/4 h por 4 semanas (estreptococo sensible, millones U); Ceftriaxona IV al día por 4 semanas (g); Vancomicina IV c/12 h (mg/kg)', N'Reservado; depende de la respuesta al tratamiento (dato ficticio)', N'Control médico periódico (dato ficticio)');
 
 -- PACIENTES: 10 filas
-INSERT INTO dbo.PACIENTES (IdPaciente, NombreCompleto, Nombres, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, IdEnfermedadDiagnosticada, IdComorbilidad, IdTratamiento, IdPlan) VALUES
-    (N'PACIE00001', N'Ernesto Valenzuela Acosta (ficticio)', N'Ernesto', N'Valenzuela', N'Acosta', N'1969-01-01', N'CARDI00017', N'CARDI00017COMOR00007', N'CARDI00017TRATA00001', N'PLAN_00001'),
-    (N'PACIE00002', N'Lucía Montaño Félix (ficticio)', N'Lucía', N'Montaño', N'Félix', N'1993-01-01', N'ENDOC00015', N'ENDOC00015COMOR00003', N'ENDOC00015TRATA00001', N'PLAN_00002'),
-    (N'PACIE00003', N'Javier Duarte Leyva (ficticio)', N'Javier', N'Duarte', N'Leyva', N'2002-01-01', N'NEUMO00008', N'NEUMO00008COMOR00008', N'NEUMO00008TRATA00001', N'PLAN_00003'),
-    (N'PACIE00004', N'Patricia Rendón Salazar (ficticio)', N'Patricia', N'Rendón', N'Salazar', N'1978-01-01', N'NEUMO00025', N'NEUMO00025COMOR00010', N'NEUMO00025TRATA00001', N'PLAN_00004'),
-    (N'PACIE00005', N'Hugo Tapia Urías (ficticio)', N'Hugo', N'Tapia', N'Urías', N'1963-01-01', N'RENAL00008', N'RENAL00008COMOR00011', N'RENAL00008TRATA00001', N'PLAN_00005'),
-    (N'PACIE00006', N'Karla Verdugo Zamora (ficticio)', N'Karla', N'Verdugo', N'Zamora', N'1997-01-01', N'MUSCU00004', N'MUSCU00004COMOR00002', N'MUSCU00004TRATA00001', N'PLAN_00006'),
-    (N'PACIE00007', N'Raúl Bórquez Cázares (ficticio)', N'Raúl', N'Bórquez', N'Cázares', N'2007-01-01', N'NEURO00085', N'NEURO00085COMOR00012', N'NEURO00085TRATA00001', N'PLAN_00007'),
-    (N'PACIE00008', N'Alma Beltrán Ibarra (ficticio)', N'Alma', N'Beltrán', N'Ibarra', N'1955-01-01', N'DIGES00017', N'DIGES00017COMOR00001', N'DIGES00017TRATA00001', N'PLAN_00008'),
-    (N'PACIE00009', N'Sergio Camacho Quijada (ficticio)', N'Sergio', N'Camacho', N'Quijada', N'1960-01-01', N'ONCOL00014', N'ONCOL00014COMOR00002', N'ONCOL00014TRATA00001', N'PLAN_00009'),
-    (N'PACIE00010', N'Gabriela Contreras Moreno (ficticio)', N'Gabriela', N'Contreras', N'Moreno', N'1988-01-01', N'INFEC00033', N'INFEC00033COMOR00007', N'INFEC00033TRATA00001', N'PLAN_00010');
+INSERT INTO dbo.PACIENTES (Id_Paciente, NombreCompleto, Nombres, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, Sexo, Id_EnfermedadDiagnosticada, Id_Comorbilidad, Id_Tratamiento, Id_Plan) VALUES
+    (N'PACIE00001', N'Ernesto Valenzuela Acosta (ficticio)', N'Ernesto', N'Valenzuela', N'Acosta', N'1969-01-01', N'M', N'CARDI00017', N'CARDI00017COMOR00007', N'CARDI00017TRATA00001', N'PLAN_00001'),
+    (N'PACIE00002', N'Lucía Montaño Félix (ficticio)', N'Lucía', N'Montaño', N'Félix', N'1993-01-01', N'F', N'ENDOC00015', N'ENDOC00015COMOR00003', N'ENDOC00015TRATA00001', N'PLAN_00002'),
+    (N'PACIE00003', N'Javier Duarte Leyva (ficticio)', N'Javier', N'Duarte', N'Leyva', N'2002-01-01', N'M', N'NEUMO00008', N'NEUMO00008COMOR00008', N'NEUMO00008TRATA00001', N'PLAN_00003'),
+    (N'PACIE00004', N'Patricia Rendón Salazar (ficticio)', N'Patricia', N'Rendón', N'Salazar', N'1978-01-01', N'F', N'NEUMO00025', N'NEUMO00025COMOR00010', N'NEUMO00025TRATA00001', N'PLAN_00004'),
+    (N'PACIE00005', N'Hugo Tapia Urías (ficticio)', N'Hugo', N'Tapia', N'Urías', N'1963-01-01', N'M', N'RENAL00008', N'RENAL00008COMOR00011', N'RENAL00008TRATA00001', N'PLAN_00005'),
+    (N'PACIE00006', N'Karla Verdugo Zamora (ficticio)', N'Karla', N'Verdugo', N'Zamora', N'1997-01-01', N'F', N'MUSCU00004', N'MUSCU00004COMOR00002', N'MUSCU00004TRATA00001', N'PLAN_00006'),
+    (N'PACIE00007', N'Raúl Bórquez Cázares (ficticio)', N'Raúl', N'Bórquez', N'Cázares', N'2007-01-01', N'M', N'NEURO00085', N'NEURO00085COMOR00012', N'NEURO00085TRATA00001', N'PLAN_00007'),
+    (N'PACIE00008', N'Alma Beltrán Ibarra (ficticio)', N'Alma', N'Beltrán', N'Ibarra', N'1955-01-01', N'F', N'DIGES00017', N'DIGES00017COMOR00001', N'DIGES00017TRATA00001', N'PLAN_00008'),
+    (N'PACIE00009', N'Sergio Camacho Quijada (ficticio)', N'Sergio', N'Camacho', N'Quijada', N'1960-01-01', N'M', N'ONCOL00014', N'ONCOL00014COMOR00002', N'ONCOL00014TRATA00001', N'PLAN_00009'),
+    (N'PACIE00010', N'Gabriela Contreras Moreno (ficticio)', N'Gabriela', N'Contreras', N'Moreno', N'1988-01-01', N'F', N'INFEC00033', N'INFEC00033COMOR00007', N'INFEC00033TRATA00001', N'PLAN_00010');
 
 -- HALLAZGOS_PACIENTE: 212 filas
-INSERT INTO dbo.HALLAZGOS_PACIENTE (IdPaciente, TipoHallazgo, IdRegistro, Valor, Unidades) VALUES
+INSERT INTO dbo.HALLAZGOS_PACIENTE (Id_Paciente, TipoHallazgo, Id_Registro, Valor, Unidades) VALUES
     (N'PACIE00001', N'Sintoma', N'CARDI00017SINTO00002', N'presente', NULL),
     (N'PACIE00001', N'Sintoma', N'CARDI00017SINTO00003', N'presente', NULL),
     (N'PACIE00001', N'Sintoma', N'CARDI00017SINTO00004', N'presente', NULL),
@@ -906,7 +906,7 @@ INSERT INTO dbo.HALLAZGOS_PACIENTE (IdPaciente, TipoHallazgo, IdRegistro, Valor,
     (N'PACIE00010', N'Comorbilidad', N'INFEC00033COMOR00007', N'presente', NULL);
 
 -- ATENCIONES_PACIENTE: 10 filas
-INSERT INTO dbo.ATENCIONES_PACIENTE (IdPaciente, IdDoctor, IdHospital, Motivo) VALUES
+INSERT INTO dbo.ATENCIONES_PACIENTE (Id_Paciente, Id_Doctor, Id_Hospital, Motivo) VALUES
     (N'PACIE00001', N'DOCTO00001', N'HOSPI00002', N'Miocardiopatía dilatada'),
     (N'PACIE00002', N'DOCTO00002', N'HOSPI00001', N'Tirotoxicosis'),
     (N'PACIE00003', N'DOCTO00003', N'HOSPI00001', N'Asma'),
@@ -919,7 +919,7 @@ INSERT INTO dbo.ATENCIONES_PACIENTE (IdPaciente, IdDoctor, IdHospital, Motivo) V
     (N'PACIE00010', N'DOCTO00006', N'HOSPI00002', N'Endocarditis infecciosa');
 
 -- IO_Complicaciones: 56 filas
-INSERT INTO dbo.IO_Complicaciones (Id_Complic, Complicac, IdEnfermedad, IdPaciente) VALUES
+INSERT INTO dbo.IO_Complicaciones (Id_Complic, Complicac, Id_Enfermedad, Id_Paciente) VALUES
     (N'DIGES00017COMPL00001', N'Choque', N'DIGES00017', NULL),
     (N'DIGES00017COMPL00002', N'Hemorragia recidivante', N'DIGES00017', N'PACIE00008'),
     (N'DIGES00017COMPL00003', N'Muerte', N'DIGES00017', N'PACIE00008'),
@@ -978,7 +978,7 @@ INSERT INTO dbo.IO_Complicaciones (Id_Complic, Complicac, IdEnfermedad, IdPacien
     (N'NEURO00085COMPL00006', N'Alteración de la marcha', N'NEURO00085', NULL);
 
 -- IO_ResultadosEsperados: 10 filas
-INSERT INTO dbo.IO_ResultadosEsperados (IdPaciente, IdEnfermedad, Enfeespera) VALUES
+INSERT INTO dbo.IO_ResultadosEsperados (Id_Paciente, Id_Enfermedad, Enfeespera) VALUES
     (N'PACIE00001', N'CARDI00017', N'Miocardiopatía dilatada'),
     (N'PACIE00002', N'ENDOC00015', N'Tirotoxicosis'),
     (N'PACIE00003', N'NEUMO00008', N'Asma'),
