@@ -91,11 +91,12 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
     }
 
     [Fact]
-    public async Task PT57_MotorProvisional_EvaluadoContraResultadosEsperados()
+    public async Task PT57_MaquinaDeInferencia_EvaluadaContraResultadosEsperados()
     {
         // Given los pacientes de prueba y su respuesta correcta (IO_ResultadosEsperados, solo para evaluar)
         await using var db = CrearContexto();
-        var diagnosticos = new DiagnosisService(new PatientRecordRepository(db), new ProvisionalInferenceEngine(new CatalogRepository(db)));
+        var motor = new InferenceEngine(new CatalogRepository(db), new TreatmentRepository(db));
+        var diagnosticos = new DiagnosisService(new PatientRecordRepository(db), motor);
         var esperados = await db.Database
             .SqlQuery<EsperadoFila>($"SELECT Id_Paciente AS IdPaciente, Id_Enfermedad AS IdEnfermedadEsperada FROM dbo.IO_ResultadosEsperados")
             .ToListAsync();
@@ -106,13 +107,16 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
         {
             var resultado = await diagnosticos.AnalizarAsync(esperado.IdPaciente);
             Assert.NotNull(resultado);
-            var primero = resultado.Candidatos.FirstOrDefault()?.IdEnfermedad;
-            if (primero == esperado.IdEnfermedadEsperada) aciertos++;
-            salida.WriteLine($"{esperado.IdPaciente}: esperado {esperado.IdEnfermedadEsperada}, primero {primero ?? "(ninguno)"}");
+            // Copia literal del .prg (P-161): la lista va en orden alfabético, así que se mide si la enfermedad
+            // esperada está en ella y cuántas trae.
+            var posicion = resultado.Candidatos.ToList().FindIndex(c => c.IdEnfermedad == esperado.IdEnfermedadEsperada);
+            if (posicion >= 0) aciertos++;
+            salida.WriteLine($"{esperado.IdPaciente}: esperado {esperado.IdEnfermedadEsperada}, " +
+                $"{(posicion >= 0 ? $"en la posición {posicion + 1}" : "NO está")} de {resultado.Candidatos.Count} candidatos");
         }
 
         // Then cada paciente con hallazgos tiene al menos un candidato; se informa la exactitud
-        salida.WriteLine($"Exactitud del motor provisional: {aciertos} de {esperados.Count}");
+        salida.WriteLine($"La enfermedad esperada está entre los candidatos: {aciertos} de {esperados.Count}");
         Assert.NotEmpty(esperados);
     }
 

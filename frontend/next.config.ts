@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     agentUpgrade: "security",
+    // Sin el servidor MCP de desarrollo: escribe cada mensaje de la consola del navegador en
+    // .next/dev/logs, ese cambio dispara una recompilación y la página se recarga en bucle
+    // ("✓ Compiled in 1ms" + GET /login sin parar). La app no lo usa.
+    mcpServer: false,
   },
   cacheComponents: true,
   images: {

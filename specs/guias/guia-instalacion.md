@@ -2,7 +2,7 @@
 
 Esta guía explica cómo descargar el repositorio, preparar las herramientas y arrancar los componentes disponibles en Windows. Está escrita para la estructura actual del repositorio.
 
-> Estado actual: el inicio de sesión funciona de extremo a extremo (frontend → API → SQL Server). Para eso, la API necesita una base de datos `XpertDiagnostic` existente con la tabla `USUARIOS`, y la configuración secreta descrita en la sección 5. El resto de los casos de uso y el servicio de IA todavía no están implementados.
+> Estado actual: el inicio de sesión funciona de extremo a extremo (frontend → API → SQL Server). Para eso, la API necesita una base de datos `XpertDiagnostic` existente con la tabla `USUARIOS`, y la configuración secreta descrita en la sección 5. El diagnóstico lo calcula la máquina de inferencia del equipo dentro de la API (`InferenceEngine`, conversión de `inference_engine.prg`, P-160); no hay un servicio de IA aparte.
 
 ## 1. Requisitos de equipo y programas
 
@@ -13,7 +13,7 @@ Instala lo siguiente desde sus sitios oficiales:
 - [**Git for Windows**](https://git-scm.com/download/win), para clonar el repositorio y trabajar con ramas. No se necesita para descargar y ejecutar solamente una copia ZIP.
 - [**Node.js 22 LTS o posterior compatible**](https://nodejs.org/en/download) y npm, para el frontend. Next.js en este proyecto requiere Node.js 20.9.0 como mínimo; se recomienda una versión LTS vigente que cumpla ese mínimo. npm se instala junto con Node.js.
 - [**.NET 8 SDK**](https://dotnet.microsoft.com/download/dotnet/8.0), no solo el runtime, para restaurar, compilar y ejecutar el backend ASP.NET Core.
-- [**Python 3.12**](https://www.python.org/downloads/), para preparar el entorno previsto para el servicio de IA cuando ese componente tenga una aplicación implementada.
+- [**Python 3.12**](https://www.python.org/downloads/), solo si vas a regenerar `SeedClinicalData.sql` a partir de los CSV (sección 7).
 - [**SQL Server Developer o Express**](https://www.microsoft.com/sql-server/sql-server-downloads) y, opcionalmente, [**SQL Server Management Studio (SSMS)**](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms), para la base de datos `XpertDiagnostic` que usa la API.
 - **Visual Studio Code** es opcional y puede usarse para editar los archivos y abrir terminales.
 
@@ -66,17 +66,6 @@ El árbol siguiente incluye los archivos versionados del proyecto. Las carpetas 
 ```text
 XpertDiagnostic/
 ├── .gitignore
-├── ai-service/
-│   ├── requirements.txt
-│   └── app/
-│       ├── __init__.py
-│       ├── main.py
-│       ├── routers/
-│       │   └── __init__.py
-│       ├── schemas/
-│       │   └── __init__.py
-│       └── services/
-│           └── __init__.py
 ├── backend/
 │   ├── XpertDiagnostic.sln
 │   ├── XpertDiagnostic.Api/
@@ -177,12 +166,6 @@ El proyecto ASP.NET Core apunta a .NET 8 e incluye estos paquetes NuGet:
 
 `dotnet restore` descarga las dependencias declaradas.
 
-### Servicio de IA
-
-`ai-service/requirements.txt` declara estas versiones fijadas: `annotated-doc` 0.0.5, `annotated-types` 0.8.0, AnyIO 4.15.1, Click 8.5.0, FastAPI 0.143.0, h11 0.16.0, httptools 0.8.0, idna 3.20, OpenTelemetry API 1.45.1, Pydantic 2.14.0, pydantic-core 2.50.0, `python-dotenv` 1.2.4, PyYAML 6.0.3, Starlette 1.7.0, typing-inspection 0.4.4, typing-extensions 4.16.0, Uvicorn 0.54.0, watchfiles 1.3.0 y websockets 17.2.
-
-El archivo `ai-service/app/main.py` está vacío actualmente. Por ello no existe una aplicación ASGI que pueda arrancarse con Uvicorn, y no es necesario instalar estas dependencias para iniciar el frontend o la API. Cuando se implemente ese servicio, se podrá crear un entorno virtual e instalar el manifiesto con pip.
-
 ## 5. Arrancar el backend ASP.NET Core
 
 ### 5.1 Configurar los secretos (una sola vez por equipo)
@@ -264,13 +247,13 @@ npm run start
 
 El formulario envía las credenciales a `/api/login`. Esa ruta de Next.js las reenvía a la API y, si son correctas, guarda el token en una cookie `httpOnly`. Para iniciar sesión, la API debe estar ejecutándose (sección 5).
 
-## 7. SQL Server y servicio de IA
+## 7. SQL Server
 
 ### SQL Server
 
 La API trabaja sobre una base de datos `XpertDiagnostic` existente. Entity Framework Core mapea la tabla `dbo.USUARIOS` con las columnas `IdUSUARIO`, `PASS`, `ROL`, `IdMEDICO` e `IdAREA`. No hay migraciones de Entity Framework: no ejecutes `dotnet ef database update`.
 
-Para el inicio de sesión, ejecuta `backend\XpertDiagnostic.Api\Sql\CreateDoctorsAndUsersTables.sql`, que crea `dbo.MEDICOS` (nombre, especialidad y cédula profesional) y `dbo.USUARIOS` (la cuenta médica: `IdUSUARIO = IdMEDICO`, `PASS` con hash BCrypt, `ROL` `T` tratante, `I` internista o `A` administrador, y `BienvenidaVista`). Si `USUARIOS` ya existía, el script la adapta dentro de una transacción, migra las cuentas `M` a `T` y actualiza las restricciones: `T` e `I` requieren un registro en `MEDICOS`; `A` puede tener `IdMEDICO` nulo.
+Para el inicio de sesión, ejecuta `backend\XpertDiagnostic.Api\Sql\CreateDoctorsAndUsersTables.sql`, que crea `dbo.MEDICOS` (nombre, especialidad y cédula profesional) y `dbo.USUARIOS` (la cuenta médica: `IdUSUARIO = IdMEDICO`, `PASS` con hash BCrypt, `ROL` `T` tratante, `I` internista o `A` administrador). Si `USUARIOS` ya existía, el script la adapta dentro de una transacción, migra las cuentas `M` a `T` y actualiza las restricciones: `T` e `I` requieren un registro en `MEDICOS`; `A` puede tener `IdMEDICO` nulo.
 
 Para datos de demostración, después del script de esquema puedes ejecutar `SeedAdminAccount.sql` (ID `654321`, contraseña inicial `admin`) y `SeedInternistAccount.sql` (ID `654322`, contraseña inicial `admin`). Ambos son solo para desarrollo. En producción no ejecutes los seeds; las cuentas se administran desde la app y las contraseñas de demostración deben cambiarse antes de exponer el entorno.
 
@@ -278,14 +261,13 @@ Para crear y llenar las tablas clínicas (enfermedades, síntomas, signos, estud
 
 1. `backend\XpertDiagnostic.Api\Sql\CreateClinicalTables.sql` (y `CreateDoctorsAndUsersTables.sql` para médicos y cuentas): crea solo las tablas que falten; no toca `dbo.USUARIOS`.
 2. `backend\XpertDiagnostic.Api\Sql\SeedClinicalData.sql`: borra y recarga los datos clínicos en una sola transacción. Se puede repetir.
+3. `backend\XpertDiagnostic.Api\Sql\LoadKnowledgeBase.sql`: agrega la base de conocimiento completa de la máquina de inferencia (924 enfermedades, 2,350 síntomas, 2,827 signos y 4,416 tratamientos, P-160). Solo agrega lo que falta, así que se puede repetir. **Va después del paso 2**, porque `SeedClinicalData.sql` borra las tablas clínicas. Se genera con `backend\XpertDiagnostic.Api\Sql\Tools\generate_knowledge_base.ps1 -DbfDir <carpeta con los BDC_*.DBF>`.
+
+Si tu base ya existía, ejecuta además `backend\XpertDiagnostic.Api\Sql\DropWelcomeColumn.sql`, que quita la columna `BienvenidaVista` de `USUARIOS` (P-154), y `backend\XpertDiagnostic.Api\Sql\AddDiagnosisValidation.sql`. Agrega a `PACIENTES` las columnas de la validación del médico internista: estado, quién envió, quién confirmó y cuándo (ESP-008, P-151). Se puede repetir sin problema.
 
 Los datos vienen de los CSV de `Sql\ClinicalData` (Windows-1252). `SeedClinicalData.sql` no se edita a mano: si cambia un CSV, se vuelve a generar con `python backend/XpertDiagnostic.Api/Sql/Tools/generate_clinical_seed.py`. El generador valida llaves y referencias y no escribe nada si encuentra errores.
 
 No guardes contraseñas ni cadenas de conexión reales en archivos que vayan a GitHub. Usa la configuración de la sección 5.1.
-
-### Servicio de IA
-
-El directorio `ai-service` es únicamente una estructura inicial. Como `main.py` está vacío, no intentes iniciar `uvicorn app.main:app`; el servicio no tiene una instancia `app` que Uvicorn pueda cargar. Su instalación y arranque se documentarán cuando se implemente la aplicación FastAPI.
 
 ## 8. Problemas frecuentes
 

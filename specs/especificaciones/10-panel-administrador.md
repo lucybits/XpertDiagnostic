@@ -5,7 +5,7 @@
 | Identificador | ESP-007 |
 | Origen | Petición de Lucía (P-116): panel de administrador para crear cuentas de médicos con su cédula profesional y su contraseña; cada apartado del login solo acepta su rol; rutas protegidas y persistencia cuidada. |
 | Estado | Implementada; pendiente la ejecución manual de PT89 a PT94 (incluye roles T/I) |
-| Tareas | [tareas/inicio-sesion.md](../tareas/inicio-sesion.md), T60 a T66 |
+| Tareas | [tareas/panel-administrador.md](../tareas/panel-administrador.md), T60 a T68, T70 y T71 |
 | Casos de prueba | Sección 7 de este documento, PT72 a PT94 |
 | Reemplaza | La pantalla `/doctors/new` y `POST /api/doctors` de ESP-002 (el alta ahora vive en el panel) |
 
@@ -43,9 +43,9 @@ Cuenta de administrador de prueba (`SeedAdminAccount.sql`): **ID 654321, contras
 
 | ID | Requisito |
 |---|---|
-| RF-50 | El login envía el apartado elegido (`T` para Médico o `A` para Administrador). El apartado Médico acepta cuentas `T` e `I`; el JWT conserva el rol real. Si la contraseña es correcta pero la cuenta es de otro grupo, responde 403 con el apartado correcto. Con contraseña incorrecta siempre responde el 401 genérico (no se revela el rol ni el estado). |
+| RF-50 | El login envía el apartado elegido (`T` para Médico o `A` para Administrador). El apartado Médico acepta cuentas `T` e `I`; el JWT conserva el rol real. Si la cuenta es de otro apartado, responde lo mismo que con credenciales incorrectas: 401 "ID o contraseña incorrectos. Vuelve a intentarlo.", sin decir de qué tipo es la cuenta (P-157). Con contraseña incorrecta siempre responde ese 401 genérico (no se revela el rol ni el estado). |
 | RF-51 | Una cuenta desactivada no puede entrar (403 "Tu cuenta está desactivada…", solo con la contraseña correcta). |
-| RF-52 | Tras iniciar sesión, cada rol va a su pantalla (`HOME_ROUTE_BY_ROLE`): el médico tratante (`T`) a `/home`, el médico internista (`I`) a `/internista` y el administrador (`A`) a `/admin`. El contenido de `/internista` está aplazado; por ahora muestra un aviso de "en preparación" y permite cerrar sesión (P-140). |
+| RF-52 | Tras iniciar sesión, cada rol va a su pantalla (`HOME_ROUTE_BY_ROLE`): el médico tratante (`T`) a `/home`, el médico internista (`I`) a `/internista` y el administrador (`A`) a `/admin`. En `/internista` el médico internista recibe y confirma los diagnósticos diferenciales que envían los tratantes (ESP-008, P-151). |
 | RF-53 | `/admin` lista a los médicos (cuentas de rol `T` o `I`) con ID, nombre, especialidad, cédula, fecha de alta y estado, y busca por nombre, especialidad, ID o cédula. |
 | RF-54 | Registrar médico: ID (será su usuario), cédula de 7 u 8 dígitos única, nombre, especialidad y contraseña inicial de 8 a 72 caracteres (con confirmación). Médico y cuenta se guardan en una sola transacción; un ID o cédula repetidos responden 409 sin guardar nada. |
 | RF-55 | Editar nombre, especialidad y cédula (el ID no cambia). Una cédula de otro médico responde 409. |

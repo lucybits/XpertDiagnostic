@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, FileText, Search, SearchX, Stethoscope, UserRound, X } from 'lucide-react';
+import { ChevronRight, FileText, Hourglass, Search, SearchX, Stethoscope, UserRound, X } from 'lucide-react';
 import { filterPatients, getDiagnosisOptions, hasActiveCriteria } from '@/lib/patientSearch';
 import {
   DIAGNOSIS_ALL,
@@ -12,6 +12,7 @@ import {
   type Patient,
   type PatientSearchCriteria,
 } from '@/types/patient';
+import { VALIDATION_STATES } from '@/types/validation';
 
 type PatientSearchDialogProps = {
   open: boolean;
@@ -196,8 +197,14 @@ function SearchPanel({ titleId, patients, onClose, onSelect }: SearchPanelProps)
                     className="h-5 w-5 shrink-0 text-slate-300 transition-colors group-hover:text-slate-500"
                   />
                 </button>
-                {/* Con diagnóstico ya hay salida: se puede abrir directamente (P-105). */}
-                {patient.diagnosis && (
+                {/* Solo con diagnóstico confirmado por el internista hay salida (P-105, P-165). Si se
+                    reenvió y está pendiente, se dice en lugar del enlace. */}
+                {patient.validationState === VALIDATION_STATES.pending ? (
+                  <span className="flex shrink-0 items-center gap-1.5 px-3 py-2 text-slate-700">
+                    <Hourglass aria-hidden="true" className="h-4 w-4" />
+                    En validación
+                  </span>
+                ) : patient.diagnosis && patient.validationState === VALIDATION_STATES.confirmed && (
                   <Link
                     href={`/patients/${patient.id}/result`}
                     // Cierra el buscador antes de salir de /home (P-107).

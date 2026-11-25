@@ -18,14 +18,16 @@ reglas > especificación > casos de prueba > plan > tareas > implementación > a
 - [03. Inicio de sesión (ESP-001)](especificaciones/03-inicio-sesion.md): historias de usuario, requisitos y criterios de aceptación.
 - [04. Pruebas TDD](especificaciones/04-pruebas-tdd.md): casos Given-When-Then y registro de su ejecución manual.
 - [05. Médicos y cuentas (ESP-002)](especificaciones/05-registro-medicos.md): perfil del médico con sesión y alta de médicos por un administrador, con sus casos PT17 a PT28.
-- [06. Bienvenida del asistente (ESP-003)](especificaciones/06-bienvenida-asistente.md): recorrido guiado la primera vez de cada cuenta, con sus casos PT29 a PT34.
+- [11. Validación del médico internista (ESP-008)](especificaciones/11-validacion-internista.md): el tratante envía el diagnóstico diferencial y el internista lo confirma, con sus casos PT60, PT61 y PT101 a PT109.
+- [12. Interrogatorio (ESP-009)](especificaciones/12-interrogatorio.md): antecedentes no patológicos y patológicos que captura el tratante, con sus casos PT110 a PT114.
+- [13. Máquina de inferencia (ESP-010)](especificaciones/13-maquina-de-inferencia.md): conversión de `inference_engine.prg` y carga de la base de conocimiento, con sus casos PT55, PT57 y PT115 a PT121.
 
 ### Planes
 - [01. Arquitectura, SOLID y patrones](planes/01-arquitectura-y-patrones.md): capas MVC, SOLID, contratos y patrones Singleton, Fachada y Estado.
 - [02. Plan técnico del inicio de sesión](planes/02-plan-inicio-sesion.md): flujo, decisiones, archivos y riesgos.
 
 ### Tareas
-- [Inicio de sesión](tareas/inicio-sesion.md): tareas con su requisito, su prueba, su autor (persona o IA) y su revisión.
+- [Índice de tareas](tareas/README.md): un archivo por especificación, con su requisito, su prueba, su autor (persona o IA) y su revisión.
 
 ### Bitácora y auditoría
 - [Bitácora de prompts](bitacora/bitacora-prompts.md): cada prompt de IA, textual, con su resultado.

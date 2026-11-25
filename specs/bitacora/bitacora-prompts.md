@@ -1415,47 +1415,6 @@ La IA advirtió que 5 tablas tenían datos y que el login depende de ellas: `USU
 
 **Revisión humana:** Error detectado por Lucía.
 
-### P-44. Chat del asistente de IA (solo visual)
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-16 |
-| Autor del prompt | Lucía |
-| Objetivo | Construir el panel central del chat de XpertDiagnostic |
-| Especificación / tarea | T41 |
-
-**Prompt**
-
-> Ahora vamos a hacer lo que irá en medio, pero bien ajustado y distribuido, sobre el chat de AI de "XpertDiagnostic". Con `logoxd.png` de preferencia como avatar de la AI, que se vea bien.
->
-> Solo de cascaroncito este panel de IA, sin respuestas reales todavía.
-
-**Resultado de la IA:** nuevo `components/home/AssistantChat.tsx`, con cuatro partes.
-
-- **Encabezado de la sección activa:**
-  - ícono, grupo y "Sección N de 8";
-  - nombre de la sección;
-  - etiqueta de estado.
-- **Conversación, en una columna centrada de hasta 768 px:**
-  - el asistente usa `logoxd.png` como avatar, en un círculo blanco con borde, y burbujas gris claro;
-  - los mensajes del médico aparecen en burbujas azul marino, alineadas a la derecha.
-  - Sin paciente, el asistente saluda y ofrece "Buscar paciente". Con paciente, pregunta por la sección y ofrece respuestas rápidas.
-- **Caja de texto:**
-  - crece con el contenido;
-  - Enter envía y Shift+Enter hace salto de línea;
-  - está desactivada sin paciente.
-- **Pie:**
-  - aviso "XpertDiagnostic es un apoyo; la decisión clínica es del médico";
-  - botón "Siguiente: …" hacia la sección que sigue, o hacia Diagnóstico y tratamiento en la última.
-
-Los mensajes del médico se agregan solo de forma local: todavía no hay IA. `HomeScreen` mide exactamente la altura de la ventana y el chat y el expediente hacen scroll por dentro.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx` (nuevo), `HomeScreen.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores; capturas sin paciente y con un paciente temporal de muestra (`{paciente}`, que se quitó después).
-
-**Revisión humana:** Pendiente.
-
 ### P-45. Secciones bloqueadas y avance por el chat
 
 | Campo | Valor |
@@ -1637,36 +1596,6 @@ Los mensajes del médico se agregan solo de forma local: todavía no hay IA. `Ho
 **Verificación automática:** `tsc` y `eslint` sin errores; recorte de captura del encabezado.
 
 **Revisión humana:** Pendiente.
-
-### P-51. Pie del chat: sin "Siguiente" y aviso para médicos
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Dar más espacio al chat y dejar un aviso clínico adecuado a usuarios médicos |
-| Especificación / tarea | T41, T42 |
-
-**Prompts**
-
-> Esta parte también la vamos a mejorar. Hay que eliminar eso del botón "Siguiente: No patológicos", porque ya lo va a manejar la IA. Y en su lugar coloca otra descripción más técnica, advirtiendo de que siempre la decisión será la del médico.
->
-> Ojo, este sistema es para médicos nomás, así que el aviso va en ese tono, y en texto pequeño xs.
-
-> Más breve, para dar más espacio al chat.
-
-**Resultado de la IA:**
-
-- **Botón "Siguiente: …":** se quitó. También se quitaron `onNext` y `nextSectionLabel` del chat y `advanceSection` de `HomeScreen`. Avanzar de sección lo hará el chat de IA cuando esté conectado.
-- **Aviso:**
-  - primer intento: un párrafo técnico de 4 líneas;
-  - después, a pedido de Lucía, una sola línea centrada en `text-xs`: "Uso exclusivo para médicos. La IA es orientativa y puede equivocarse; la decisión clínica es del médico tratante."
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`, `HomeScreen.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores. En el recorte de captura, el aviso queda en una línea a 1440 px.
-
-**Revisión humana:** Correcciones de Lucía.
 
 ### P-52. Encabezado contraíble y "Paso N de M" en azul
 
@@ -1924,438 +1853,6 @@ Los mensajes del médico se agregan solo de forma local: todavía no hay IA. `Ho
 
 **Revisión humana:** Ajuste de Lucía.
 
-### P-59. Bienvenida guiada del asistente la primera vez
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Quitar los mensajes de ejemplo del chat y mostrar un recorrido de bienvenida la primera vez |
-| Especificación / tarea | ESP-003, T43 a T45 |
-
-**Prompt**
-
-> Vamos a eliminar todas las respuestas y chats actuales de XpertDiagnostic hasta ahora. En su lugar vamos a crear un "camino" que deberá decir al momento de cargar o de ser la "primera vez" en la página o en la cuenta.
->
-> O sea que la primera vez que alguien entra, el asistente lo va guiando con unos mensajes, y ya después el chat queda normal. La primera vez se cuenta por cuenta, no por página.
-
-**Decisiones de Lucía** (preguntadas por la IA):
-
-- "Primera vez" se cuenta por cuenta.
-- Recorrido guiado de 3 a 4 pasos.
-
-**Resultado de la IA:**
-
-- **Chat vacío:** se quitaron el saludo, la pregunta por sección, las respuestas rápidas y el botón del saludo anterior.
-- **Especificación primero:** `especificaciones/06-bienvenida-asistente.md` (ESP-003) con los casos PT29 a PT34.
-- **Pruebas antes del código:** PT29 a PT31 en `DoctorServiceTests.cs`.
-- **Base de datos:** columna `USUARIOS.BienvenidaVista` (`BIT NOT NULL DEFAULT 0`) en `CreateDoctorsAndUsersTables.sql`, al crear la tabla y al adaptar una existente. Se aplicó en la base real; los usuarios 1 y 123456 quedan en 0.
-- **Backend:**
-  - `User.BienvenidaVista`, que también se agrega a `DoctorProfile`;
-  - `IDoctorRepository.MarcarBienvenidaVistaAsync`, con `ExecuteUpdateAsync` sin cargar la entidad;
-  - `IDoctorService.MarcarBienvenidaVistaAsync`;
-  - endpoint `POST /api/doctors/me/welcome`, que responde 204 o 404.
-- **Frontend:**
-  - `SessionProfile.bienvenidaVista`;
-  - ruta `app/api/session/welcome`;
-  - `markWelcomeSeen()`, que nunca lanza;
-  - `forwardWithSession` devuelve 204 sin cuerpo.
-- **`HomeScreen`:**
-  - espera el perfil antes de montar el chat;
-  - muestra la bienvenida si `bienvenidaVista` es falso (también sin sesión, con `{nombre}`);
-  - al pulsar "Acepto" la marca en la cuenta.
-- **`AssistantChat`:**
-  - 4 pasos (Continuar, Entendido, Acepto, Buscar paciente);
-  - cada botón aparece como respuesta del médico y el asistente sigue con el próximo paso;
-  - el último abre el buscador;
-  - los mensajes entran con un desplazamiento sutil que respeta el movimiento reducido.
-
-**Archivos afectados:**
-
-- `backend/XpertDiagnostic.Api/Models/Entities/User.cs`, `Models/Results/DoctorProfile.cs`, `Repositories/IDoctorRepository.cs`, `Repositories/DoctorRepository.cs`, `Services/Interfaces/IDoctorService.cs`, `Services/DoctorService.cs`, `Controllers/DoctorsController.cs`, `Sql/CreateDoctorsAndUsersTables.sql`;
-- `backend/XpertDiagnostic.Tests/DoctorServiceTests.cs`;
-- `frontend/types/doctor.ts`, `lib/backendSession.ts`, `services/doctorService.ts`, `app/api/session/welcome/route.ts` (nuevo), `components/home/HomeScreen.tsx`, `components/home/AssistantChat.tsx`;
-- `specs/guias/guia-instalacion.md` y `specs/README.md`.
-
-**Verificación automática:**
-
-- `dotnet test`: 26 de 26 pruebas.
-- `tsc` y `eslint` sin errores.
-- El script se ejecutó dos veces en una base desechable sin errores.
-- La API compilada se probó contra una base desechable, que después se borró:
-  - `me` devuelve `bienvenidaVista: false`;
-  - `POST /me/welcome` responde 204, también al repetirlo;
-  - después, `me` devuelve `true`;
-  - sin token responde 401.
-- Capturas del recorrido: se hizo clic en Continuar, Entendido y Acepto con el protocolo de DevTools.
-
-**Revisión humana:** Pendiente.
-
-### P-60. Asistente "pensando" y escritura con barrido
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Hacer más dinámico el recorrido de bienvenida |
-| Especificación / tarea | ESP-003, T44 |
-
-**Prompts**
-
-> Vamos a hacer más dinámico el recorrido. Está la animación `loading.svg`, búscala. De preferencia coloca este para simular que la IA de XpertDiagnostic está pensando, y también usaremos una máquina de escribir pero con barrido, así lindo.
-
-> Que sea más pequeño ese loading, y que no tenga fondo ni borde.
-
-> Pero que no sea tan rápido toda la máquina de escribir y así. Las de los LLMs no suelen ser tan rápidas, aparte de que manejan distintos tiempos por burbuja de chat.
-
-**Resultado de la IA:**
-
-- **"Pensando":** antes de cada mensaje del asistente aparecen su avatar y nombre con `public/loading.svg` durante 950 ms.
-  - Es un SVG animado con SMIL que se muestra con `next/image` `unoptimized`.
-  - Tiene `role="status"` y el texto oculto "XpertDiagnostic está escribiendo".
-  - A pedido de Lucía, la animación quedó de 32×8 px, sin fondo ni borde.
-- **Nuevo `components/ui/TypewriterText.tsx`:** máquina de escribir con barrido.
-  - Las palabras entran una tras otra cada 45 ms, de transparentes y difuminadas (`blur 6px`, `translateY 3px`) a nítidas, en 420 ms.
-  - Usa la Web Animations API y anima solo al montarse.
-  - El texto completo ocupa su lugar desde el inicio, así que la burbuja no salta.
-  - Con movimiento reducido, el texto aparece de inmediato.
-- **Ritmo más pausado y variable,** a pedido de Lucía:
-  - cada palabra espera en promedio unos 100 ms (antes 45 ms), con una variación aleatoria de ±30 %;
-  - pausas extra de 170 ms tras una coma y de 360 ms tras un punto o dos puntos;
-  - cada palabra tarda 520 ms en aclararse;
-  - cada paso tiene su tiempo de "pensar" (1.3 s, 2.1 s, 1.7 s y 1.0 s) y su ritmo por palabra (105, 85, 125 y 115 ms).
-  - Medido en el navegador, cada burbuja tarda en escribirse unos 2.0, 2.9, 2.5 y 1.1 s.
-- **`AssistantChat`:**
-  - `pendingStep` controla la fase de "pensar";
-  - `typedIds` muestra el botón del paso solo cuando el mensaje terminó de escribirse;
-  - el desplazamiento al último mensaje ahora es suave.
-
-**Archivos afectados:** `frontend/components/ui/TypewriterText.tsx` (nuevo), `frontend/components/home/AssistantChat.tsx`, `specs/especificaciones/06-bienvenida-asistente.md`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Capturas en cada fase: pensando, a mitad de la escritura, mensaje completo con su botón y la respuesta seguida de "pensando" otra vez. El clic se simuló con el protocolo de DevTools.
-
-**Revisión humana:** Ajuste de Lucía (tamaño del indicador).
-
-### P-61. Burbuja del asistente sin borde y en azul claro
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que las burbujas del asistente se distingan mejor |
-| Especificación / tarea | T41 |
-
-**Prompt**
-
-> Coloca sin bordes la burbuja de chat, aparte colócala de otro color, por favor, que contraste muy bien. La burbuja de chat por parte de la AI, la del usuario no.
->
-> La del asistente es la que se pierde con el fondo blanco.
-
-**Resultado de la IA:**
-
-- La burbuja del asistente pasa de `bg-slate-50` con borde `slate-100` a `bg-blue-100` sin borde, con texto `slate-900`.
-  - Contraste del texto: alrededor de 15:1.
-  - Se distingue del fondo blanco y de la burbuja azul marino del médico.
-- La burbuja del médico no cambia.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:** `tsc` sin errores; captura del recorrido hasta el paso "Acepto".
-
-**Revisión humana:** Ajuste de Lucía.
-
-### P-62. Explicación detallada del proceso en la bienvenida
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Ampliar el paso 2 de la bienvenida |
-| Especificación / tarea | ESP-003, T44 |
-
-**Prompt**
-
-> Vamos a explicar esto de forma muy alargada. Explícale lo que pasa con todo eso: "Te guiaré sección por sección: primero los antecedentes y después la evaluación clínica. Con esa información propondré un diagnóstico diferencial."
->
-> O sea no nada más una burbuja, sino varias que vayan explicando bien qué se hace en cada parte y para qué, que se entienda el proceso completo.
-
-**Resultado de la IA:**
-
-- **Pasos con varias burbujas:** cada paso de `WELCOME_STEPS` ahora es una lista de burbujas, cada una con su tiempo de "pensar" y su ritmo por palabra.
-  - Al terminar de escribirse una burbuja, el asistente "piensa" la siguiente.
-  - El botón del paso aparece solo después de la última burbuja.
-- **El paso 2 pasa a 5 burbujas** con contenido acorde al sistema:
-  - las 8 secciones reales del sidebar;
-  - el desbloqueo secuencial;
-  - el panel del expediente;
-  - la comparación con la base de conocimiento;
-  - el diagnóstico diferencial;
-  - estudios, plan y seguimiento, que corresponden a las tablas `ESTUDIOS_*`, `TRATAMIENTOS` y `PLANES`.
-- **Burbujas agrupadas:** las burbujas seguidas del asistente muestran el avatar y el nombre solo en la primera (`isContinuation`). Los "puntos de pensar" de una continuación tampoco repiten la cabecera.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`, `specs/especificaciones/06-bienvenida-asistente.md`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Recorrido en el navegador con el protocolo de DevTools: "Entendido" aparece a los 31 s de pulsar "Continuar", tras las 5 burbujas, y nunca antes.
-- Capturas antes y después de agrupar las burbujas.
-
-**Revisión humana:** Pendiente.
-
-### P-63. Franja negra otra vez bajo la pantalla principal
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Quitar de nuevo el espacio negro al final de `/home` |
-| Especificación / tarea | T41 |
-
-**Prompt**
-
-> De nuevo apareció ese margen negro, quítalo. Sale abajo cuando avanza la bienvenida y se puede bajar la página, y no debería.
-
-**Causa:**
-
-- Al hacer ocultable el encabezado del chat (P-53), el área con scroll quedó dentro de un contenedor nuevo, y `relative` se quedó en el contenedor exterior, que no recorta su contenido.
-- Los textos `sr-only` de los mensajes ("Tú:" y "XpertDiagnostic está escribiendo") usan `position: absolute`, así que se posicionaban fuera del área con scroll.
-- La página crecía conforme avanzaba la bienvenida: de 508 a 642 px en una ventana de 508 px. Mismo tipo de error que P-45.
-
-**Corrección:**
-
-- `relative` en el área con scroll del chat.
-- **Resguardo:** la raíz de `HomeScreen` pasa de `min-h-dvh` a `h-dvh overflow-hidden`. La pantalla principal mide siempre la ventana y nada interno puede volver a alargar la página.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`, `HomeScreen.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Se midió con el protocolo de DevTools a 1365×600, 1440×900 y 420×800, en tres momentos: al cargar, con el sidebar contraído y tras avanzar la bienvenida. En todos, la página mide lo mismo que la ventana.
-
-**Revisión humana:** Error detectado por Lucía.
-
-### P-64. Burbujas duplicadas en la bienvenida (clave repetida)
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Corregir el error de consola "Encountered two children with the same key, `welcome-1-2`" |
-| Especificación / tarea | ESP-003, T44 |
-
-**Prompt**
-
-> Ayuda, dice [error de Next.js: dos elementos con la misma key `welcome-1-2` en `AssistantChat.tsx`]. Aparecen burbujas repetidas cuando guardo el archivo a mitad de la bienvenida.
-
-**Causa:**
-
-- En desarrollo, React vuelve a ejecutar los efectos de los componentes ya montados (Fast Refresh al guardar archivos, Strict Mode).
-- `TypewriterText` volvía a animar los mensajes ya escritos y avisaba otra vez que había terminado.
-- El chat entonces encolaba de nuevo la burbuja siguiente y la publicaba dos veces.
-
-**Corrección, con tres protecciones:**
-
-1. `TypewriterText` recuerda si ya terminó (`isDoneRef`): no reanima ni vuelve a avisar.
-2. `AssistantChat` avanza una sola vez por burbuja (`advancedIdsRef`).
-3. Al publicar una burbuja, se omite si su `id` ya está en la conversación.
-
-**Archivos afectados:** `frontend/components/ui/TypewriterText.tsx`, `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Recorrido en el navegador con dos Fast Refresh forzados a mitad de las burbujas (se volvió a guardar el archivo sin cambios).
-- Resultado: 6 burbujas del asistente (saludo y las 5 del paso 2), sin duplicados y sin errores en consola, revisada con `Runtime.consoleAPICalled`.
-
-**Revisión humana:** Error detectado por Lucía.
-
----
-
-Si quieres, puedo hacer lo mismo con los campos de **Resultado de la IA** o **Verificación automática** para que también queden más redactados, o dejar los prompts aún más largos en las entradas que más te importen.
-### P-65. La bienvenida espera el primer mensaje; portada del chat vacío
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el chat no salude solo: el médico escribe primero y entonces arranca la bienvenida. Mientras el chat está vacío, mostrar una portada decorativa que invite a escribir. |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> En vez de empezar con "Hola, Médico Prueba. Soy XpertDiagnostic, tu asistente de apoyo clínico." directamente, permitámosle al usuario escribir en el chat y después de lo que escriba se empiece a activar. Pero si el chat está inactivo y el usuario no ha enviado un mensaje, que aparezca una leyenda invitando a escribir, linda y decorativa [captura de referencia: saludo grande, logo y sugerencias en botones].
-
-**Resultado de la IA:**
-
-- La bienvenida ya no arranca al montar el chat: arranca cuando el médico envía su primer mensaje. Ese mensaje se puede escribir aunque todavía no haya paciente; después el cuadro vuelve a bloquearse hasta elegir uno.
-- Con el chat vacío se muestra `ChatIntro`: logo, título grande y subtítulo. Tiene tres variantes:
-  - Bienvenida pendiente: "¿Qué vamos a revisar hoy, {nombre}?" (cambiado en P-67).
-  - Sin paciente y bienvenida ya vista: "Hola de nuevo, {nombre}".
-  - Con paciente: "¿Qué observaste en {sección}?"
-- Fondo decorativo: cruces médicas en SVG estático, en azul y verde agua muy claros, sin animación ni desenfoque (por A-10).
-- Nueva prop `doctorName` en `AssistantChat`.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`, `frontend/components/home/HomeScreen.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** Lucía pidió quitar las sugerencias en botones que tenía la primera versión de la portada (ver A-12).
-
-### P-66. Saltos de línea en la portada del chat
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el título y el subtítulo de la portada no se vean tan alargados |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> Se ve muy alargado ese texto, dale saltos de línea sutiles [captura: "¿Qué vamos a revisar hoy, Medico Prueba?" en una sola línea].
-
-**Resultado de la IA:** el título y el subtítulo de `ChatIntro` se parten en dos líneas en un punto natural (por ejemplo, "¿Qué vamos a revisar hoy, / {nombre}?"). En pantallas pequeñas el salto se omite y el texto se acomoda solo. El interlineado del subtítulo es un poco más amplio.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** Corrección visual pedida por Lucía.
-
-### P-67. Título más grande y texto neutral en la portada de bienvenida
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Agrandar el título de la portada y cambiar "¿Qué vamos a revisar hoy?", que daba a entender que el asistente ya comprendía el chat y el recorrido |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> Pon más gigante el "qué vamos a revisar hoy" y pon otro texto, no ese de "qué vamos a revisar", es que se oye como si ya estuviera capacitado para entender el chat y el recorrido.
-
-**Resultado de la IA:**
-
-- Título de la bienvenida pendiente: "Te damos la bienvenida a / XpertDiagnostic". Subtítulo: "Hola, {nombre}. / Envía un mensaje para comenzar."
-- El título crece en todas las variantes de la portada: `text-4xl`, `sm:text-5xl` y `lg:text-6xl`. El subtítulo pasa a `sm:text-xl`.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** Corrección de texto y tamaño pedida por Lucía.
-
-### P-68. El subtítulo de la portada invita a escribir en el chat
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el subtítulo invite a escribir en el chat, que se habilita antes de la bienvenida (P-65) |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> Pero que se pueda escribir en el chat, como te mencioné anteriormente, o que invite ese subtítulo.
-
-**Resultado de la IA:**
-
-- Subtítulo de la bienvenida pendiente: "Hola, {nombre}. / Escríbeme en el chat de abajo para comenzar."
-- Mientras la bienvenida espera el primer mensaje, el cuadro de texto recibe el foco al cargar, así que el cursor queda listo para escribir.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** Corrección de texto pedida por Lucía.
-
-### P-69. El recorrido de bienvenida avanza con lo que escribe el médico
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el médico pueda escribir durante todo el recorrido y que cada respuesta escrita muestre el paso siguiente |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> O sea, la idea es que se pueda escribir y vaya mostrando lo del recorrido después de escribir.
-
-**Resultado de la IA:**
-
-- Cuando el asistente termina la última burbuja de un paso, el cuadro de texto se habilita. Lo que el médico escriba aparece como su mensaje y el asistente pasa al paso siguiente.
-- Los botones (Continuar, Entendido, Acepto) siguen como atajo. Si el médico escribe, el botón desaparece.
-- Responder por escrito al aviso clínico cuenta como aceptarlo: marca la bienvenida como vista, igual que "Acepto".
-- El último paso ("Para empezar, selecciona un paciente") se resuelve con el botón "Buscar paciente". Sin paciente, el cuadro vuelve a bloquearse ahí.
-- Mientras el asistente piensa o escribe, el cuadro se bloquea con el texto "XpertDiagnostic está escribiendo…". Al terminar, el cursor vuelve solo al cuadro y el texto de ayuda dice "Escribe tu respuesta para continuar…".
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** Aclaración de comportamiento pedida por Lucía.
-
-### P-70. Se puede escribir sin paciente aunque la bienvenida ya se haya visto
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el chat deje escribir aunque la cuenta ya haya visto la bienvenida y no haya paciente |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> Me sale abajo "Selecciona un paciente", no deja escribir [captura: portada "Hola de nuevo, Medico Prueba" con el cuadro de texto bloqueado].
-
-**Causa:** la cuenta de prueba ya había visto la bienvenida (`BienvenidaVista = 1`). Sin paciente, el chat solo dejaba escribir para arrancar la bienvenida, así que el cuadro quedaba bloqueado.
-
-**Resultado de la IA:**
-
-- Sin paciente y con la bienvenida ya vista, el médico puede escribir su primer mensaje. El asistente responde con el último paso de la bienvenida: "Para empezar, selecciona un paciente.", con el botón "Buscar paciente".
-- Subtítulo de esa portada: "Escríbeme en el chat o selecciona / un paciente para empezar."
-- Con el chat vacío ya no se baja automáticamente al final, así que la portada se ve completa desde arriba. Antes el logo quedaba cortado.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** Error detectado por Lucía.
-
-### P-71. El recorrido de bienvenida se muestra siempre
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que escribir en el chat arranque siempre el recorrido, aunque la cuenta ya lo haya visto, sin el recordatorio "Para empezar, selecciona un paciente" de P-70 |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> Pero estaría bien que eso de escribir y el recorrido siempre pasara, aunque ya lo haya visto. O sea, no quiero eso de "para empezar, selecciona un paciente".
-
-**Resultado de la IA:**
-
-- Sin paciente, el primer mensaje del médico arranca siempre el recorrido completo. Ya no depende de `USUARIOS.BienvenidaVista`.
-- Se quitaron la portada "Hola de nuevo" y el recordatorio de P-70. Sin paciente se ve siempre "Te damos la bienvenida a XpertDiagnostic".
-- `AssistantChat` ya no recibe `welcomeName` y usa `doctorName` para el saludo. `HomeScreen` ya no calcula `showWelcome`.
-- Aceptar el aviso clínico se sigue guardando con `POST /api/doctors/me/welcome`, como registro de la aceptación.
-- Con paciente seleccionado, el chat sigue siendo el de captura, sin recorrido.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`, `frontend/components/home/HomeScreen.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** Lucía rechazó el recordatorio de P-70 (ver A-13).
-
 ### P-72. La animación de entrada del login a veces se quedaba detenida
 
 | Campo | Valor |
@@ -2494,439 +1991,6 @@ Si quieres, puedo hacer lo mismo con los campos de **Resultado de la IA** o **Ve
 
 **Revisión humana:** Error de diseño detectado por Lucía.
 
-### P-77. Posición inicial de la conversación
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el inicio del chat no se vea pegado arriba, sobre todo con la barra superior y el encabezado plegados |
-| Especificación / tarea | Pantalla principal, T47 |
-
-**Prompt**
-
-> Siento que se ve muy arriba el inicio del chat [captura: el primer mensaje casi pegado al borde superior, bajo la lengüeta y el botón "Patológicos"].
-
-**Resultado de la IA:**
-
-1. Primera propuesta: apilar los mensajes desde abajo, junto al cuadro de texto. Lucía la rechazó: "Ahora se ve muy abajo, anticuado" (ver A-15).
-2. Versión final: la conversación vuelve a empezar arriba, con un margen superior amplio que se adapta al alto de la ventana (`clamp(4.5rem, 12vh, 7rem)`). El primer mensaje queda debajo del botón del encabezado y de la lengüeta de la barra superior, sin quedar pegado al borde.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Edge sin interfaz a 1360×594, con las barras plegadas y el mensaje "hola" enviado: el primer mensaje empieza a 72 px del borde, debajo del botón "Patológicos". Sin errores en la consola.
-
-**Revisión humana:** Corrección de diseño pedida por Lucía.
-
-### P-78. Colores del chat del asistente y de los botones de la bienvenida
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Burbujas del asistente en azul fuerte con texto blanco y otro color para los botones de los pasos (Continuar, Entendido, etc.) |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> Coloca el color de chat un azul fuerte oscuro, pero no tan oscuro, al de XpertDiagnostic, que contraste con texto blanco, y también otro color para los botones de continuación como Continuar, etc.
->
-> (Seguimiento) Un poquitín más oscuro ese azul del chat de XpertDiagnostic.
-
-**Resultado de la IA:**
-
-- Burbujas del asistente: de `bg-blue-100` con texto oscuro a `bg-blue-800` (#1e40af) con texto blanco, con contraste de 8.7:1. Primero se probó `blue-700`; Lucía pidió un tono un poco más oscuro. Sigue siendo más claro que el azul marino de los mensajes del médico (#0b1533) y que la barra superior (`blue-900`).
-- Botones de los pasos (Continuar, Entendido, Acepto, Buscar paciente): de azul marino con texto blanco a verde cyan (`teal-400`) con texto negro y `teal-300` al pasar el cursor. Es el mismo acento del avatar del médico y de las etiquetas `accent`.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Captura en Edge sin interfaz a 1360×594 con la burbuja de saludo y el botón "Continuar". Sin errores en la consola.
-
-**Revisión humana:** Lucía eligió el tono del azul.
-
-### P-79. Cuadro de texto y aviso del chat más visibles; enlace "Más información"
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el cuadro de texto del chat (sobre todo bloqueado) y el aviso de abajo no se vean tan tenues, y agregar "Más información" al final del aviso |
-| Especificación / tarea | Pantalla principal |
-
-**Prompt**
-
-> Vamos a cambiar el color de esto también a más visible, se ve muy tenue [captura: cuadro bloqueado con "Selecciona un paciente para comenzar"]. Y a este texto, al final, vamos a colocarle "Más información" subrayado y con cursor pointer [captura: aviso "Uso exclusivo para médicos…"].
-
-**Resultado de la IA:**
-
-- **Cuadro de texto.**
-  - Borde `slate-200` → `slate-300`.
-  - Texto de ayuda `slate-400` → `slate-600`.
-  - Botón de dictado bloqueado: ícono `slate-300` → `slate-500` y borde `slate-300`.
-  - Botón de enviar bloqueado: opacidad 45 % → 70 %.
-- **Aviso.** `text-xs slate-500` → `text-sm slate-700`.
-- **Enlace.** Al final del aviso va un botón "Más información", subrayado, con `cursor-pointer` y que se pone azul al pasar el cursor. Por ahora es solo visual: todavía no hay página o diálogo de información.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Captura en Edge sin interfaz a 1360×594 con el cuadro bloqueado mientras el asistente escribe. Sin errores en la consola.
-
-**Revisión humana:** Corrección visual pedida por Lucía.
-
-### P-80. Cuadro de texto hasta abajo y aviso fijo encima
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Poner el cuadro de texto hasta abajo y el aviso fijo justo encima, sin que se encime con la conversación |
-| Especificación / tarea | Pantalla principal |
-
-**Prompt**
-
-> ¿No podemos colocar la barra de chat hasta abajo y la info arribita, fija, pero sin chocar con el chat de arriba?
-
-**Resultado de la IA:**
-
-- En la zona de redacción, el aviso "Uso exclusivo para médicos… Más información" va primero y el cuadro de texto después, pegado al borde inferior.
-- Ambos están dentro de la zona fija, debajo de la línea divisoria. La conversación hace scroll por encima y nunca queda tapada.
-- Relleno de la zona: `pt-4 pb-4` → `pt-3 pb-3`. Separación entre aviso y cuadro: `mb-2.5`.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Captura en Edge sin interfaz a 1360×594. Sin errores en la consola.
-
-**Revisión humana:** Corrección de diseño pedida por Lucía.
-
-### P-81. Aviso al final de la conversación, sin divisor, con margen
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el aviso no sea fijo y aparezca siempre al final de la conversación, sin la línea divisoria; con margen suficiente para que nada se vea junto |
-| Especificación / tarea | Pantalla principal |
-
-**Prompt**
-
-> Estaría bien que no sea fija y esa info siempre aparezca al final, para no estar con eso del divisor.
->
-> (Seguimiento) Pero dejar margen, pues; por ejemplo, aquí se ve muy junto en el chat [captura: la portada recortada arriba y el aviso pegado al subtítulo].
-
-**Resultado de la IA:**
-
-- El aviso "Uso exclusivo para médicos… Más información" salió de la zona fija y quedó al final del área con scroll: después del último mensaje o de la portada. Se desplaza con la conversación.
-- La zona de redacción ya no tiene divisor (`border-t-2`); solo queda el cuadro de texto abajo.
-- Cuando hay pocos mensajes, la conversación ocupa el espacio libre y el aviso queda abajo. Cuando hay muchos, aparece después del último mensaje.
-- Margen: el aviso lleva `pt-6 pb-5`.
-- Corrección de la portada: con `overflow-hidden` y `flex-1`, se encogía por debajo de su contenido en ventanas bajas y quedaba recortada. Ahora usa `flex-[1_0_auto]`: llena el espacio, pero nunca mide menos que su contenido. Si no cabe, se hace scroll.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Capturas en Edge sin interfaz a 1360×594 de la portada (completa, con scroll) y de la conversación (aviso abajo, separado). Sin errores en la consola.
-
-**Revisión humana:** Corrección de diseño pedida por Lucía.
-
-### P-82. Aviso del chat en letra más pequeña
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Reducir el tamaño del aviso "Uso exclusivo para médicos… Más información" |
-| Especificación / tarea | Pantalla principal |
-
-**Prompt**
-
-> Un poco más pequeño todo este texto: "Uso exclusivo para médicos. La IA es orientativa y puede equivocarse; la decisión clínica es del médico tratante. Más información".
-
-**Resultado de la IA:** el aviso y el enlace pasan de `text-sm` a `text-xs`. Conserva el color `slate-700` de P-79, así que se sigue leyendo bien.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`.
-
-**Verificación automática:** `eslint` sin errores.
-
-**Revisión humana:** Corrección visual pedida por Lucía.
-
-### P-83. Botón para detener al asistente mientras escribe
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Cambiar la flecha de enviar por un ícono de detener mientras la IA escribe, para poder pararla |
-| Especificación / tarea | ESP-003, T46 |
-
-**Prompt**
-
-> ¿Podemos poner un ícono de stop en vez de la flecha cuando la IA esté escribiendo? Esto con el fin de detenerla o pararla.
-
-**Resultado de la IA:**
-
-- Mientras el asistente piensa o escribe, el botón de enviar se cambia por "Detener respuesta": un cuadrado relleno sobre azul marino.
-- **Si está pensando,** no publica la burbuja.
-- **Si está escribiendo,** la burbuja se corta en la palabra actual: las palabras que ya empezaron se completan y las demás no aparecen. Debajo se muestra "Respuesta detenida". Si no alcanzó a aparecer ninguna palabra, la burbuja se quita.
-- **Al detenerse,** el cuadro de texto se habilita con "Escribe tu respuesta para continuar…". El siguiente mensaje retoma el recorrido desde la burbuja pendiente. Si se detuvo la última burbuja de un paso, queda su botón (por ejemplo, "Continuar") y responder avanza como siempre.
-- `TypewriterText` recibe `stopped` y `onStopped(textoVisible)`. Al detenerse ya no llama a `onDone`.
-
-**Archivos afectados:** `frontend/components/home/AssistantChat.tsx`, `frontend/components/ui/TypewriterText.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Edge sin interfaz, controlado con un script:
-  1. Detener a medio escribir el saludo: queda "Hola, {nombre}." con "Respuesta detenida" y el botón "Continuar".
-  2. Detener mientras piensa: el cuadro se habilita para continuar.
-  3. Mandar otro mensaje: retoma el paso 2 y vuelve a mostrar el botón de detener.
-- Sin errores en la consola.
-
-**Revisión humana:** Pendiente de revisión por Lucía.
-
-### P-84. Chat del asistente centralizado en su propia carpeta, por capas
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Mover todo lo del chat de IA a una carpeta centralizada, siguiendo los patrones acordados |
-| Especificación / tarea | R-ARQ-01, R-ARQ-04, R-ARQ-05, R-ARQ-07; plan 01 |
-
-**Prompt**
-
-> ¿Podemos dedicar o mover todo lo referente al chat de IA de XpertDiagnostic a una carpeta centralizada para esta, siguiendo los patrones de diseño que habíamos acordado?
-
-**Resultado de la IA:** `components/home/AssistantChat.tsx` (unas 680 líneas con todo mezclado) se dividió por capas (R-ARQ-01), igual que el login:
-
-- **Tipos (`types/assistant.ts`):** `ChatMessage`, `WelcomeBubble`, `WelcomeStep`, `TourPosition` (antes `PendingBubble`) y `ChatIntroMode`.
-- **Modelo (`lib/welcomeTour.ts`):** el guion `WELCOME_STEPS`, las constantes de los pasos y las reglas puras `welcomeMessage`, `isContinuation`, `isLastBubble`, `thinkingTime`, `nextBubble`, `nextStep` y `TOUR_START`. Tiene contratos `@pre`/`@post` (R-ARQ-05) y no depende de React.
-- **Vista (`components/assistant/`), una responsabilidad por archivo (R-ARQ-04):**
-  - `AssistantChat.tsx`: contenedor. Guarda el estado y decide si se puede escribir, enviar o detener.
-  - `SectionHeader.tsx`: encabezado de la sección y botón para volver a mostrarlo.
-  - `ChatIntro.tsx`: portada y cruces decorativas.
-  - `ChatMessages.tsx`: burbuja del asistente, mensaje del médico e indicador de "pensando".
-  - `ChatComposer.tsx`: cuadro de texto, dictado y enviar o detener.
-  - `ChatNotice.tsx`: aviso y "Más información".
-  - `TypewriterText.tsx`: se movió desde `components/ui/`, porque solo lo usa el chat.
-  - `styles.ts`: anillo de foco compartido.
-- `HomeScreen` importa ahora `@/components/assistant/AssistantChat`. Los nombres de carpetas y archivos van en inglés (R-ARQ-07).
-- Se agregaron las filas del chat a las tablas de capas y de contratos del plan 01.
-- Sin cambios de comportamiento: la lógica de estado se copió tal cual.
-
-**Fuera del alcance:**
-
-- `clinicalSections.ts` se queda en `components/home/`, porque también lo usan la barra lateral y el expediente.
-- `markWelcomeSeen` se queda en `services/doctorService.ts`, porque llama a un endpoint de médicos.
-
-**Archivos afectados:** `frontend/components/assistant/*` (nuevos), `frontend/types/assistant.ts` (nuevo), `frontend/lib/welcomeTour.ts` (nuevo), `frontend/components/home/HomeScreen.tsx`, `frontend/components/home/AssistantChat.tsx` (eliminado), `frontend/components/ui/TypewriterText.tsx` (movido), `specs/planes/01-arquitectura-y-patrones.md`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Se repitió en Edge sin interfaz la prueba de P-83: arrancar la bienvenida, detener mientras escribe, detener mientras piensa y retomar. Mismo resultado y sin errores en la consola.
-
-**Revisión humana:** Pendiente de revisión por Lucía.
-
-### P-85. Azul de las burbujas del asistente un poco menos fuerte
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Suavizar un poco el azul de las burbujas del asistente sin perder intensidad |
-| Especificación / tarea | ESP-003 |
-
-**Prompt**
-
-> Pon el color de chat un azul un poquitito menos fuerte, pero sí [fuerte].
-
-**Resultado de la IA:** las burbujas del asistente pasan de `blue-800` (#1e40af) a #1e47c5. Es un tono intermedio entre `blue-700`, que Lucía había visto demasiado claro en P-78, y `blue-800`. El contraste con el texto blanco es de 7.6:1 y cumple el nivel AAA.
-
-**Archivos afectados:** `frontend/components/assistant/ChatMessages.tsx`.
-
-**Verificación automática:** `eslint` sin errores; contraste calculado con la fórmula de luminancia de WCAG.
-
-**Revisión humana:** Lucía eligió el tono.
-
-### P-86. Conversación más ancha y burbujas con más aire
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que el chat (mensajes, cuadro de texto) se vea más alargado y menos compacto |
-| Especificación / tarea | Pantalla principal |
-
-**Prompt**
-
-> ¿Es posible que podamos hacer más alargado el chat? Me refiero a los mensajes y así, no tan compacto.
->
-> (Seguimiento) No tan alargado.
-
-**Resultado de la IA:**
-
-- Ancho de la columna del chat (conversación, portada, aviso y cuadro de texto): `max-w-3xl` (768 px) → `max-w-4xl` (896 px). Primero se probó `max-w-5xl` (1024 px) y Lucía lo vio demasiado ancho.
-- Burbujas: ancho máximo de 85 % → 88 %, relleno `px-4 py-3` → `px-5 py-3.5`.
-
-**Archivos afectados:** `frontend/components/assistant/AssistantChat.tsx`, `ChatComposer.tsx`, `ChatIntro.tsx`, `ChatNotice.tsx`, `ChatMessages.tsx`.
-
-**Verificación automática:**
-
-- `eslint` sin errores.
-- Captura en Edge sin interfaz a 1600×800 con las barras plegadas. Sin errores en la consola.
-
-**Revisión humana:** Lucía ajustó el ancho.
-
-### P-87. Hora de envío al final de cada grupo de mensajes
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Mostrar la hora de envío de los mensajes del médico y del asistente; si hay varios seguidos del mismo autor, solo al final del último |
-| Especificación / tarea | ESP-003 |
-
-**Prompt**
-
-> ¿Es posible colocarle la hora en que se envía cada mensaje, tanto receptor como emisor? Pero si son varios mensajes de cada uno, que se muestre al final del último.
-
-**Resultado de la IA:**
-
-- `ChatMessage` tiene un campo nuevo, `sentAt` (ms). Lo llenan:
-  - el mensaje del médico;
-  - la respuesta con botón (por ejemplo, "Continuar");
-  - cada burbuja del asistente, con la hora en que se publica: `welcomeMessage(posición, nombre, sentAt)`.
-- Regla del modelo `endsGroup(mensaje, autorSiguiente)` en `lib/welcomeTour.ts`: la hora va solo bajo el último mensaje de un grupo seguido del mismo autor. El asistente "pensando" cuenta como el siguiente mensaje del asistente, así que la hora baja a la nueva burbuja cuando llega.
-- Formato corto en español de México con `Intl.DateTimeFormat('es-MX')`, por ejemplo "4:18 p.m.", dentro de un `<time dateTime>`.
-- Ubicación: bajo la burbuja, alineada a la izquierda (asistente) o a la derecha (médico). Si la burbuja se detuvo, se muestra junto a la hora: "4:18 p.m. · Respuesta detenida".
-
-**Archivos afectados:** `frontend/types/assistant.ts`, `frontend/lib/welcomeTour.ts`, `frontend/components/assistant/AssistantChat.tsx`, `frontend/components/assistant/ChatMessages.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Edge sin interfaz: "hola", el saludo, "Continuar" y el grupo de explicaciones dan 4 horas. Las burbujas anteriores del grupo no la llevan. Sin errores en la consola.
-
-**Revisión humana:** Pendiente de revisión por Lucía.
-
-### P-88. Error "Invalid time value" al mostrar la hora de mensajes antiguos
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Corregir el error `RangeError: Invalid time value` en `MessageMeta` |
-| Especificación / tarea | P-87 |
-
-**Prompt**
-
-> Dice: [error de Next.js: `Runtime RangeError: Invalid time value` en `Date.toISOString`, `components/assistant/ChatMessages.tsx:39`].
-
-**Causa:** la conversación estaba abierta mientras se agregaba la hora (P-87). Fast Refresh conservó el estado de React con mensajes creados antes de que existiera `sentAt`. Con `sentAt` indefinido, `new Date(undefined).toISOString()` lanza el error.
-
-**Corrección:** `MessageMeta` comprueba `Number.isFinite(sentAt)`. Sin una hora válida, omite la hora y conserva la nota "Respuesta detenida" si la hay. En el uso normal todos los mensajes nuevos llevan `sentAt`.
-
-**Archivos afectados:** `frontend/components/assistant/ChatMessages.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** Error detectado por Lucía.
-
-### P-89. La hora del asistente aparece cuando termina de responder
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Que la hora del asistente no se vea mientras piensa o escribe, sino solo cuando terminó de responder, para que no se encime con la animación de carga |
-| Especificación / tarea | P-87 |
-
-**Prompt**
-
-> Pero que al final; me refería después de que haya dejado de responder, para que no choque con el loading.
-
-**Resultado de la IA:** la hora de un mensaje del asistente se muestra solo si cierra su grupo (`endsGroup`) y si su burbuja ya terminó de escribirse. Mientras el asistente piensa o escribe dentro de un grupo, no hay hora. Al terminar la última burbuja, la hora aparece bajo ella y antes del botón del paso. Los mensajes del médico no cambian.
-
-**Archivos afectados:** `frontend/components/assistant/AssistantChat.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Edge sin interfaz: a mitad del paso 2 hay 3 horas y ninguna en el grupo en curso. Al terminar el paso hay 4, la última bajo la quinta burbuja y antes de "Entendido". Sin errores en la consola.
-
-**Revisión humana:** Aclaración de Lucía sobre P-87.
-
-### P-90. Reintentar una respuesta detenida del asistente
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Si se detiene un mensaje de XpertDiagnostic, ofrecer un ícono para reintentar el mensaje |
-| Especificación / tarea | ESP-003, P-83 |
-
-**Prompt**
-
-> ¿Es posible hacer algo para que, si el mensaje de chat de XpertDiagnostic se detiene, poner un ícono así UX/UI que dé la opción de reintentar enviar el mensaje de nuevo?
-
-**Resultado de la IA:**
-
-- Junto a "Respuesta detenida" aparece el botón "↻ Reintentar" (`RotateCcw`, en el azul de las burbujas), con `aria-label` y `title` "Reintentar respuesta".
-- Al pulsarlo, la burbuja cortada se quita y el asistente vuelve a "pensar" y escribe el mensaje completo desde el principio. Mientras tanto se puede volver a detener.
-- Solo se ofrece en el último mensaje de la conversación y cuando el asistente no está ocupado, para no desordenar la conversación.
-- Si la respuesta se detuvo mientras el asistente pensaba, no hay burbuja que reintentar. En ese caso sigue valiendo escribir para retomar (P-83).
-
-**Archivos afectados:** `frontend/components/assistant/AssistantChat.tsx`, `frontend/components/assistant/ChatMessages.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Edge sin interfaz:
-  1. Detener el saludo: aparece "Reintentar".
-  2. Pulsarlo: el asistente vuelve a pensar, con el botón de detener activo.
-  3. Al final queda el saludo completo, sin la nota "Respuesta detenida" y con "Continuar".
-- Sin errores en la consola.
-
-**Revisión humana:** Pendiente de revisión por Lucía.
-
-### P-91. Logo del asistente más grande y sin borde circular
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Agrandar el ícono de XpertDiagnostic junto a sus mensajes y quitarle el borde circular |
-| Especificación / tarea | ESP-003 |
-
-**Prompt**
-
-> Pon el ícono de XpertDiagnostic un poco más grande, sin borde circular.
-
-**Resultado de la IA:** el avatar del asistente ya no tiene círculo, borde (`rounded-full border-2`) ni fondo. El logo pasa de 22 px a 32 px dentro del mismo espacio de 36 px, así que las burbujas seguidas siguen alineadas. También aplica al indicador de "pensando".
-
-**Archivos afectados:** `frontend/components/assistant/ChatMessages.tsx`.
-
-**Verificación automática:**
-
-- `eslint` sin errores.
-- Captura en Edge sin interfaz a 1600×800. Sin errores en la consola.
-
-**Revisión humana:** Corrección visual pedida por Lucía.
-
 ### P-92. Corte diagonal decorativo en la barra superior
 
 | Campo | Valor |
@@ -2955,45 +2019,6 @@ Si quieres, puedo hacer lo mismo con los campos de **Resultado de la IA** o **Ve
 
 **Revisión humana:** Pendiente de revisión visual por Lucía.
 
-### P-93. Jerarquía visual de los botones de los pasos
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Dar una jerarquía visual y una experiencia más claras a los botones de la bienvenida (Continuar, Entendido, Acepto, Buscar paciente) |
-| Especificación / tarea | ESP-003 |
-
-**Prompt**
-
-> Al botón Continuar y así, esos botones, hay que darles una jerarquía visual más clara y UX/UI.
-
-**Resultado de la IA:** nuevo componente `StepAction` en `ChatMessages.tsx`:
-
-- **Acción principal.** Botón más grande que antes:
-  - forma: `min-h-11`, `px-5 py-2.5`, `rounded-xl`;
-  - texto: `font-semibold`, `text-base`;
-  - interacción: se aclara a `teal-300` al pasar el cursor y baja 1 px al pulsarlo (`active:translate-y-px`), sin sombras;
-  - separación de la hora del mensaje con `mt-4`.
-- **Ícono según la intención:**
-
-  | Botón | Ícono | Posición |
-  |---|---|---|
-  | Continuar, Entendido | flecha → | al final; se desliza un poco al pasar el cursor |
-  | Acepto | escudo con palomita (aceptar el aviso clínico) | al inicio |
-  | Buscar paciente | lupa | al inicio |
-
-- **Pista secundaria.** Al lado, en gris pequeño: "o escríbeme tu respuesta". Recuerda que también se puede avanzar escribiendo (P-69). No aparece en "Buscar paciente", que solo se resuelve con el botón.
-
-**Archivos afectados:** `frontend/components/assistant/ChatMessages.tsx`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Captura en Edge sin interfaz a 1600×800 con "Continuar →". Sin errores en la consola.
-
-**Revisión humana:** Lucía pidió quitar la pista "o escríbeme tu respuesta" (ver A-16).
-
 ### P-94. Acentos verde cyan en el login
 
 | Campo | Valor |
@@ -3009,7 +2034,7 @@ Si quieres, puedo hacer lo mismo con los campos de **Resultado de la IA** o **Ve
 
 **Resultado de la IA:** el índigo, que no era de la paleta, se cambió por verde cyan (`teal`):
 
-- **Botón "Entrar":** de `#4c589c` con texto blanco y sombra a `teal-400` con texto negro en negrita, `teal-300` al pasar el cursor y sin sombra. Es igual a las acciones principales del chat (P-78, P-93).
+- **Botón "Entrar":** de `#4c589c` con texto blanco y sombra a `teal-400` con texto negro en negrita, `teal-300` al pasar el cursor y sin sombra.
 - **Foco de los campos:** borde `teal-500` y anillo `teal-500/40`. Los estados de error (rojo) y de campo válido (verde) no cambian.
 - **Selector Médico/Administrador y botón de mostrar contraseña:** anillo de foco `teal-500`.
 - **Casilla "Recuérdame la sesión":** `accent-teal-500`.
@@ -3045,76 +2070,6 @@ Si quieres, puedo hacer lo mismo con los campos de **Resultado de la IA** o **Ve
 **Verificación automática:** `eslint` sin errores; contrastes calculados con la fórmula de luminancia de WCAG.
 
 **Revisión humana:** Corrección de color pedida por Lucía.
-
-### P-96. Formato de chat (negritas y listas) en el recorrido
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Dar formato de chat a las burbujas del paso 2 de la bienvenida para que no se vean tan secas |
-| Especificación / tarea | ESP-003 (burbujas 2.1 a 2.5) |
-
-**Prompt**
-
-> ¿Podrías añadir estilos de chat en estas partes del recorrido? [las 5 burbujas del paso 2] … para que no se vea tan seco.
-
-**Resultado de la IA:**
-
-- **Formato mínimo (`lib/chatMarkup.ts`, modelo):**
-  - `**texto**` para negritas;
-  - las líneas que empiezan con `- ` son viñetas;
-  - el resto son párrafos.
-
-  `parseChatMarkup` devuelve bloques de palabras, con contratos `@pre`/`@post`. No interpreta HTML, así que el texto nunca se inyecta como marcado. Registra si había espacio antes de cada palabra, para que "**negrita**." no separe el punto.
-- **Vista (`components/assistant/ChatMarkup.tsx`):**
-  - párrafos separados;
-  - listas con viñetas en `teal-300`;
-  - negritas en `font-semibold text-teal-200` sobre el azul de la burbuja.
-- **`TypewriterText`:** anima las palabras de ese formato. Hace una pausa extra de 260 ms al terminar cada párrafo o viñeta. Al detenerse informa cuántas palabras aparecieron (`visibleWords`). El mensaje conserva su texto completo y la burbuja detenida muestra solo esas palabras, con el formato intacto. Reintentar (P-90) sigue igual.
-- **Guion del paso 2, mismo contenido con formato:**
-  - 2.1: negritas en "dos etapas" y "en orden, una sección a la vez".
-  - 2.2: "**1. Antecedentes**" con sus cinco secciones en viñetas.
-  - 2.3: "**2. Evaluación clínica**" con sus tres secciones en viñetas.
-  - 2.4: negritas en "se desbloquea al completar la anterior", "barra lateral" y "expediente".
-  - 2.5: "diagnóstico diferencial" en negrita y lo que se sugiere en viñetas.
-
-**Archivos afectados:** `frontend/lib/chatMarkup.ts` (nuevo), `frontend/components/assistant/ChatMarkup.tsx` (nuevo), `frontend/components/assistant/TypewriterText.tsx`, `frontend/components/assistant/ChatMessages.tsx`, `frontend/components/assistant/AssistantChat.tsx`, `frontend/types/assistant.ts`, `frontend/lib/welcomeTour.ts`.
-
-**Verificación automática:**
-
-- `tsc` y `eslint` sin errores.
-- Pruebas del intérprete con `tsx`: puntuación pegada a la negrita, viñetas, texto plano y texto vacío.
-- Edge sin interfaz:
-  - capturas del paso 2 completo con negritas y viñetas;
-  - se repitió la prueba de detener y reintentar.
-- Sin errores en la consola.
-
-**Revisión humana:** Lucía revisó las capturas. Antes de entregar se corrigió un error de la propia IA: la puntuación quedaba separada de las negritas.
-
-### P-97. "Asistente clínico" como insignia
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Autor del prompt | Lucía |
-| Objetivo | Mostrar el rol del asistente como insignia junto a su nombre, sin el "·" |
-| Especificación / tarea | ESP-003 |
-
-**Prompt**
-
-> Esto de "· Asistente clínico" mejor pongámoslo como un badge, sin el "·".
-
-**Resultado de la IA:** sobre las burbujas del asistente, "XpertDiagnostic" va seguido de la insignia "Asistente clínico" (`rounded-md bg-blue-100 text-sm`), sin separador. Lucía pidió después el texto oscuro, pero no azul: `text-slate-800`. También aplica al indicador de "pensando".
-
-**Archivos afectados:** `frontend/components/assistant/ChatMessages.tsx`.
-
-**Verificación automática:**
-
-- `eslint` sin errores.
-- Captura en Edge sin interfaz. Sin errores en la consola.
-
-**Revisión humana:** Corrección visual pedida por Lucía.
 
 ### P-98. Animación continua en la etiqueta "Pendiente"
 
@@ -3937,40 +2892,6 @@ Registrados el 2026-11-20 a petición de Lucía. Axel los usó antes de crear la
 
 **Revisión humana:** revisada por Axel; la prueba servía justamente para revisar el formato antes de la extracción completa.
 
-### P-119. Título de bienvenida más pequeño
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-22 |
-| Autor del prompt | Lucía |
-| Objetivo | Reducir el tamaño del título "Te damos la bienvenida a XpertDiagnostic" |
-| Especificación / tarea | Pantalla principal |
-
-**Prompt**
-
-> Puedes reducir un poco más el texto "Te damos la bienvenida a XpertDiagnostic".
-
-> Es decir, que se vea gigante, pero no tanto.
->
-> Un poquititito más gigante.
->
-> Pon un poco más pequeño el texto, Te damos la bienvenida a XpertDiagnostic.
-
-**Resultado de la IA:**
-
-- Primero bajó el título un escalón en cada tamaño de pantalla: de `text-4xl`, `sm:text-5xl` y `lg:text-6xl` (36, 48 y 60 px) a `text-3xl`, `sm:text-4xl` y `lg:text-5xl` (30, 36 y 48 px).
-- Lucía aclaró que debía seguir viéndose grande. Pasó a un punto intermedio: `text-4xl`, `sm:text-[2.75rem]` y `lg:text-[3.5rem]` (36, 44 y 56 px).
-- Lucía pidió "un poquititito más gigante". Quedó en `text-[2.375rem]`, `sm:text-[2.875rem]` y `lg:text-[3.625rem]` (38, 46 y 58 px), apenas por debajo del original.
-- Lucía pidió el texto un poco más pequeño. Pasó a `text-4xl`, `sm:text-[2.625rem]` y `lg:text-[3.25rem]` (36, 42 y 52 px).
-- Ya con Geist (P-123), Lucía lo pidió otra vez un poco más pequeño. Quedó en `text-[2rem]`, `sm:text-[2.375rem]` y `lg:text-[2.875rem]` (32, 38 y 46 px).
-- El subtítulo y la portada con paciente no cambian.
-
-**Archivos afectados:** `frontend/components/assistant/ChatIntro.tsx`.
-
-**Verificación automática:** `eslint` sin errores.
-
-**Revisión humana:** corrección visual pedida por Lucía; ajustó la primera reducción por quedar demasiado pequeña.
-
 ### P-120. Ilustración en "Sin paciente seleccionado"
 
 | Campo | Valor |
@@ -4443,31 +3364,6 @@ Criterio: se quita lo que repite algo visible, lo que explica algo que la interf
 
 **Revisión humana:** Lucía detectó la pantalla vacía (A-26).
 
-### P-138. Sin campo de chat en la interfaz de entrada
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-22 |
-| Autor del prompt | Lucía |
-| Objetivo | Quitar el campo de mensaje del chat durante la captura del expediente y conservarlo en la introducción |
-| Especificación / tarea | ESP-003 (introducción), ESP-005 (interfaz de entrada) |
-
-**Prompt**
-
-> Vamos a quitar este, porque no tendremos un LLM o IA formal, ya que el motor de inferencia será de nuestra propiedad. Quitaremos lo del chat, pero solo para la interfaz de entrada; para la introducción no.
-
-**Resultado de la IA:**
-
-- `AssistantChat` muestra `ChatComposer` solo sin paciente seleccionado, es decir, en la introducción guiada (ESP-003). Con paciente, en la captura y el diagnóstico diferencial, ya no aparece el campo de mensaje: todo se hace en las tarjetas.
-- Se quitaron los textos del campo de mensaje que solo se usaban con paciente ("Captura los datos en la tarjeta de arriba" y "Analiza el expediente en la tarjeta de arriba", de P-127 y P-137).
-- La introducción (bienvenida, recorrido y su campo de mensaje) no cambia.
-
-**Archivos afectados:** `frontend/components/assistant/AssistantChat.tsx`.
-
-**Verificación automática:** `tsc` y `eslint` sin errores.
-
-**Revisión humana:** decisión de Lucía: el motor de inferencia es propio y no habrá un LLM en la captura.
-
 ### P-139. El desenfoque del banner ya no cubre los hallazgos
 
 | Campo | Valor |
@@ -4931,3 +3827,472 @@ Mensaje enviado durante la tarea:
 **Verificación automática:** el script se corrió dos veces: la primera reemplazó la tabla y la segunda no hizo nada. La tabla quedó con las 10 columnas nuevas.
 
 **Revisión humana:** columnas definidas por Axel.
+
+### P-150. Quitar el botón "Ver resultado" del aviso de envío a validación
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-23 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el aviso de envío a validación del médico internista no ofrezca ir a la interfaz de salida |
+| Especificación / tarea | ESP-005 (panel del expediente), P-141 |
+
+**Prompt**
+
+> (Captura del aviso "Tromboembolia pulmonar: enviado a validación por el médico internista." con el botón "Ver resultado") aquí elimina lo de Ver resultado.
+
+**Resultado de la IA:**
+
+- El aviso del diagnóstico enviado a validación ya no muestra el botón "Ver resultado"; solo queda el texto del envío y la validación del comité.
+- Se quitaron los imports que dejaron de usarse (`Link` y el icono `FileText`) y se actualizó el comentario del aviso.
+
+**Archivos afectados:** `frontend/components/assistant/DiagnosisPanel.tsx`.
+
+**Verificación automática:** `npx tsc --noEmit -p .` y `npx eslint` sin errores.
+
+**Revisión humana:** Pendiente de revisión visual.
+
+### P-151. Validación del diagnóstico por el médico internista
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el médico internista reciba y confirme los diagnósticos diferenciales y que la confirmación le llegue al médico tratante |
+| Especificación / tarea | ESP-008 (nueva, `11-validacion-internista.md`); Bloque 4 del reparto; reemplaza el aviso simulado de `36a01ff` |
+
+**Prompt**
+
+> Al final, la estructura del sistema debe quedar así: 3 usuarios, médico tratante, médico internista y administrador. Los administradores registran y eliminan pacientes y médicos (tratantes o internistas). El médico tratante llena el interrogatorio y las secciones, y solo busca y revisa pacientes. El médico internista es quien confirma los diagnósticos diferenciales: al iniciar sesión le aparece la interfaz de los diagnósticos que el tratante le envió, y al confirmarse al tratante le aparece que se fue a validación y después "confirmado por el médico internista". ¿Está bien la lógica?
+>
+> (Tras la revisión) Construye eso: el internista recibe los diagnósticos de la máquina de inferencia (que se implementará más adelante), los confirma y se los envía al tratante.
+
+**Resultado de la IA:**
+
+- Revisión: administrador y tratante ya cumplían; la validación era solo un texto simulado (el tratante confirmaba directo y `/internista` decía "en preparación").
+- Base de datos: `AddDiagnosisValidation.sql` agrega a `PACIENTES` `EstadoValidacion` (`P`/`C`), `Id_MedicoSolicitante`, `FechaSolicitud`, `Id_MedicoValidador` y `FechaValidacion`; `CreateClinicalTables.sql` las incluye. Sin llave foránea a médicos para conservar el historial al eliminar uno.
+- Backend: `DiagnosisValidationController`, `DiagnosisValidationService` y `DiagnosisValidationRepository`. El tratante envía (solo `T`); el internista lista, revisa y confirma (solo `I`), y solo un candidato del análisis actual. El ID del médico sale del token. Se quitó `PUT /api/patients/{id}/diagnosis` y `ConfirmarDiagnosticoAsync`; tratamiento y plan quedan solo para `T`. Los diagnósticos anteriores (seed) cuentan como confirmados.
+- Frontend: `/internista` muestra Pendientes y Confirmados, el caso con hallazgos y candidatos, y "Confirmar este diagnóstico". El tratante ve "Enviar al médico internista", luego "Enviado a validación del médico internista" y, al confirmarse, "{enfermedad}: confirmado por el médico internista {nombre}"; también en el panel del expediente y en la interfaz de salida. Se quitó el texto simulado del comité.
+- Pruebas: PT101 a PT106 nuevas; PT60 y PT61 pasaron al nuevo servicio.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Sql/AddDiagnosisValidation.sql` (nuevo), `Sql/CreateClinicalTables.sql`, `Configuration/ValidationStates.cs` (nuevo), `Controllers/DiagnosisValidationController.cs` (nuevo), `Controllers/PatientResultController.cs`, `Services/DiagnosisValidationService.cs` y su interfaz (nuevos), `Services/PatientResultService.cs` y su interfaz, `Repositories/DiagnosisValidationRepository.cs` y su interfaz (nuevos), `Repositories/PatientRepository.cs`, `Repositories/PatientResultRepository.cs` y su interfaz, `Models/Entities/Patient.cs`, `Models/Results/DiagnosisValidation.cs` (nuevo), `Models/Results/PatientSummary.cs`, `Models/DTOs/SaveResultRequests.cs`, `Data/AppDbContext.cs`, `Program.cs`, `XpertDiagnostic.Tests/DiagnosisValidationServiceTests.cs` (nuevo), `XpertDiagnostic.Tests/PatientResultServiceTests.cs`; `frontend/components/internist/InternistScreen.tsx`, `components/internist/ValidationDetail.tsx` (nuevo), `components/assistant/DiagnosisPanel.tsx`, `components/assistant/AssistantChat.tsx`, `components/home/HomeScreen.tsx`, `components/home/PatientRecordPanel.tsx`, `components/home/HelpMenu.tsx`, `components/result/ResultSections.tsx`, `services/validationService.ts` (nuevo), `services/resultService.ts`, `services/patientService.ts`, `types/validation.ts` (nuevo), `types/patient.ts`, `types/result.ts`, `types/record.ts`, `app/api/patients/[id]/validation/route.ts` (nuevo), `app/api/validations/route.ts` y `[id]/route.ts` (nuevos), `app/api/patients/[id]/diagnosis/route.ts` (eliminado); `specs/especificaciones/11-validacion-internista.md` (nuevo), `09-interfaz-de-salida.md`, `10-panel-administrador.md`, `specs/guias/guia-instalacion.md`.
+
+**Verificación automática:** `dotnet test` (sin integración) 134 correctas; `npx tsc --noEmit -p .` y `npx eslint` sin errores; `AddDiagnosisValidation.sql` corrido dos veces en la base local sin errores. Flujo completo por HTTP (PT107): 19 de 19 comprobaciones; `PACIE00001` se restauró al terminar.
+
+**Revisión humana:** Pendiente de revisión visual (PT108).
+
+### P-152. Un diagnóstico del seed no cuenta como confirmado por el internista
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el tratante solo vea "confirmado por el médico internista" cuando un internista lo confirmó |
+| Especificación / tarea | ESP-008; A-28 |
+
+**Prompt**
+
+> (Capturas: PACIE00002 dice "Tirotoxicosis: confirmado por el médico internista", y la pantalla del internista no tiene pendientes ni confirmados.) No sé si funciona aún, porque ahí dice que ya ha sido confirmado por el médico internista, pero esta es la pantalla del internista.
+
+**Resultado de la IA:**
+
+- Causa: `ValidationStates.Efectivo` trataba un diagnóstico guardado sin estado (pacientes del seed) como confirmado.
+- `Efectivo` ahora devuelve solo el estado guardado; esos pacientes quedan "sin enviar" y el tratante puede enviarlos al internista.
+- Panel del expediente: "Diagnóstico registrado, sin validar por el médico internista: X". Interfaz de salida: "Registrado sin validación del médico internista".
+- PT106 cambió: un diagnóstico sin validar no cuenta como confirmado.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Configuration/ValidationStates.cs`, `Repositories/DiagnosisValidationRepository.cs`, `Repositories/PatientRepository.cs`, `Repositories/PatientResultRepository.cs`, `XpertDiagnostic.Tests/DiagnosisValidationServiceTests.cs`, `frontend/components/home/PatientRecordPanel.tsx`, `frontend/components/result/ResultSections.tsx`, `specs/especificaciones/11-validacion-internista.md`, `specs/auditoria/auditoria-humana.md`.
+
+**Verificación automática:** `dotnet test` (sin integración) 135 correctas; `npx tsc --noEmit -p .` y `npx eslint` sin errores.
+
+**Revisión humana:** Lucía detectó el error (A-28). Pendiente volver a probar el flujo.
+
+### P-153. El internista puede corregir un diagnóstico ya confirmado
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el médico internista pueda volver a confirmar si se equivocó de candidato |
+| Especificación / tarea | ESP-008 (RF-57, RF-60) |
+
+**Prompt**
+
+> Que en la pantalla de internista se pueda volver a confirmar, por si ocurre algún error de dedo.
+>
+> (Durante el cambio) Elimina este mensaje: "¿Te equivocaste? Elige el correcto con «Cambiar a este diagnóstico»".
+
+**Resultado de la IA:**
+
+- Backend: `ConfirmarAsync` acepta pacientes pendientes y también confirmados; solo rechaza los que el tratante no ha enviado (`NoEnviado`, 409). Al corregir se guardan el internista y la fecha de la corrección, y el tratamiento se quita si cambió la enfermedad.
+- Frontend: en un paciente confirmado, los demás candidatos muestran "Cambiar a este diagnóstico" (botón secundario). El aviso dice "Diagnóstico corregido" y la fila de Confirmados se actualiza.
+- Se quitó la línea de ayuda "¿Te equivocaste?…" a petición de Lucía.
+- Pruebas: PT104 ahora solo rechaza lo no enviado; PT109 nueva (corregir).
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Services/DiagnosisValidationService.cs` y su interfaz, `Models/Results/DiagnosisValidation.cs`, `Controllers/DiagnosisValidationController.cs`, `XpertDiagnostic.Tests/DiagnosisValidationServiceTests.cs`, `frontend/components/internist/ValidationDetail.tsx`, `frontend/components/internist/InternistScreen.tsx`, `specs/especificaciones/11-validacion-internista.md`.
+
+**Verificación automática:** `dotnet test` (sin integración) 135 correctas; `npx tsc --noEmit -p .` y `npx eslint` sin errores.
+
+**Revisión humana:** Lucía pidió quitar la línea de ayuda. Pendiente probar la corrección en pantalla.
+
+### P-154. Retiro del chat, la bienvenida y el recorrido guiado
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Eliminar del código y de los specs todo lo del chat, la bienvenida y el recorrido guiado |
+| Especificación / tarea | Retira ESP-003 |
+
+**Prompt**
+
+> Vamos a eliminar todo lo relacionado al chat/tutorial/bienvenida, y todo lo referente a este en todo el código y specs ("Te damos la bienvenida a XpertDiagnostic. Hola, Medico Prueba. Escríbeme en el chat de abajo para comenzar. Más información").
+>
+> Decisiones: sin paciente, un aviso simple con el botón "Buscar paciente"; quitar el código y la columna `BienvenidaVista`; borrar también el historial de bitácora y auditoría sobre el chat y la bienvenida.
+
+**Resultado de la IA:**
+
+- Frontend: se borraron `AssistantChat`, `ChatComposer`, `ChatIntro`, `ChatMessages`, `ChatMarkup`, `ChatNotice`, `TypewriterText`, `lib/welcomeTour.ts`, `lib/chatMarkup.ts`, `lib/typingPace.ts`, `types/assistant.ts`, `public/loading.svg` y la ruta `app/api/session/welcome`. Lo que queda se movió de `components/assistant/` a `components/capture/` y el contenedor nuevo es `SectionWorkspace`. Sin paciente muestra "Selecciona un paciente para comenzar la captura" y "Buscar paciente".
+- Backend: se quitaron `POST /api/doctors/me/welcome`, `MarcarBienvenidaVistaAsync`, `User.BienvenidaVista` y `DoctorProfile.BienvenidaVista`, con las pruebas PT29 a PT31.
+- Base de datos: `DropWelcomeColumn.sql` (nuevo) quita la columna y su valor por defecto. `CreateDoctorsAndUsersTables.sql` y los seeds ya no la usan. Aplicado en la base local.
+- Specs: se borró `06-bienvenida-asistente.md` (ESP-003) y las menciones en README, guía, plan de arquitectura, tareas (T41, T43 a T46) y ESP-004. A petición de Lucía también se borraron de la bitácora P-44, P-51, P-59 a P-71, P-77 a P-91, P-93, P-96, P-97, P-119 y P-138, y de la auditoría A-12, A-13, A-15 y A-16.
+
+**Archivos afectados:** `frontend/components/capture/*` (antes `components/assistant/`), `frontend/components/home/HomeScreen.tsx`, `frontend/services/doctorService.ts`, `frontend/types/doctor.ts`, `frontend/lib/backendSession.ts`; `backend/XpertDiagnostic.Api/Controllers/DoctorsController.cs`, `Models/Entities/User.cs`, `Models/Results/DoctorProfile.cs`, `Repositories/DoctorRepository.cs` y su interfaz, `Services/DoctorService.cs` y su interfaz, `Sql/DropWelcomeColumn.sql` (nuevo), `Sql/CreateDoctorsAndUsersTables.sql`, `Sql/SeedAdminAccount.sql`, `Sql/SeedInternistAccount.sql`, `XpertDiagnostic.Tests/DoctorServiceTests.cs`, `XpertDiagnostic.Tests/Fakes/DoctorFakes.cs`; `specs/` (README, guía, plan, tareas, ESP-004, ESP-008, bitácora y auditoría).
+
+**Verificación automática:** `dotnet test` (sin integración) 132 correctas; `npx tsc --noEmit -p .` y `npx eslint` sin errores; `DropWelcomeColumn.sql` y `CreateDoctorsAndUsersTables.sql` corridos sin errores en la base local.
+
+**Revisión humana:** pendiente de revisión visual.
+
+### P-155. La pantalla se recargaba en bucle en desarrollo
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que `/login` deje de recargarse sola con `npm run dev` |
+| Especificación / tarea | Configuración del entorno de desarrollo |
+
+**Prompt**
+
+> Ayuda, se recarga mucho en esta parte. (Terminal: "✓ Compiled in 1ms" y "GET /login 200" repetidos sin parar.)
+
+**Resultado de la IA:**
+
+- Causa: en Next 16 el servidor MCP de desarrollo (`experimental.mcpServer`, activo por defecto) escribe cada mensaje de la consola del navegador en `.next/dev/logs/next-development.log`. Cada escritura disparaba una recompilación, la página se recargaba, el navegador volvía a escribir y se repetía, unas dos veces por segundo.
+- Se desactivó con `experimental.mcpServer: false` en `next.config.ts`. La app no lo usa; solo sirve a herramientas de agentes.
+
+**Archivos afectados:** `frontend/next.config.ts`.
+
+**Verificación automática:** tras el cambio, el servidor se reinició solo, `/login` responde 200 y ya no se crea `.next/dev/logs`.
+
+**Revisión humana:** pendiente de que Lucía confirme que la página ya no se recarga.
+
+### P-156. Acciones del panel de administración como íconos
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Cambiar los enlaces de texto de las filas por botones de ícono |
+| Especificación / tarea | ESP-007 (panel del administrador) |
+
+**Prompt**
+
+> Coloca mejor en el panel de administración íconos en vez de eliminar, desactivar, contraseña y editar: así, círculo con fondo de color subido e ícono blanco.
+
+**Resultado de la IA:**
+
+- Componente nuevo `IconAction`: círculo de color intenso con ícono blanco y una etiqueta negra (cuadrada) arriba al pasar el cursor o con el teclado. Conserva el nombre accesible completo ("Editar datos de Ana López").
+- Médicos: Editar (lápiz, azul), Contraseña (llave, violeta), Desactivar (usuario con X, ámbar) o Activar (usuario con palomita, verde) y Eliminar (bote, rojo). Iguales en la tabla y en la lista móvil.
+- Pacientes: Eliminar con el mismo botón rojo.
+
+**Archivos afectados:** `frontend/components/admin/IconAction.tsx` (nuevo), `frontend/components/admin/AdminPanel.tsx`, `frontend/components/admin/AdminPatientsSection.tsx`.
+
+**Verificación automática:** `npx tsc --noEmit -p .` y `npx eslint` sin errores.
+
+**Revisión humana:** pendiente de revisión visual.
+
+### P-157. El login no dice de qué tipo es la cuenta
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el error del login por apartado equivocado no revele que la cuenta es de administrador o de médico |
+| Especificación / tarea | ESP-007, RF-50 |
+
+**Prompt**
+
+> Cambia eso del mensaje de error en el login sobre validación: no decir que es administrador, simplemente poner lo otro.
+
+**Resultado de la IA:**
+
+- Antes, con la contraseña correcta en el apartado equivocado, el backend respondía 403 "Esta cuenta es de administrador. Inicia sesión desde el apartado Administrador." (o "…de médico…").
+- Ahora responde igual que con credenciales incorrectas: 401 "ID o contraseña incorrectos. Vuelve a intentarlo.". Así tampoco se revela que el ID existe ni de qué tipo es.
+- `AuthService` sigue detectando el apartado incorrecto (PT72 y PT73 no cambian); solo cambió la respuesta del controlador. El 403 queda solo para la cuenta desactivada.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Controllers/AuthController.cs`, `backend/XpertDiagnostic.Tests/AuthServiceTests.cs` (comentarios), `frontend/components/auth/LoginForm.tsx`, `specs/especificaciones/10-panel-administrador.md` (RF-50).
+
+**Verificación automática:** `dotnet test` (sin integración) 132 correctas; `npx tsc --noEmit -p .` y `npx eslint` sin errores.
+
+**Revisión humana:** pendiente de probarlo en el login.
+
+### P-158. Volver a enviar al internista desde el aviso de confirmación
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el tratante pueda devolver al internista un diagnóstico con el que no está de acuerdo, y ver que ya se envió |
+| Especificación / tarea | ESP-008 |
+
+**Prompt**
+
+> Algo para que, en vez de que esté mal, se vuelva a enviar con el internista: un botón. Que aparezca que ya se envió en este mensaje, y ese botón de volver a enviar que se vuelva "Enviado"; y que vuelva a estar disponible después de que el internista confirme o seleccione otro diagnóstico.
+>
+> (Ajustes previos en la misma sesión: quitar el borde del aviso verde y la fecha dentro de él; el pie muestra "Confirmado el…" con la hora de la confirmación; "Cambiar a este diagnóstico" en la pantalla del internista.)
+
+**Resultado de la IA:**
+
+- Aviso verde ("confirmado por el médico internista"): botón "Volver a enviar al internista". Al pulsarlo, el paciente vuelve a pendiente.
+- Aviso de pendiente: a la derecha, "Enviado" (desactivado) mientras el internista no responde.
+- Cuando el internista confirma de nuevo (el mismo u otro diagnóstico), regresa el aviso verde con el botón disponible.
+- El botón del pie solo sirve para el primer envío ("Enviar al médico internista"). El backend no cambió: ya aceptaba reenviar desde confirmado (PT105).
+
+**Archivos afectados:** `frontend/components/capture/DiagnosisPanel.tsx`, `frontend/components/internist/ValidationDetail.tsx`.
+
+**Verificación automática:** `npx tsc --noEmit -p .` y `npx eslint` sin errores.
+
+**Revisión humana:** pendiente de revisión visual.
+
+### P-159. Interrogatorio: antecedentes no patológicos y patológicos
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el médico tratante llene el interrogatorio antes de las secciones clínicas |
+| Especificación / tarea | ESP-009 (nueva, `12-interrogatorio.md`); Bloque 2 del reparto |
+
+**Prompt**
+
+> ¿Faltó el formulario interrogatorio antes de las secciones o ya está? "El médico tratante es quien llena el formulario interrogatorio y también las secciones."
+>
+> Es la de IO_AntecNoPatol y la de IO_AntecPatol.
+
+**Resultado de la IA:**
+
+- Revisión: las tablas existían, pero no había endpoints ni pantalla; las 7 preguntas de no patológicos estaban definidas en el frontend sin usarse.
+- Backend: entidad `PathologicalHistory` (21 textos), `PatientHistoryRepository`, `PatientHistoryService` (traduce las columnas abreviadas y limpia los textos) y `PatientHistoryController`. GET para `T` e `I`; PUT solo para `T`.
+- Frontend: grupo "Interrogatorio" al inicio del menú con "Antecedentes no patológicos" (sí/no) y "Antecedentes patológicos" (21 campos de texto), con "Guardar y continuar" y el mismo bloqueo por secciones. Al abrir un paciente se cargan el expediente y el interrogatorio a la vez.
+- Pruebas: PT110 a PT113.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Models/Entities/PathologicalHistory.cs` (nuevo), `Models/DTOs/PatientHistoryData.cs` (nuevo), `Models/Results/PatientHistory.cs` (nuevo), `Repositories/IPatientHistoryRepository.cs` y `PatientHistoryRepository.cs` (nuevos), `Services/Interfaces/IPatientHistoryService.cs` y `Services/PatientHistoryService.cs` (nuevos), `Controllers/PatientHistoryController.cs` (nuevo), `Data/AppDbContext.cs`, `Program.cs`, `XpertDiagnostic.Tests/PatientHistoryServiceTests.cs` (nuevo); `frontend/components/capture/HistoryCapture.tsx` (nuevo), `components/capture/SectionWorkspace.tsx`, `components/capture/SectionCapture.tsx`, `components/home/clinicalSections.ts`, `components/home/HomeScreen.tsx`, `services/historyService.ts` (nuevo), `types/history.ts` (nuevo), `app/api/patients/[id]/history/*` (nuevos); `specs/especificaciones/12-interrogatorio.md` (nuevo).
+
+**Verificación automática:** `dotnet test` (sin integración) 136 correctas; `npx tsc --noEmit -p .` y `npx eslint` sin errores.
+
+**Revisión humana:** pendiente (PT114). Falta mostrar los antecedentes en la interfaz de salida y en la pantalla del internista.
+
+### P-160. Máquina de inferencia del equipo (conversión de inference_engine.prg)
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-25 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Convertir la máquina de inferencia de XBase a C# y SQL Server y usarla como motor definitivo |
+| Especificación / tarea | ESP-010 (nueva, `13-maquina-de-inferencia.md`); T57 |
+
+**Prompt**
+
+> Aquí va el código de la máquina de inferencia en lenguaje XBase (compatible con dBase, FoxPro, etc.). Por favor convierte estos algoritmos para usarlos con las tablas de la base de datos en SQL Server. El código fuente está en `inference_engine.prg`. Las tablas con prefijo "IO" son de entrada y salida; las de prefijo "BDC", la base de conocimiento; las demás, temporales. Este motor de inferencia lo vamos a usar reemplazando el AI service, porque tiene la lógica de cómo se calculan las enfermedades probables, que tiene que ser lo más precisa posible. Es el definitivo; no vamos a construir RAG ni nada.
+>
+> Decisiones (al preguntar la IA): ordenar por coincidencias; cargar la base de conocimiento completa; usar todos los hallazgos; borrar `ai-service`.
+
+**Resultado de la IA:**
+
+- Análisis del `.prg`: compara síntomas y signos del paciente con la base de conocimiento por texto, saca las enfermedades sin repetir y les agrega el primer tratamiento. Hallazgos: no ordena (el comentario dice que cuenta, el código no); ignora laboratorios; el `ZAP` borra los resultados de los pacientes anteriores; la base de SQL Server tenía 10 enfermedades y la de FoxPro 924.
+- `InferenceEngine` (C#): mismo algoritmo, ordenado por coincidencias y luego por proporción, con todos los tipos de hallazgo, comparación sin mayúsculas, acentos ni espacios repetidos, y las 5 más probables con su primer tratamiento. Reemplaza a `ProvisionalInferenceEngine` (eliminado).
+- Base de conocimiento: `Sql/Tools/generate_knowledge_base.ps1` lee los DBF y genera `LoadKnowledgeBase.sql`. Repara 613 textos partidos por una coma en la importación original. Cargado en la base local: 924 enfermedades, 2,350 síntomas, 2,827 signos y 4,416 tratamientos.
+- Frontend: "Tratamiento sugerido" en cada candidato (tratante e internista).
+- Se eliminó `ai-service/` y sus menciones en la guía y los specs.
+- Pruebas: PT55 reescrita, PT115 a PT121 nuevas, PT57 con el motor nuevo.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Services/InferenceEngine.cs` (nuevo), `Services/ProvisionalInferenceEngine.cs` (eliminado), `Services/Interfaces/IInferenceEngine.cs`, `Repositories/ITreatmentRepository.cs` y `TreatmentRepository.cs` (nuevos), `Models/Results/DiagnosisResult.cs`, `Program.cs`, `Sql/Tools/generate_knowledge_base.ps1` (nuevo), `Sql/LoadKnowledgeBase.sql` (nuevo, generado), `XpertDiagnostic.Tests/InferenceEngineTests.cs` (nuevo), `XpertDiagnostic.Tests/PatientRecordServiceTests.cs`, `XpertDiagnostic.Tests/ClinicalDataIntegrationTests.cs`; `frontend/types/record.ts`, `frontend/components/capture/DiagnosisPanel.tsx`, `frontend/components/internist/ValidationDetail.tsx`; `ai-service/` (eliminado); `specs/especificaciones/13-maquina-de-inferencia.md` (nuevo), `08-captura-y-analisis.md`, `07-nuevo-paciente.md`, `specs/guias/guia-instalacion.md`, `specs/tareas/inicio-sesion.md`, `specs/README.md`.
+
+**Verificación automática:** `dotnet test` (sin integración) 145 correctas. PT57 contra la base real con la base de conocimiento completa: 10 de 10. `LoadKnowledgeBase.sql` corrido dos veces (la segunda no agrega nada). `npx tsc --noEmit -p .` y `npx eslint` sin errores.
+
+**Revisión humana:** pendiente. Conviene que el Ing. Castañeda revise las decisiones de la sección 2 de ESP-010 (orden, entradas y comparación de texto).
+
+### P-161. La máquina de inferencia como copia literal del .prg
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-25 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el resultado de la máquina de inferencia sea exactamente el de inference_engine.prg |
+| Especificación / tarea | ESP-010 |
+
+**Prompt**
+
+> En esta pregunta que me hiciste antes seleccioné coincidencias, pero vamos a cambiar eso: debe ser COPIA literal del .prg.
+
+**Resultado de la IA:**
+
+- El `.prg` termina con `INDE ON enfermedad TO paso40 UNIQUE` + `COPY TO`: todas las enfermedades encontradas, una por nombre y en orden alfabético, sin contar ni limitar.
+- `InferenceEngine`: se quitó el orden por coincidencias y el límite de 5. Ahora devuelve todas, una por nombre (la de menor ID si se repite) y por nombre. Coincidencias y proporción siguen calculándose como información.
+- Se conservan las otras decisiones de P-160: todos los tipos de hallazgo y la comparación de texto sin mayúsculas ni acentos (sin ella no coincidirían "Melena" y "MELENA").
+- Pruebas: PT55, PT115 y PT120 reescritas; PT57 mide si la enfermedad esperada está en la lista.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Services/InferenceEngine.cs`, `Services/Interfaces/IInferenceEngine.cs`, `Models/Results/DiagnosisResult.cs`, `XpertDiagnostic.Tests/InferenceEngineTests.cs`, `XpertDiagnostic.Tests/ClinicalDataIntegrationTests.cs`, `specs/especificaciones/13-maquina-de-inferencia.md`.
+
+**Verificación automática:** `dotnet test` (sin integración) 145 correctas. PT57 contra la base real: la enfermedad esperada está en la lista en 10 de 10, entre 14 y 182 candidatos, en posiciones de la 3 a la 116.
+
+**Revisión humana:** la IA advirtió a Lucía que, con la base completa, las listas son largas y la enfermedad correcta puede quedar lejos del inicio (con el orden por coincidencias salía primera en 10 de 10). Pendiente de su decisión final.
+
+### P-162. Borrar la paciente de prueba PACIE00011
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-25 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Quitar de la base un dato de prueba creado durante el desarrollo |
+| Especificación / tarea | ESP-004 (alta y baja de pacientes) |
+
+**Prompt**
+
+> [Captura de "Andrea Olivas Villarreal · PACIE00011 · Nefropatía crónica (CKD)"] Borra este dato de prueba y todo lo relacionado a este.
+
+**Resultado de la IA:**
+
+- Se borró en una transacción, con los mismos pasos que `PatientRepository.EliminarAsync` (la eliminación del administrador):
+  - 28 hallazgos (`HALLAZGOS_PACIENTE`);
+  - 1 fila de `IO_AntecNoPatolPacientes` y 1 de `IO_AntecPatolPacientes`;
+  - la fila de `PACIENTES`, con su estado de validación.
+- No había filas en las demás tablas del paciente ni marca en `IO_Complicaciones`. No tenía plan asociado.
+- No se tocó código. Las menciones a `PACIE00011` en entradas anteriores de esta bitácora se conservan como historial: ese ID lo usaron otros pacientes de prueba.
+
+**Archivos afectados:** ninguno (solo la base de datos local).
+
+**Verificación automática:** consulta posterior: 0 filas para `PACIE00011`; el último ID vuelve a ser `PACIE00010`.
+
+**Revisión humana:** solicitada por Lucía.
+
+### P-163. Aviso de análisis desactualizado en negro
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-25 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Mejor contraste del aviso de hallazgos cambiados |
+| Especificación / tarea | ESP-008 |
+
+**Prompt**
+
+> Esto y el ícono, colócalo de texto color negro: "Los hallazgos cambiaron. Actualiza el expediente antes de enviarlo al médico internista."
+
+**Resultado de la IA:**
+
+- En `DiagnosisPanel.tsx`, el texto y el ícono del aviso pasan de ámbar oscuro a negro; el fondo ámbar claro se conserva.
+
+**Archivos afectados:** `frontend/components/capture/DiagnosisPanel.tsx`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** pendiente de revisión visual.
+
+### P-164. Interfaz de salida de solo lectura, ligada a la confirmación del internista
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-25 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que la salida muestre lo calculado por la máquina de inferencia y confirmado por el internista, sin edición |
+| Especificación / tarea | ESP-006, T56 |
+
+**Prompt**
+
+> [Capturas de Historia clínica, Diagnóstico, Tratamiento y Plan de PACIE00002] En la interfaz de salida, todo esto debe salir como ya calculado por la máquina de inferencia, no debe ser editable ni nada por el estilo, y también con lo que ha dicho el médico internista, algo así, que encaje.
+
+**Resultado de la IA:**
+
+- **Solo lectura.** Se quitaron "Guardar tratamiento" y "Guardar plan", los endpoints `PUT api/patients/{id}/treatment` y `PUT .../plan`, sus rutas del frontend, DTOs y métodos de servicio y repositorio.
+- **Ligada al internista.** Sin confirmación (`EstadoValidacion` distinto de `C`), el resultado no trae diagnóstico, tratamiento ni plan, y las tarjetas dicen "Disponible cuando el médico internista confirme el diagnóstico". Con confirmación, el diagnóstico dice "Calculado por la máquina de inferencia y confirmado por el médico internista {nombre} el {fecha}".
+- **Tratamiento.** El indicado es el primero de la enfermedad (menor ID), como en `inference_engine.prg`, con su dosis. Debajo, "Otros tratamientos para {enfermedad}", sin poder elegirlos.
+- **Plan.** La base de conocimiento no trae planes: el plan indicado se arma con los tratamientos de la enfermedad (uno por línea, con dosis). Expectativa y seguimiento se muestran del plan guardado del paciente, o "Sin registro".
+- Pruebas: PT59, PT62 y PT63 retiradas; PT64 reescrita; nuevas PT122 y PT123.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Controllers/PatientResultController.cs`, `Models/DTOs/SaveResultRequests.cs`, `Models/Results/PatientResult.cs`, `Repositories/IPatientResultRepository.cs`, `Repositories/PatientResultRepository.cs`, `Services/Interfaces/IPatientResultService.cs`, `Services/PatientResultService.cs`, `XpertDiagnostic.Tests/PatientResultServiceTests.cs`, `frontend/components/result/ResultSections.tsx`, `PatientResultScreen.tsx`, `frontend/services/resultService.ts`, `frontend/types/result.ts`, `frontend/app/api/patients/[id]/treatment/route.ts` y `plan/route.ts` (eliminados), `specs/especificaciones/09-interfaz-de-salida.md`, `specs/tareas/inicio-sesion.md`.
+
+**Verificación automática:** `dotnet test` (sin integración) 143 correctas; PT65 contra la base real correcta. `tsc` y `eslint` sin errores.
+
+**Revisión humana:** pendiente de revisión visual. La IA señaló que el plan no lo calcula el `.prg` (solo da enfermedad y primer tratamiento), por lo que se arma con los tratamientos de la base de conocimiento.
+
+### P-165. "Ver resultado" bloqueado mientras el internista no confirme
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-25 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el acceso a la interfaz de salida dependa de la confirmación vigente del internista |
+| Especificación / tarea | ESP-006, ESP-008 |
+
+**Prompt**
+
+> [Captura del panel con "Volver a enviar al internista" y "Ver resultado del expediente"] Aquí tengo un conflicto: al confirmarlo el internista está bien, pero si lo vuelve a enviar al internista y sale pendiente sin confirmar, ¿no debería salir bloqueada la opción de ver resultado hasta que lo confirme?
+
+**Resultado de la IA:**
+
+- Sí: el botón aparecía con solo tener un diagnóstico guardado, aunque el paciente estuviera de nuevo en validación.
+- `PatientRecordPanel.tsx`: "Ver resultado del expediente" solo es enlace con el estado "confirmado". Si está pendiente (o tiene un diagnóstico sin validar, como los pacientes de prueba), se muestra bloqueado (gris, con candado, `aria-disabled`) y explica qué falta. Al reenviar, el panel cambia en el momento.
+- `PatientSearchDialog.tsx`: "Ver resultado" solo aparece con diagnóstico confirmado; si está pendiente, dice "En validación".
+- La página de salida ya no muestra salidas sin confirmación (P-164), así que entrar por URL tampoco las muestra.
+
+**Archivos afectados:** `frontend/components/home/PatientRecordPanel.tsx`, `frontend/components/home/PatientSearchDialog.tsx`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores.
+
+**Revisión humana:** detectado por Lucía; pendiente de revisión visual.
+
+### P-166. Un archivo de tareas por especificación
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-25 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que la carpeta de tareas cubra todo el sistema, no solo el inicio de sesión |
+| Especificación / tarea | Todas |
+
+**Prompt**
+
+> [Captura de la carpeta `tareas` con solo `inicio-sesion.md`] Aquí añade todo lo demás, solo sale inicio de sesión.
+
+**Resultado de la IA:**
+
+- `inicio-sesion.md` tenía T01 a T59 de todos los módulos, casi todas bajo "Pendientes fuera de esta especificación". Se separaron en un archivo por especificación, sin cambiar los números: `medicos-y-cuentas.md`, `nuevo-paciente.md`, `captura-y-analisis.md`, `interfaz-de-salida.md`, `panel-administrador.md`, `validacion-internista.md`, `interrogatorio.md`, `maquina-de-inferencia.md`, `base-de-datos.md` y `pantalla-principal.md`, más el índice `README.md`.
+- Se agregaron las tareas que faltaban (T67 a T105) para lo hecho desde P-140: roles, panel de administración, validación del internista, interrogatorio, máquina de inferencia, salida de solo lectura y scripts SQL.
+- T60 a T66 estaban citadas en ESP-007 pero nunca se escribieron; se reconstruyeron a partir de la especificación y se marcó así.
+- T27 (primer commit y ramas) quedó hecha; T28 se actualizó porque `/home` ya está protegida.
+- Se actualizaron los enlaces de "Tareas" en ESP-002 y ESP-004 a ESP-010 y en `specs/README.md`.
+
+**Archivos afectados:** `specs/tareas/*.md`, `specs/especificaciones/05`, `07` a `13`, `specs/README.md`.
+
+**Verificación automática:** ninguna (solo documentación).
+
+**Revisión humana:** pendiente. La IA señaló que ESP-007 y ESP-008 usan los mismos números de requisito (RF-50 a RF-59).

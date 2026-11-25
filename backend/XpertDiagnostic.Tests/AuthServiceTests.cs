@@ -107,7 +107,8 @@ public class AuthServiceTests
         // When intenta entrar desde el apartado Administrador
         var resultado = await servicio.LoginAsync(IdExistente, "securePass123", UserRoles.Administrador);
 
-        // Then no recibe token y se le indica que su cuenta es de médico
+        // Then no recibe token. El servicio sabe que la cuenta es de médico; el controlador responde como
+        // credenciales incorrectas, sin revelarlo (P-157).
         Assert.Equal(LoginStatus.ApartadoIncorrecto, resultado.Estado);
         Assert.Null(resultado.Respuesta);
         Assert.Equal(UserRoles.MedicoTratante, resultado.RolDeLaCuenta);
@@ -124,7 +125,8 @@ public class AuthServiceTests
         // When intenta entrar desde el apartado Médico
         var resultado = await servicio.LoginAsync(654321, "admin", UserRoles.MedicoTratante);
 
-        // Then no recibe token y se le indica que su cuenta es de administrador
+        // Then no recibe token. El servicio sabe que la cuenta es de administrador; el controlador responde
+        // como credenciales incorrectas, sin revelarlo (P-157).
         Assert.Equal(LoginStatus.ApartadoIncorrecto, resultado.Estado);
         Assert.Equal(UserRoles.Administrador, resultado.RolDeLaCuenta);
     }

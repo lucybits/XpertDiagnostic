@@ -82,7 +82,7 @@ export async function forwardWithSession(
     return clearSessionCookie(errorResponse(401, 'Tu sesión terminó. Vuelve a iniciar sesión.'));
   }
 
-  // 204: éxito sin cuerpo (por ejemplo, al marcar la bienvenida).
+  // 204: éxito sin cuerpo (por ejemplo, al eliminar un registro).
   if (backendResponse.status === 204) return new NextResponse(null, { status: 204 });
 
   const data = (await backendResponse.json().catch(() => null)) as unknown;

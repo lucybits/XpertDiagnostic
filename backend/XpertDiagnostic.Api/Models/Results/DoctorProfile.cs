@@ -5,5 +5,4 @@ public sealed record DoctorProfile(
     int UsuarioId,
     string Rol,
     string NombreCompleto,
-    string Especialidad,
-    bool BienvenidaVista);
+    string Especialidad);

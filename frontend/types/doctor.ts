@@ -10,8 +10,6 @@ export interface SessionProfile {
   rol: string;
   nombreCompleto: string;
   especialidad: string;
-  /** true si ya completó la bienvenida guiada del asistente (ESP-003). */
-  bienvenidaVista: boolean;
 }
 
 /** Tipo de médico que el administrador elige al darlo de alta o editarlo (P-144). */

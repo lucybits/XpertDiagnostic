@@ -12,7 +12,9 @@ import { HOME_ROUTE_BY_ROLE, LOGIN_LIMITS, type LoginFailureReason, type LoginMo
 
 const FAILURE_MESSAGES: Record<LoginFailureReason, string> = {
   'invalid-credentials': 'ID o contraseña incorrectos. Vuelve a intentarlo.',
-  forbidden: 'Esta cuenta no puede entrar desde este apartado.',
+  // 403 solo llega por cuenta desactivada (trae su propio mensaje del servidor). Una cuenta de otro
+  // apartado responde 401, como credenciales incorrectas (P-157).
+  forbidden: 'No se pudo iniciar sesión con esta cuenta.',
   'invalid-request': 'Revisa tu ID y contraseña e inténtalo de nuevo.',
   unavailable: 'No se pudo iniciar sesión. Inténtalo de nuevo.',
   network: 'No se pudo iniciar sesión. Verifica tu conexión e inténtalo de nuevo.',
@@ -304,7 +306,7 @@ export default function LoginForm() {
             name="rememberMe"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-[1.125rem] w-[1.125rem] rounded border-slate-300 accent-teal-500 focus:ring-teal-500"
+            className="h-[1.125rem] w-[1.125rem] rounded-none border-slate-300 accent-teal-500 focus:ring-teal-500"
           />
           <label htmlFor="remember" className="cursor-pointer text-[length:clamp(0.9375rem,2.7svh,1rem)] font-medium text-slate-700">
             Recuérdame la sesión

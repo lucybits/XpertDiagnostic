@@ -26,8 +26,8 @@ IF EXISTS (SELECT 1 FROM dbo.MEDICOS WHERE Id_Medico = 654321)
 
 IF NOT EXISTS (SELECT 1 FROM dbo.USUARIOS WHERE Id_Usuario = 654321)
 BEGIN
-    INSERT INTO dbo.USUARIOS (Id_Usuario, PASS, ROL, Id_Medico, Id_Area, BienvenidaVista, Activo)
-    VALUES (654321, '$2a$11$awcLce16ICdrYN.wUWuCxOLcTI1u2oZiMTG6hf79MuNYUfkQpj2aG', 'A', NULL, NULL, 1, 1);
+    INSERT INTO dbo.USUARIOS (Id_Usuario, PASS, ROL, Id_Medico, Id_Area, Activo)
+    VALUES (654321, '$2a$11$awcLce16ICdrYN.wUWuCxOLcTI1u2oZiMTG6hf79MuNYUfkQpj2aG', 'A', NULL, NULL, 1);
     PRINT 'Cuenta de administrador 654321 creada.';
 END
 ELSE

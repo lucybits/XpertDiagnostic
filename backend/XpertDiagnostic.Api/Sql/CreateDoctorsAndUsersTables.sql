@@ -14,7 +14,7 @@
     Ejecutar en la base XpertDiagnostic. Se puede repetir:
       - crea lo que falte;
       - si USUARIOS ya existía (versión anterior de este script o esquema anterior), la adapta sin perder
-        registros: Id_Area e Id_Medico opcionales, BienvenidaVista, Activo, FechaRegistro, reglas de ROL y
+        registros: Id_Area e Id_Medico opcionales, Activo, FechaRegistro, reglas de ROL y
         llave foránea a MEDICOS. Todo dentro de una transacción: si algo falla, no queda a medias.
     No inserta registros: las cuentas se crean desde el panel de administración o mediante los seeds de
     prueba SeedAdminAccount.sql y SeedInternistAccount.sql.
@@ -44,7 +44,6 @@ CREATE TABLE dbo.USUARIOS (
     ROL             VARCHAR(1)   NOT NULL CONSTRAINT CK_USUARIOS_ROL CHECK (ROL IN ('T', 'I', 'A')),
     Id_Medico        INT          NULL CONSTRAINT FK_USUARIOS_MEDICOS REFERENCES dbo.MEDICOS (Id_Medico),
     Id_Area          INT          NULL,
-    BienvenidaVista BIT          NOT NULL CONSTRAINT DF_USUARIOS_BIENVENIDA DEFAULT (0), -- bienvenida guiada (ESP-003)
     Activo          BIT          NOT NULL CONSTRAINT DF_USUARIOS_ACTIVO DEFAULT (1),
     FechaRegistro   DATETIME2(0) NOT NULL CONSTRAINT DF_USUARIOS_FECHA_REGISTRO DEFAULT (SYSUTCDATETIME()),
     CONSTRAINT CK_USUARIOS_MEDICO_ROL CHECK ((ROL IN ('T', 'I') AND Id_Medico IS NOT NULL) OR ROL = 'A'),
@@ -54,9 +53,6 @@ CREATE TABLE dbo.USUARIOS (
 -- ── Adaptación de una USUARIOS creada antes ──────────────────────────────────────────────────
 IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo.USUARIOS') AND name = N'Id_Area' AND is_nullable = 0)
     ALTER TABLE dbo.USUARIOS ALTER COLUMN Id_Area INT NULL;
-
-IF COL_LENGTH(N'dbo.USUARIOS', N'BienvenidaVista') IS NULL
-    ALTER TABLE dbo.USUARIOS ADD BienvenidaVista BIT NOT NULL CONSTRAINT DF_USUARIOS_BIENVENIDA DEFAULT (0);
 
 -- Las cuentas existentes quedan activas y con fecha de registro igual al momento de la adaptación.
 IF COL_LENGTH(N'dbo.USUARIOS', N'Activo') IS NULL

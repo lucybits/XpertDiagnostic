@@ -37,22 +37,6 @@ public class DoctorsController(IDoctorService medicos) : ControllerBase
             : Ok(perfil);
     }
 
-    /// <summary>Marca que el usuario autenticado completó la bienvenida guiada (ESP-003).</summary>
-    /// <remarks>@post 204 si se marcó (repetirlo no cambia nada); 404 si la cuenta del token ya no existe.</remarks>
-    [HttpPost("me/welcome")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> MarkWelcomeSeen(CancellationToken cancellationToken)
-    {
-        if (!TryGetUserId(out var usuarioId))
-            return Unauthorized();
-
-        return await medicos.MarcarBienvenidaVistaAsync(usuarioId, cancellationToken)
-            ? NoContent()
-            : NotFound(new ErrorResponse("No se encontró la cuenta."));
-    }
-
     /// <summary>ID del usuario tomado del token (claim NameIdentifier).</summary>
     private bool TryGetUserId(out int usuarioId) =>
         int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out usuarioId) && usuarioId > 0;

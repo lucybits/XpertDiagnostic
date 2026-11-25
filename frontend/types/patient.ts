@@ -1,9 +1,11 @@
+import type { ValidationState } from './validation';
+
 /** Modelo de paciente registrado, tal como lo muestra el buscador (tabla PACIENTES). */
 
 /**
  * @inv recordNumber es único por paciente (IdPaciente, p. ej. "PACIE00001").
  * @inv age >= 0.
- * @inv diagnosis es el nombre de la enfermedad diagnosticada, o null si aún no tiene.
+ * @inv diagnosis es el nombre de la enfermedad diagnosticada (la confirma el médico internista), o null.
  */
 export interface Patient {
   id: string;
@@ -14,6 +16,10 @@ export interface Patient {
   /** Años cumplidos; el servidor la calcula de la fecha de nacimiento. */
   age: number;
   diagnosis: string | null;
+  /** Validación del diagnóstico (P-151): 'P' en validación, 'C' confirmado, null sin enviar. */
+  validationState: ValidationState | null;
+  /** Médico internista que confirmó el diagnóstico, o null. */
+  validatedBy: string | null;
 }
 
 export type AgeFilter = 'all' | '0-17' | '18-39' | '40-64' | '65+';

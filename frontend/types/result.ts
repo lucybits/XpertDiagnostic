@@ -11,34 +11,39 @@ export interface TreatmentView {
   unidades: string | null;
 }
 
-/** Plan, pronóstico (expectativa) y seguimiento. */
+/**
+ * Plan, pronóstico (expectativa) y seguimiento (P-164). planIndicado lista los tratamientos de la base de
+ * conocimiento; pronóstico y seguimiento vienen del plan guardado del paciente, si tiene.
+ */
 export interface CarePlanView {
-  idPlan: string;
+  idPlan: string | null;
   planIndicado: string;
   pronostico: string | null;
   seguimiento: string | null;
 }
 
 /**
- * Entradas capturadas y salidas guardadas del paciente.
- * @inv tratamientos son los de la enfermedad diagnosticada (vacío sin diagnóstico).
- * @inv idTratamiento, si existe, es uno de tratamientos.
+ * Entradas capturadas y salidas del paciente. Solo lectura (P-164).
+ * @inv Sin confirmación del médico internista no hay diagnóstico, tratamientos ni plan.
+ * @inv tratamientos son los de la enfermedad confirmada; idTratamiento es el primero (inference_engine.prg).
  */
 export interface PatientResult {
-  paciente: { idPaciente: string; nombreCompleto: string; edad: number; diagnostico: string | null };
+  paciente: {
+    idPaciente: string;
+    nombreCompleto: string;
+    edad: number;
+    diagnostico: string | null;
+    /** Validación del médico internista (P-151): 'P', 'C' o null. */
+    estadoValidacion: string | null;
+    /** Internista que confirmó el diagnóstico, o null. */
+    validadoPor: string | null;
+  };
   expediente: PatientRecord;
   idEnfermedadDiagnosticada: string | null;
   enfermedadDiagnosticada: string | null;
   tratamientos: TreatmentView[];
   idTratamiento: string | null;
   plan: CarePlanView | null;
+  /** Cuándo confirmó el médico internista (ISO), o null. */
+  fechaValidacion: string | null;
 }
-
-/** Plan que escribe el médico (decisión de Lucía, P-105); mismos límites que la tabla PLANES. */
-export interface CarePlanInput {
-  planIndicado: string;
-  pronostico: string;
-  seguimiento: string;
-}
-
-export const CARE_PLAN_LIMITS = { planMin: 3, planMax: 1000, pronosticoMax: 300, seguimientoMax: 300 } as const;

@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Treatment> Tratamientos => Set<Treatment>();
     public DbSet<CarePlan> Planes => Set<CarePlan>();
     public DbSet<NonPathologicalHistory> AntecedentesNoPatologicos => Set<NonPathologicalHistory>();
+    public DbSet<PathologicalHistory> AntecedentesPatologicos => Set<PathologicalHistory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +34,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             // la convierta bien a la hora local.
             .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
+        // Fechas de la validación del internista (P-151): se guardan en UTC y se leen marcadas como UTC.
+        modelBuilder.Entity<Patient>(paciente =>
+        {
+            paciente.Property(p => p.FechaSolicitud)
+                .HasColumnType("datetime2(0)")
+                .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+            paciente.Property(p => p.FechaValidacion)
+                .HasColumnType("datetime2(0)")
+                .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+        });
+
         // HALLAZGOS_PACIENTE: llave compuesta (PK_HALLAZGOS_PACIENTE).
         modelBuilder.Entity<PatientFinding>().HasKey(h => new { h.IdPaciente, h.IdRegistro });
 
@@ -42,6 +54,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<Patient>()
             .WithOne()
             .HasForeignKey<NonPathologicalHistory>(a => a.IdPaciente)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // IO_AntecPatolPacientes.IdPaciente -> PACIENTES (uno a uno), igual que los no patológicos (P-159).
+        modelBuilder.Entity<PathologicalHistory>()
+            .HasOne<Patient>()
+            .WithOne()
+            .HasForeignKey<PathologicalHistory>(a => a.IdPaciente)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
