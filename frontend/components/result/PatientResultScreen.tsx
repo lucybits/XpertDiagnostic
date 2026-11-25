@@ -7,6 +7,7 @@ import { ArrowLeft, CircleAlert, CircleCheck, CircleDashed, Download, Printer, S
 import LoadingDots from '@/components/ui/LoadingDots';
 import { getResult } from '@/services/resultService';
 import type { PatientResult } from '@/types/result';
+import { VALIDATION_STATES } from '@/types/validation';
 import { CarePlanCard, ClinicalHistoryCard, DiagnosisCard, TreatmentCard } from './ResultSections';
 
 const NAV_ITEM =
@@ -14,7 +15,8 @@ const NAV_ITEM =
 
 /**
  * Interfaz de salida del expediente (P-105, boceto de Lucía). Muestra lo que el médico capturó
- * (historia clínica) y las salidas de PACIENTES: diagnóstico confirmado, tratamiento indicado y plan.
+ * (historia clínica) y las salidas: diagnóstico confirmado por el internista, tratamiento indicado y plan.
+ * Es de solo lectura (P-164): las salidas las calcula la máquina de inferencia y nadie las edita aquí.
  *
  * - Izquierda: acciones (buscar paciente, volver a la captura, descargar PDF, imprimir).
  * - Centro: encabezado del paciente y las cuatro tarjetas.
@@ -122,8 +124,8 @@ export default function PatientResultScreen({ patientId }: { patientId: string }
             <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-6 sm:px-8 print:max-w-none print:space-y-4 print:px-0 print:py-4">
               <ClinicalHistoryCard result={result} />
               <DiagnosisCard result={result} />
-              <TreatmentCard key={result.idEnfermedadDiagnosticada ?? 'none'} result={result} onSaved={setResult} />
-              <CarePlanCard result={result} onSaved={setResult} />
+              <TreatmentCard result={result} />
+              <CarePlanCard result={result} />
             </div>
           </>
         )}
@@ -140,12 +142,19 @@ export default function PatientResultScreen({ patientId }: { patientId: string }
           </h2>
           <ul className="space-y-2.5">
             <Status done={result.expediente.hallazgos.length > 0} label="Historia clínica" detail={`${result.expediente.hallazgos.length} hallazgos`} />
-            <Status done={result.idEnfermedadDiagnosticada !== null} label="Diagnóstico" detail={result.enfermedadDiagnosticada ?? 'Pendiente'} />
+            <Status
+              done={result.enfermedadDiagnosticada !== null}
+              label="Diagnóstico"
+              detail={
+                result.enfermedadDiagnosticada ??
+                (result.paciente.estadoValidacion === VALIDATION_STATES.pending ? 'En validación' : 'Sin enviar a validación')
+              }
+            />
             <Status done={result.idTratamiento !== null} label="Tratamiento" detail={result.idTratamiento ? 'Indicado' : 'Pendiente'} />
-            <Status done={result.plan !== null} label="Plan y seguimiento" detail={result.plan ? 'Guardado' : 'Pendiente'} />
+            <Status done={result.plan !== null} label="Plan y seguimiento" detail={result.plan ? 'Indicado' : 'Pendiente'} />
           </ul>
           <p className="text-sm text-slate-700">
-            Las salidas se guardan en el expediente del paciente: diagnóstico, tratamiento y plan.
+            Las salidas las calcula la máquina de inferencia para el diagnóstico que confirma el médico internista.
           </p>
         </aside>
       )}

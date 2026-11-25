@@ -6,7 +6,10 @@ import { CircleHelp } from 'lucide-react';
 const STEPS: readonly { title: string; detail: string }[] = [
   { title: 'Elige un paciente', detail: '«Buscar paciente» en la barra lateral. Los pacientes los registra el administrador.' },
   { title: 'Captura cada sección', detail: 'Marca en la tarjeta lo que presenta y pulsa «Guardar y continuar».' },
-  { title: 'Analiza y confirma', detail: 'En «Diagnóstico diferencial», analiza y confirma uno de los candidatos.' },
+  {
+    title: 'Analiza y envía a validación',
+    detail: 'En «Diagnóstico diferencial», analiza y envía los candidatos al médico internista, que confirma el diagnóstico.',
+  },
   { title: 'Completa el resultado', detail: 'Elige el tratamiento, escribe el plan y descarga o imprime el PDF.' },
 ];
 

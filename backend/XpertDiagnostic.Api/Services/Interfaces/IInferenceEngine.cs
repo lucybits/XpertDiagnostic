@@ -3,10 +3,9 @@ using XpertDiagnostic.Api.Models.Results;
 namespace XpertDiagnostic.Api.Services.Interfaces;
 
 /// <summary>
-/// Máquina de inferencia (P-103). Recibe los hallazgos del paciente (entradas) y
-/// propone el diagnóstico diferencial (salida). Hoy está registrada una implementación provisional;
-/// cuando el equipo termine la máquina de inferencia (o el RAG), se registra la nueva en Program.cs
-/// sin cambiar el servicio, el controlador ni el frontend.
+/// Máquina de inferencia (P-103). Recibe los hallazgos del paciente (entradas) y propone el diagnóstico
+/// diferencial (salida). La implementación registrada es <c>InferenceEngine</c>, conversión del motor del
+/// equipo (inference_engine.prg, P-160); no hay RAG ni servicio de IA aparte.
 /// </summary>
 public interface IInferenceEngine
 {
@@ -19,7 +18,8 @@ public interface IInferenceEngine
     /// <summary>Diagnóstico diferencial a partir de los hallazgos.</summary>
     /// <remarks>
     /// @pre hallazgos son filas de HALLAZGOS_PACIENTE (sin agrupar), con su IdRegistro.
-    /// @post Hasta 3 candidatos con al menos una coincidencia, de mayor a menor puntaje. No modifica datos.
+    /// @post Todas las enfermedades con al menos una coincidencia, una por nombre y en orden alfabético
+    ///       (copia literal del .prg, P-161), cada una con su primer tratamiento si lo tiene. No modifica datos.
     /// @post No consulta IO_ResultadosEsperados (es solo para evaluar al sistema).
     /// </remarks>
     Task<IReadOnlyList<DiagnosisCandidate>> InferirAsync(

@@ -1,0 +1,28 @@
+import { UserRound } from 'lucide-react';
+import type { Patient } from '@/types/patient';
+
+/**
+ * Píldora fija con el paciente de la sesión (P-101), arriba a la izquierda del área de conversación.
+ * No se desplaza con la captura y sigue visible aunque el encabezado de la sección esté oculto; así
+ * siempre se sabe de quién es el expediente que se está capturando. Al bajar en la captura se esconde
+ * para no tapar el contenido, y vuelve en cuanto se sube (P-104). Fondo azul marino con texto
+ * blanco para que contraste con el fondo blanco (P-101).
+ */
+export default function SessionPatientPill({ patient, hidden }: { patient: Patient; hidden: boolean }) {
+  return (
+    <p
+      title={patient.fullName}
+      // Se esconde al bajar y vuelve al subir (P-104); oculta, no recibe clics ni lectores de pantalla.
+      aria-hidden={hidden || undefined}
+      className={`absolute top-3 left-4 z-10 flex max-w-[min(30rem,calc(100%-14rem))] min-w-0 items-center gap-2 rounded-none bg-[#0b1533] py-1 pr-4 pl-1 transition-[translate,opacity] duration-300 ease-out starting:opacity-0 motion-reduce:transition-none sm:left-8 ${
+        hidden ? 'pointer-events-none -translate-y-[calc(100%+1rem)] opacity-0' : ''
+      }`}
+    >
+      <span aria-hidden="true" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-400 text-black">
+        <UserRound className="h-4 w-4" />
+      </span>
+      <span className="sr-only">Paciente de la sesión: </span>
+      <span className="truncate font-semibold text-white">{patient.fullName}</span>
+    </p>
+  );
+}

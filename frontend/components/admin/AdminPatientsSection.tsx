@@ -1,8 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import LoadingDots from '@/components/ui/LoadingDots';
 import DeleteDialog from './DeleteDialog';
+import IconAction from './IconAction';
 import NewPatientDialog from './NewPatientDialog';
 import { FOCUS_RING } from './AdminDialog';
 import { deletePatient } from '@/services/adminService';
@@ -220,7 +222,7 @@ export default function AdminPatientsSection({
               </thead>
               <tbody>
                 {results.map((patient) => (
-                  <tr key={patient.id} className="border-b-2 border-slate-200 align-top">
+                  <tr key={patient.id} className="border-b-2 border-slate-200 align-middle">
                     <td className="py-3 pr-4 font-medium text-slate-900">{patient.fullName}</td>
                     <td className="py-3 pr-4 font-mono text-slate-800">{patient.recordNumber}</td>
                     <td className="py-3 pr-4 whitespace-nowrap text-slate-800">{formatBirthDate(patient.birthDate)}</td>
@@ -258,15 +260,15 @@ export default function AdminPatientsSection({
   );
 }
 
+/** Eliminar paciente: círculo rojo con ícono blanco, como las acciones de los médicos. */
 function DeleteAction({ patient, onOpen }: { patient: Patient; onOpen: (dialog: DialogState) => void }) {
   return (
-    <button
-      type="button"
+    <IconAction
+      icon={Trash2}
+      label="Eliminar"
+      description={`Eliminar a ${patient.fullName}`}
+      tone="delete"
       onClick={() => onOpen({ kind: 'delete', patient })}
-      aria-label={`Eliminar a ${patient.fullName}`}
-      className={`text-sm font-medium text-red-800 underline-offset-2 hover:underline ${FOCUS_RING}`}
-    >
-      Eliminar
-    </button>
+    />
   );
 }

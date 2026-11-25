@@ -283,38 +283,6 @@ Estas verificaciones las ejecutó el asistente de IA. Son evidencia complementar
 | 2026-11-16 | P-04 | `POST /api/login` en Next.js (puerto 3000) | Datos inválidos → 400; contraseña incorrecta → 401; `/login` responde 200 con las etiquetas nuevas |
 | — | — | Inicio de sesión exitoso (PT01) | **No ejecutado:** requiere credenciales reales, a cargo del equipo |
 
-### A-12. Sugerencias de la portada del chat eliminadas
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Revisó | Lucía |
-| Prompt | P-65 |
-| Archivo | `frontend/components/home/AssistantChat.tsx` |
-| Resultado | **Corregido** |
-
-**Hallazgo.** La primera versión de la portada del chat vacío incluía sugerencias en botones (por ejemplo, "¿Cómo trabajas?" o "Buscar paciente"). La revisora no las quería.
-
-**Corrección.** Se eliminaron las sugerencias. La portada quedó con logo, título, subtítulo y las cruces decorativas.
-
----
-
-### A-13. Recordatorio "selecciona un paciente" descartado
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Revisó | Lucía |
-| Prompt | P-70 |
-| Archivo | `frontend/components/home/AssistantChat.tsx` |
-| Resultado | **Rechazado** |
-
-**Hallazgo.** Para las cuentas que ya habían visto la bienvenida, la IA hizo que el primer mensaje solo recibiera "Para empezar, selecciona un paciente". La revisora quería que escribir arrancara siempre el recorrido completo.
-
-**Corrección (P-71).** El recorrido se muestra siempre que el médico escribe sin paciente. `BienvenidaVista` solo registra la aceptación del aviso clínico.
-
----
-
 ### A-14. Etiqueta "Cédula profesional" revertida
 
 | Campo | Valor |
@@ -328,38 +296,6 @@ Estas verificaciones las ejecutó el asistente de IA. Son evidencia complementar
 **Hallazgo.** Lucía prefirió no usar "Cédula profesional", porque el login usa el ID médico y no la cédula.
 
 **Corrección.** La etiqueta y el texto de ayuda volvieron a "ID médico".
-
----
-
-### A-15. Conversación apilada desde abajo descartada
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Revisó | Lucía |
-| Prompt | P-77 |
-| Archivo | `frontend/components/home/AssistantChat.tsx` |
-| Resultado | **Rechazado** |
-
-**Hallazgo.** Para que el chat no se viera tan arriba, la IA apiló los mensajes desde abajo, junto al cuadro de texto. La revisora consideró que así se veía demasiado abajo y anticuado.
-
-**Corrección.** La conversación empieza arriba con un margen superior amplio y adaptable (`clamp(4.5rem, 12vh, 7rem)`).
-
----
-
-### A-16. Pista "o escríbeme tu respuesta" eliminada
-
-| Campo | Valor |
-|---|---|
-| Fecha | 2026-11-17 |
-| Revisó | Lucía |
-| Prompt | P-93 |
-| Archivo | `frontend/components/assistant/ChatMessages.tsx` |
-| Resultado | **Corregido** |
-
-**Hallazgo.** Junto a los botones de los pasos, la IA agregó la pista secundaria "o escríbeme tu respuesta". La revisora no la quería.
-
-**Corrección.** Se quitó la pista. El botón del paso queda solo, con su nuevo estilo e ícono.
 
 ---
 
@@ -536,5 +472,21 @@ Estas verificaciones las ejecutó el asistente de IA. Son evidencia complementar
 **Hallazgo.** La primera versión del panel usaba los patrones típicos de una interfaz generada por IA: tabla dentro de una tarjeta redondeada, estado en píldora, tres botones con borde e ícono por fila, subtítulo explicativo y botón principal con ícono.
 
 **Corrección (P-140).** Tabla de datos sobria con líneas horizontales, estado y acciones como texto, conteo junto al título. Lección: en vistas administrativas, preferir convenciones de tabla clásicas a componentes decorados.
+
+---
+
+### A-28. "Confirmado por el médico internista" sin que un internista lo confirmara
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-24 |
+| Revisó | Lucía |
+| Prompt | P-151 |
+| Archivo | `backend/XpertDiagnostic.Api/Configuration/ValidationStates.cs` |
+| Resultado | **Corregido** |
+
+**Hallazgo.** Al probar con el tratante, PACIE00002 (paciente del seed con Tirotoxicosis ya guardada) decía "Tirotoxicosis: confirmado por el médico internista", pero en la pantalla del internista no aparecía ni en Pendientes ni en Confirmados. La IA había decidido que un diagnóstico guardado antes de la validación contara como confirmado. El sistema afirmaba una validación que nunca ocurrió.
+
+**Corrección (P-152).** El estado es solo el guardado: un diagnóstico sin pasar por el internista queda "sin enviar". El panel del expediente dice "Diagnóstico registrado, sin validar por el médico internista" y la interfaz de salida "Registrado sin validación del médico internista". Lección: en un sistema clínico, nunca inferir que una persona validó algo; solo mostrarlo si quedó registrado.
 
 ---

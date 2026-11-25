@@ -14,10 +14,6 @@ public interface IDoctorService
     /// </remarks>
     Task<DoctorRegistrationResult> RegistrarAsync(CreateDoctorRequest solicitud, CancellationToken cancellationToken = default);
 
-    /// <summary>Marca que el usuario completó la bienvenida guiada del asistente.</summary>
-    /// <remarks>@pre usuarioId &gt; 0. @post true si existía (y ahora BienvenidaVista = true); false si no.</remarks>
-    Task<bool> MarcarBienvenidaVistaAsync(int usuarioId, CancellationToken cancellationToken = default);
-
     /// <summary>Devuelve el perfil del usuario, o null si no existe.</summary>
     /// <remarks>
     /// @pre usuarioId &gt; 0.

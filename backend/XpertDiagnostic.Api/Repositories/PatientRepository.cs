@@ -1,5 +1,6 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using XpertDiagnostic.Api.Configuration;
 using XpertDiagnostic.Api.Data;
 using XpertDiagnostic.Api.Models.Entities;
 using XpertDiagnostic.Api.Models.Results;
@@ -23,13 +24,37 @@ public sealed class PatientRepository(AppDbContext db) : IPatientRepository
         "IO_AntecParaClinicPacientes",
     ];
 
-    public async Task<IReadOnlyList<PatientSummary>> ListarAsync(CancellationToken cancellationToken = default) =>
-        await (from p in db.Pacientes.AsNoTracking()
-               join e in db.Enfermedades on p.IdEnfermedadDiagnosticada equals e.Id into diagnosticos
-               from e in diagnosticos.DefaultIfEmpty()
-               orderby p.Id
-               select new PatientSummary(p.Id, p.NombreCompleto, p.FechaNacimiento, e == null ? null : e.Nombre))
-            .ToListAsync(cancellationToken);
+    public async Task<IReadOnlyList<PatientSummary>> ListarAsync(CancellationToken cancellationToken = default)
+    {
+        var filas = await (
+            from p in db.Pacientes.AsNoTracking()
+            join e in db.Enfermedades on p.IdEnfermedadDiagnosticada equals e.Id into diagnosticos
+            from e in diagnosticos.DefaultIfEmpty()
+            join m in db.Medicos on p.IdMedicoValidador equals (int?)m.Id into validadores
+            from m in validadores.DefaultIfEmpty()
+            orderby p.Id
+            select new
+            {
+                p.Id,
+                p.NombreCompleto,
+                p.FechaNacimiento,
+                p.IdEnfermedadDiagnosticada,
+                Diagnostico = e == null ? null : e.Nombre,
+                p.EstadoValidacion,
+                ValidadoPor = m == null ? null : m.NombreCompleto,
+            }).ToListAsync(cancellationToken);
+
+        // El estado efectivo se calcula en memoria: un diagnóstico anterior a la validación cuenta como confirmado.
+        return filas
+            .Select(f => new PatientSummary(
+                f.Id,
+                f.NombreCompleto,
+                f.FechaNacimiento,
+                f.Diagnostico,
+                ValidationStates.Efectivo(f.EstadoValidacion),
+                f.ValidadoPor))
+            .ToList();
+    }
 
     public Task<string?> ObtenerUltimoIdAsync(CancellationToken cancellationToken = default) =>
         // Los ID tienen ancho fijo (PACIE + 5 dígitos), así que el orden de texto es el numérico.

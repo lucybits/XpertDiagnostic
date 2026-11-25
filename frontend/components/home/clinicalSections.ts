@@ -1,12 +1,15 @@
 import {
   Activity,
+  ClipboardList,
   ClipboardPlus,
   FlaskConical,
+  HeartPulse,
   Stethoscope,
   Thermometer,
   type LucideIcon,
 } from 'lucide-react';
 import type { CatalogName } from '@/types/catalog';
+import type { PatientHistory } from '@/types/history';
 import type { FindingSection, FindingType, PatientRecord } from '@/types/record';
 
 /** Avance de captura de una sección del expediente. */
@@ -16,9 +19,12 @@ export type SectionStatus = 'pending' | 'in-progress' | 'complete';
  * Qué captura una sección y dónde se guarda (P-103):
  * - findings: elementos de un catálogo → HALLAZGOS_PACIENTE con su TipoHallazgo.
  * - analysis: no captura; ejecuta la máquina de inferencia con lo capturado.
+ * - non-pathological / pathological: interrogatorio (P-159) → IO_AntecNoPatolPacientes / IO_AntecPatolPacientes.
  */
 export type SectionCapture =
   | { kind: 'findings'; section: FindingSection; catalog: CatalogName; findingType: FindingType; noun: string }
+  | { kind: 'non-pathological' }
+  | { kind: 'pathological' }
   | { kind: 'analysis' };
 
 export interface ClinicalSection {
@@ -50,9 +56,17 @@ type SectionDefinition = Omit<ClinicalSection, 'status'>;
  * orden en que se capturan: signos (exploración física), síntomas, resultados de estudios y
  * laboratorios, comorbilidades y, al final, el análisis. El orden del arreglo es el de captura:
  * buildSectionGroups desbloquea la primera sección sin completar y bloquea las siguientes.
- * Pendiente (tarea 2.2): "Antecedentes del paciente" irá antes de todas.
+ * Antes de todo va el interrogatorio (P-159): antecedentes no patológicos y patológicos.
  */
 const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: readonly SectionDefinition[] }[] = [
+  {
+    id: 'interrogation',
+    label: 'Interrogatorio',
+    sections: [
+      { id: 'non-pathological', label: 'Antecedentes no patológicos', icon: ClipboardList, capture: { kind: 'non-pathological' } },
+      { id: 'pathological', label: 'Antecedentes patológicos', icon: HeartPulse, capture: { kind: 'pathological' } },
+    ],
+  },
   {
     id: 'evaluation',
     label: 'Evaluación clínica',
@@ -125,14 +139,19 @@ export function buildSectionGroups(completed: ReadonlySet<string>): readonly Cli
 
 /**
  * Secciones que ya tienen datos guardados en el expediente (para retomar a un paciente).
- * @post Incluye cada sección de hallazgos con al menos un hallazgo de su tipo. El análisis nunca se da por hecho.
+ * @post Incluye cada sección de hallazgos con al menos un hallazgo de su tipo y cada parte del interrogatorio
+ *       ya guardada (P-159). El análisis nunca se da por hecho.
  */
-export function sectionsWithData(record: PatientRecord): Set<string> {
+export function sectionsWithData(record: PatientRecord, history: PatientHistory | null): Set<string> {
   const done = new Set<string>();
   for (const group of SECTION_DEFINITIONS) {
     for (const section of group.sections) {
       const { capture } = section;
       if (capture.kind === 'findings' && record.hallazgos.some((h) => h.tipoHallazgo === capture.findingType)) {
+        done.add(section.id);
+      } else if (capture.kind === 'non-pathological' && history?.noPatologicos) {
+        done.add(section.id);
+      } else if (capture.kind === 'pathological' && history?.patologicos) {
         done.add(section.id);
       }
     }

@@ -42,21 +42,13 @@ internal sealed class RepositorioMedicosFalso : IDoctorRepository
         return Task.FromResult(true);
     }
 
-    public Task<bool> MarcarBienvenidaVistaAsync(int usuarioId, CancellationToken cancellationToken = default)
-    {
-        var usuario = Usuarios.FirstOrDefault(u => u.Id == usuarioId);
-        if (usuario is null) return Task.FromResult(false);
-        usuario.BienvenidaVista = true;
-        return Task.FromResult(true);
-    }
-
     public Task<DoctorProfile?> ObtenerPerfilAsync(int usuarioId, CancellationToken cancellationToken = default)
     {
         var usuario = Usuarios.FirstOrDefault(u => u.Id == usuarioId);
         if (usuario is null) return Task.FromResult<DoctorProfile?>(null);
         var medico = Medicos.FirstOrDefault(m => m.Id == usuario.IdMedico);
         return Task.FromResult<DoctorProfile?>(new DoctorProfile(
-            usuario.Id, usuario.Rol, medico?.NombreCompleto ?? string.Empty, medico?.Especialidad ?? string.Empty, usuario.BienvenidaVista));
+            usuario.Id, usuario.Rol, medico?.NombreCompleto ?? string.Empty, medico?.Especialidad ?? string.Empty));
     }
 
     public Task<IReadOnlyList<DoctorAccount>> ListarCuentasAsync(string? busqueda, CancellationToken cancellationToken = default)

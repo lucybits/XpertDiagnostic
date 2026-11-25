@@ -68,12 +68,6 @@ public sealed partial class DoctorService(IDoctorRepository medicos, IPasswordHa
             usuario.Rol, usuario.Activo, usuario.FechaRegistro));
     }
 
-    public Task<bool> MarcarBienvenidaVistaAsync(int usuarioId, CancellationToken cancellationToken = default)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(usuarioId);
-        return _medicos.MarcarBienvenidaVistaAsync(usuarioId, cancellationToken);
-    }
-
     public async Task<DoctorProfile?> ObtenerPerfilAsync(int usuarioId, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(usuarioId);

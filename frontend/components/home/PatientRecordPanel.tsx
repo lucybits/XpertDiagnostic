@@ -7,8 +7,10 @@ import {
   Activity,
   ArrowRight,
   ClipboardPlus,
+  Hourglass,
   FileText,
   FlaskConical,
+  Lock,
   Microscope,
   PanelRightClose,
   PanelRightOpen,
@@ -22,6 +24,7 @@ import {
 import type { ClinicalSectionGroup } from './clinicalSections';
 import type { Patient } from '@/types/patient';
 import type { DiagnosisResult } from '@/types/record';
+import { VALIDATION_STATES } from '@/types/validation';
 
 /** Un hallazgo del paciente (fila de HALLAZGOS_PACIENTE). */
 export interface PatientFinding {
@@ -206,10 +209,10 @@ export default function PatientRecordPanel({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={percent}
-            className="h-2 overflow-hidden rounded-full bg-slate-100"
+            className="h-2 overflow-hidden rounded-none bg-slate-100"
           >
             <div
-              className="h-full rounded-full bg-emerald-500 transition-[width] duration-500 ease-out motion-reduce:transition-none"
+              className="h-full rounded-none bg-emerald-500 transition-[width] duration-500 ease-out motion-reduce:transition-none"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -235,7 +238,7 @@ export default function PatientRecordPanel({
                       sizes="(min-width: 1280px) 280px, 320px"
                       className="-z-10 scale-150 object-cover object-right blur-[24px] transition-[filter,scale] duration-500 ease-out group-hover:scale-100 group-hover:blur-none motion-reduce:transition-none"
                     />
-                    <span className="absolute top-2.5 right-2.5 min-w-7 rounded-full bg-[#0b1533] px-2 text-center font-medium text-white tabular-nums">
+                    <span className="absolute top-2.5 right-2.5 min-w-7 rounded-none bg-[#0b1533] px-2 text-center font-medium text-white tabular-nums">
                       <span className="sr-only">Registros: </span>
                       {items.length}
                     </span>
@@ -330,9 +333,9 @@ export default function PatientRecordPanel({
                         aria-valuenow={percent}
                         className="mt-2 flex items-center gap-2.5"
                       >
-                        <span className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
+                        <span className="h-2 flex-1 overflow-hidden rounded-none bg-slate-200">
                           <span
-                            className={`block h-full rounded-full ${isFirst ? 'bg-[#1e47c5]' : 'bg-blue-300'}`}
+                            className={`block h-full rounded-none ${isFirst ? 'bg-[#1e47c5]' : 'bg-blue-300'}`}
                             style={{ width: `${Math.max(percent, 3)}%` }}
                           />
                         </span>
@@ -347,8 +350,8 @@ export default function PatientRecordPanel({
               })}
             </ol>
           ) : (
-            <div className="flex items-start gap-3 rounded-xl border-2 border-dashed border-slate-200 px-4 py-4 text-slate-700">
-              <Stethoscope aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-slate-300" />
+            <div className="flex items-start gap-3 rounded-xl border-2 border-dashed border-slate-400 px-4 py-4 text-slate-700">
+              <Stethoscope aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-slate-600" strokeWidth={2.25} />
               <p>{diagnosis ? 'Sin coincidencias con la base de conocimiento.' : 'Disponible al analizar el expediente.'}</p>
             </div>
           )}
@@ -357,12 +360,20 @@ export default function PatientRecordPanel({
               Los hallazgos cambiaron: actualiza el expediente en «Diagnóstico diferencial».
             </p>
           )}
-          {/* Interfaz de salida (P-110, P-111): solo existe resultado después de confirmar un diagnóstico,
-              así que el acceso aparece hasta entonces; antes se explica el paso que falta. */}
-          {patient?.diagnosis ? (
+          {/* Validación del médico internista (P-151): mientras espera se dice; el diagnóstico solo existe
+              cuando él lo confirma. */}
+          {patient?.validationState === VALIDATION_STATES.pending && (
+            <p role="status" className="mt-3 flex items-start gap-2 text-sm text-slate-800">
+              <Hourglass aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#1e47c5]" />
+              En validación del médico internista.
+            </p>
+          )}
+          {/* Interfaz de salida (P-110, P-111, P-165): el resultado solo se abre con un diagnóstico confirmado
+              por el internista. Si se reenvió y está pendiente, el acceso queda bloqueado hasta que confirme. */}
+          {patient?.diagnosis && patient.validationState === VALIDATION_STATES.confirmed ? (
             <>
               <p className="mt-3 text-slate-700">
-                <span className="text-slate-700">Diagnóstico confirmado: </span>
+                <span className="text-slate-700">Confirmado por el médico internista: </span>
                 <span className="font-semibold text-slate-900">{patient.diagnosis}</span>
               </p>
               <Link
@@ -374,12 +385,31 @@ export default function PatientRecordPanel({
                 <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </>
+          ) : patient && (patient.validationState === VALIDATION_STATES.pending || patient.diagnosis) ? (
+            <>
+              {/* Bloqueado (P-165): enfocable con aria-disabled para que el lector de pantalla lo anuncie. */}
+              <span
+                role="link"
+                aria-disabled="true"
+                aria-describedby={`${ids}-result-locked`}
+                tabIndex={0}
+                className="mt-3 flex cursor-not-allowed items-center justify-center gap-2 border-2 border-slate-300 bg-slate-100 px-4 py-2.5 font-semibold text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+              >
+                <Lock aria-hidden="true" className="h-4 w-4" />
+                Ver resultado del expediente
+              </span>
+              <p id={`${ids}-result-locked`} className="mt-2 text-sm text-slate-700">
+                {patient.validationState === VALIDATION_STATES.pending
+                  ? 'Disponible cuando el médico internista confirme el diagnóstico.'
+                  : 'Envía el diagnóstico diferencial al médico internista; el resultado estará disponible cuando lo confirme.'}
+              </p>
+            </>
           ) : (
             patient && (
               <p className="mt-3 text-sm text-slate-700">
                 {diagnosis && diagnosis.candidatos.length > 0
-                  ? 'Confirma uno de los candidatos para generar el resultado del expediente.'
-                  : 'Al analizar y confirmar un diagnóstico podrás ver el resultado del expediente.'}
+                  ? 'Envía el diagnóstico diferencial al médico internista para que confirme uno de los candidatos.'
+                  : 'Cuando el médico internista confirme el diagnóstico podrás ver el resultado del expediente.'}
               </p>
             )
           )}
@@ -433,7 +463,7 @@ export default function PatientRecordPanel({
                   <Icon className="h-[18px] w-[18px]" />
                 </span>
                 {count > 0 && (
-                  <span className="absolute -top-1 -right-1.5 min-w-4.5 rounded-full border-2 border-white bg-[#0b1533] px-1 text-center text-xs leading-4 font-medium text-white tabular-nums">
+                  <span className="absolute -top-1 -right-1.5 min-w-4.5 rounded-none border-2 border-white bg-[#0b1533] px-1 text-center text-xs leading-4 font-medium text-white tabular-nums">
                     {count}
                   </span>
                 )}
@@ -443,9 +473,9 @@ export default function PatientRecordPanel({
         </span>
         {/* Avance como barra vertical que se llena de abajo hacia arriba. */}
         <span aria-hidden="true" className="mt-auto flex min-h-0 flex-1 flex-col items-center justify-end gap-1.5">
-          <span className="relative max-h-24 min-h-6 w-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+          <span className="relative max-h-24 min-h-6 w-2 flex-1 overflow-hidden rounded-none bg-slate-100">
             <span
-              className="absolute inset-x-0 bottom-0 rounded-full bg-emerald-500 transition-[height] duration-500 ease-out motion-reduce:transition-none"
+              className="absolute inset-x-0 bottom-0 rounded-none bg-emerald-500 transition-[height] duration-500 ease-out motion-reduce:transition-none"
               style={{ height: `${percent}%` }}
             />
           </span>

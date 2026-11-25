@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { KeyRound, LogOut } from 'lucide-react';
+import { KeyRound, LogOut, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
 import LoadingDots from '@/components/ui/LoadingDots';
 import AdminPatientsSection from './AdminPatientsSection';
+import IconAction from './IconAction';
 import DeleteDialog from './DeleteDialog';
 import DoctorFormDialog, { type SaveOutcome } from './DoctorFormDialog';
 import PasswordDialog from './PasswordDialog';
@@ -358,7 +359,7 @@ export default function AdminPanel() {
                     <span className="font-mono">{doctor.cedulaProfesional}</span>, alta{' '}
                     {dateFormatter.format(new Date(doctor.fechaRegistro))}
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
+                  <div className="mt-3 flex flex-wrap gap-2.5">
                     <RowActions doctor={doctor} onOpen={setDialog} />
                   </div>
                 </li>
@@ -384,7 +385,7 @@ export default function AdminPanel() {
                 </thead>
                 <tbody>
                   {doctors.map((doctor) => (
-                    <tr key={doctor.idMedico} className="border-b-2 border-slate-200 align-top">
+                    <tr key={doctor.idMedico} className="border-b-2 border-slate-200 align-middle">
                       <td className="py-3 pr-4">
                         <p className="font-medium text-slate-900">{doctor.nombreCompleto}</p>
                         <p className="text-slate-700">{doctor.especialidad}</p>
@@ -399,7 +400,7 @@ export default function AdminPanel() {
                         {doctor.activo ? 'Activa' : 'Desactivada'}
                       </td>
                       <td className="py-3">
-                        <div className="flex justify-end gap-x-4 whitespace-nowrap">
+                        <div className="flex justify-end gap-2 whitespace-nowrap">
                           <RowActions doctor={doctor} onOpen={setDialog} />
                         </div>
                       </td>
@@ -469,57 +470,41 @@ export default function AdminPanel() {
   );
 }
 
-/** Editar, contraseña, activar/desactivar y eliminar: las mismas acciones en la tabla y en la lista móvil. */
+/**
+ * Editar, contraseña, activar/desactivar y eliminar: círculos de color con ícono blanco, iguales en la
+ * tabla y en la lista móvil. Cada uno muestra su nombre al pasar el cursor.
+ */
 function RowActions({ doctor, onOpen }: { doctor: DoctorAccount; onOpen: (dialog: DialogState) => void }) {
   return (
     <>
-      <RowAction
+      <IconAction
+        icon={Pencil}
         label="Editar"
         description={`Editar datos de ${doctor.nombreCompleto}`}
+        tone="edit"
         onClick={() => onOpen({ kind: 'edit', doctor })}
       />
-      <RowAction
+      <IconAction
+        icon={KeyRound}
         label="Contraseña"
         description={`Asignar contraseña nueva a ${doctor.nombreCompleto}`}
+        tone="password"
         onClick={() => onOpen({ kind: 'password', doctor })}
       />
-      <RowAction
+      <IconAction
+        icon={doctor.activo ? UserX : UserCheck}
         label={doctor.activo ? 'Desactivar' : 'Activar'}
         description={`${doctor.activo ? 'Desactivar' : 'Activar'} la cuenta de ${doctor.nombreCompleto}`}
-        tone={doctor.activo ? 'danger' : 'default'}
+        tone={doctor.activo ? 'deactivate' : 'activate'}
         onClick={() => onOpen({ kind: 'status', doctor })}
       />
-      <RowAction
+      <IconAction
+        icon={Trash2}
         label="Eliminar"
         description={`Eliminar a ${doctor.nombreCompleto}`}
-        tone="danger"
+        tone="delete"
         onClick={() => onOpen({ kind: 'delete', doctor })}
       />
     </>
-  );
-}
-
-function RowAction({
-  label,
-  description,
-  tone = 'default',
-  onClick,
-}: {
-  label: string;
-  description: string;
-  tone?: 'default' | 'danger';
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={description}
-      className={`text-sm font-medium underline-offset-2 hover:underline ${FOCUS_RING} ${
-        tone === 'danger' ? 'text-red-800' : 'text-blue-900'
-      }`}
-    >
-      {label}
-    </button>
   );
 }

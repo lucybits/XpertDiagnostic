@@ -56,4 +56,24 @@ public class Patient
 
     [Column("Id_Plan", TypeName = "varchar(10)")]
     public string? IdPlan { get; set; }
+
+    // ── Validación del diagnóstico por el médico internista (P-151) ──
+    /// <summary>"P" pendiente, "C" confirmado o null si aún no se envía (<see cref="XpertDiagnostic.Api.Configuration.ValidationStates"/>).</summary>
+    [StringLength(1)]
+    [Column(TypeName = "char(1)")]
+    public string? EstadoValidacion { get; set; }
+
+    /// <summary>Médico tratante que envió el diagnóstico diferencial a validación.</summary>
+    [Column("Id_MedicoSolicitante")]
+    public int? IdMedicoSolicitante { get; set; }
+
+    /// <summary>Cuándo se envió (UTC).</summary>
+    public DateTime? FechaSolicitud { get; set; }
+
+    /// <summary>Médico internista que confirmó el diagnóstico.</summary>
+    [Column("Id_MedicoValidador")]
+    public int? IdMedicoValidador { get; set; }
+
+    /// <summary>Cuándo se confirmó (UTC).</summary>
+    public DateTime? FechaValidacion { get; set; }
 }
