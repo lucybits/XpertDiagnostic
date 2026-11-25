@@ -46,10 +46,6 @@ public class Patient
     [StringLength(1000)]
     public string? HipotesisInicial { get; set; }
 
-    /// <summary>null, <see cref="PatientValidation.Pendiente"/> o <see cref="PatientValidation.Validado"/> (P-151).</summary>
-    [Column(TypeName = "varchar(10)")]
-    public string? EstadoValidacion { get; set; }
-
     // ── Salida de la máquina de inferencia (null hasta que exista un diagnóstico) ──
     [Column("Id_EnfermedadDiagnosticada", TypeName = "varchar(10)")]
     public string? IdEnfermedadDiagnosticada { get; set; }
@@ -64,15 +60,24 @@ public class Patient
 
     [Column("Id_Plan", TypeName = "varchar(10)")]
     public string? IdPlan { get; set; }
-}
 
-/// <summary>
-/// Estados de PACIENTES.EstadoValidacion (P-151). El médico tratante confirma el diagnóstico y queda
-/// <see cref="Pendiente"/>; el médico internista lo valida y queda <see cref="Validado"/>. Solo entonces
-/// el tratante puede abrir la interfaz de salida. null = todavía en captura.
-/// </summary>
-public static class PatientValidation
-{
-    public const string Pendiente = "Pendiente";
-    public const string Validado = "Validado";
+    // ── Validación del diagnóstico por el médico internista (P-151) ──
+    /// <summary>"P" pendiente, "C" confirmado o null si aún no se envía (<see cref="XpertDiagnostic.Api.Configuration.ValidationStates"/>).</summary>
+    [StringLength(1)]
+    [Column(TypeName = "char(1)")]
+    public string? EstadoValidacion { get; set; }
+
+    /// <summary>Médico tratante que envió el diagnóstico diferencial a validación.</summary>
+    [Column("Id_MedicoSolicitante")]
+    public int? IdMedicoSolicitante { get; set; }
+
+    /// <summary>Cuándo se envió (UTC).</summary>
+    public DateTime? FechaSolicitud { get; set; }
+
+    /// <summary>Médico internista que confirmó el diagnóstico.</summary>
+    [Column("Id_MedicoValidador")]
+    public int? IdMedicoValidador { get; set; }
+
+    /// <summary>Cuándo se confirmó (UTC).</summary>
+    public DateTime? FechaValidacion { get; set; }
 }

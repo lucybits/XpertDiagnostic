@@ -3,12 +3,13 @@ import {
   ClipboardList,
   ClipboardPlus,
   FlaskConical,
-  Lightbulb,
+  HeartPulse,
   Stethoscope,
   Thermometer,
   type LucideIcon,
 } from 'lucide-react';
 import type { CatalogName } from '@/types/catalog';
+import type { PatientHistory } from '@/types/history';
 import type { FindingSection, FindingType, PatientRecord } from '@/types/record';
 
 /** Avance de captura de una sección del expediente. */
@@ -17,14 +18,13 @@ export type SectionStatus = 'pending' | 'in-progress' | 'complete';
 /**
  * Qué captura una sección y dónde se guarda (P-103):
  * - findings: elementos de un catálogo → HALLAZGOS_PACIENTE con su TipoHallazgo.
- * - history: antecedentes no patológicos del interrogatorio (casillas sí/no) → IO_AntecNoPatolPacientes (P-145).
- * - hypothesis: hipótesis diagnóstica inicial del tratante → PACIENTES.HipotesisInicial (P-145).
  * - analysis: no captura; ejecuta la máquina de inferencia con lo capturado.
+ * - non-pathological / pathological: interrogatorio (P-159) → IO_AntecNoPatolPacientes / IO_AntecPatolPacientes.
  */
 export type SectionCapture =
   | { kind: 'findings'; section: FindingSection; catalog: CatalogName; findingType: FindingType; noun: string }
-  | { kind: 'history' }
-  | { kind: 'hypothesis' }
+  | { kind: 'non-pathological' }
+  | { kind: 'pathological' }
   | { kind: 'analysis' };
 
 export interface ClinicalSection {
@@ -52,17 +52,19 @@ export function isSectionLocked(section: ClinicalSection): boolean {
 type SectionDefinition = Omit<ClinicalSection, 'status'>;
 
 /**
- * Secciones en el orden en que el médico tratante las captura (P-103, P-145): interrogatorio
- * (antecedentes no patológicos), exploración y evaluación clínica (signos, síntomas, estudios y
- * laboratorios, comorbilidades), su hipótesis inicial y, al final, el análisis del sistema. El orden del
- * arreglo es el de captura: buildSectionGroups desbloquea la primera sección sin completar y bloquea las siguientes.
+ * Secciones alineadas con las entradas de la máquina de inferencia (decisión de Lucía, P-103), en el
+ * orden en que se capturan: signos (exploración física), síntomas, resultados de estudios y
+ * laboratorios, comorbilidades y, al final, el análisis. El orden del arreglo es el de captura:
+ * buildSectionGroups desbloquea la primera sección sin completar y bloquea las siguientes.
+ * Antes de todo va el interrogatorio (P-159): antecedentes no patológicos y patológicos.
  */
 const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: readonly SectionDefinition[] }[] = [
   {
-    id: 'interview',
+    id: 'interrogation',
     label: 'Interrogatorio',
     sections: [
-      { id: 'non-pathological', label: 'Antecedentes no patológicos', icon: ClipboardList, capture: { kind: 'history' } },
+      { id: 'non-pathological', label: 'Antecedentes no patológicos', icon: ClipboardList, capture: { kind: 'non-pathological' } },
+      { id: 'pathological', label: 'Antecedentes patológicos', icon: HeartPulse, capture: { kind: 'pathological' } },
     ],
   },
   {
@@ -109,11 +111,8 @@ const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: reado
   },
   {
     id: 'result',
-    label: 'Diagnóstico',
-    sections: [
-      { id: 'hypothesis', label: 'Hipótesis inicial', icon: Lightbulb, capture: { kind: 'hypothesis' } },
-      { id: 'diagnosis', label: 'Diagnóstico diferencial', icon: Stethoscope, capture: { kind: 'analysis' } },
-    ],
+    label: 'Resultado',
+    sections: [{ id: 'diagnosis', label: 'Diagnóstico diferencial', icon: Stethoscope, capture: { kind: 'analysis' } }],
   },
 ];
 
@@ -140,19 +139,21 @@ export function buildSectionGroups(completed: ReadonlySet<string>): readonly Cli
 
 /**
  * Secciones que ya tienen datos guardados en el expediente (para retomar a un paciente).
- * @post Incluye cada sección de hallazgos con al menos un hallazgo de su tipo, los antecedentes si ya se
- *       guardaron y la hipótesis si ya tiene texto. El análisis nunca se da por hecho.
+ * @post Incluye cada sección de hallazgos con al menos un hallazgo de su tipo y cada parte del interrogatorio
+ *       ya guardada (P-159). El análisis nunca se da por hecho.
  */
-export function sectionsWithData(record: PatientRecord): Set<string> {
+export function sectionsWithData(record: PatientRecord, history: PatientHistory | null): Set<string> {
   const done = new Set<string>();
   for (const group of SECTION_DEFINITIONS) {
     for (const section of group.sections) {
       const { capture } = section;
-      const hasData =
-        (capture.kind === 'findings' && record.hallazgos.some((h) => h.tipoHallazgo === capture.findingType)) ||
-        (capture.kind === 'history' && record.antecedentesNoPatologicos !== null) ||
-        (capture.kind === 'hypothesis' && Boolean(record.hipotesisInicial?.trim()));
-      if (hasData) done.add(section.id);
+      if (capture.kind === 'findings' && record.hallazgos.some((h) => h.tipoHallazgo === capture.findingType)) {
+        done.add(section.id);
+      } else if (capture.kind === 'non-pathological' && history?.noPatologicos) {
+        done.add(section.id);
+      } else if (capture.kind === 'pathological' && history?.patologicos) {
+        done.add(section.id);
+      }
     }
   }
   return done;

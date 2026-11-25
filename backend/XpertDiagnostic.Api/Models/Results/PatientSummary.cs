@@ -4,8 +4,16 @@ namespace XpertDiagnostic.Api.Models.Results;
 /// <remarks>
 /// @inv Diagnostico es el nombre de la enfermedad diagnosticada, o null si aún no tiene.
 /// @inv Edad se calcula de FechaNacimiento con la fecha de hoy (P-144); no se guarda.
+/// @inv EstadoValidacion es null (sin enviar), "P" (en validación) o "C" (confirmado por el internista), P-151.
+/// @inv ValidadoPor es el nombre del internista que confirmó, o null.
 /// </remarks>
-public sealed record PatientSummary(string IdPaciente, string NombreCompleto, DateOnly FechaNacimiento, string? Diagnostico)
+public sealed record PatientSummary(
+    string IdPaciente,
+    string NombreCompleto,
+    DateOnly FechaNacimiento,
+    string? Diagnostico,
+    string? EstadoValidacion = null,
+    string? ValidadoPor = null)
 {
     /// <summary>Años cumplidos hoy.</summary>
     public int Edad => PatientAge.EnAnios(FechaNacimiento, DateOnly.FromDateTime(DateTime.Today));

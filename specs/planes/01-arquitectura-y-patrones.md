@@ -54,13 +54,13 @@ AuthController ──► IAuthService (AuthService) ──► IUserRepository (U
 - Modelo: `types/result.ts`.
 - Backend: `PatientResultController` → `IPatientResultService` → `IPatientResultRepository`.
 
-**Chat del asistente (P-84).** Sigue la misma separación por capas, en carpetas propias:
+**Captura del expediente.** El centro de la pantalla del tratante sigue la misma separación por capas:
 
 | Capa | Archivos | Responsabilidad |
 |---|---|---|
-| **Vista** | `components/assistant/`: `AssistantChat.tsx` (contenedor), `SectionHeader.tsx`, `ChatIntro.tsx`, `ChatMessages.tsx`, `ChatComposer.tsx`, `ChatNotice.tsx`, `TypewriterText.tsx`, `styles.ts` | El contenedor guarda el estado de la conversación y decide qué se puede hacer. Las demás piezas solo presentan y avisan de eventos. |
-| **Modelo** | `types/assistant.ts`, `lib/welcomeTour.ts` | Tipos de la conversación. Guion de la bienvenida y reglas puras para recorrerlo, sin React. |
-| **Controlador** | `services/` (pendiente) | Cuando exista `ai-service/`, las respuestas reales de la IA llegarán por un servicio en esta capa. |
+| **Vista** | `components/capture/`: `SectionWorkspace.tsx` (contenedor), `SectionHeader.tsx`, `SectionCapture.tsx`, `DiagnosisPanel.tsx`, `SessionPatientPill.tsx`, `styles.ts` | El contenedor elige qué mostrar: la captura de la sección, el diagnóstico diferencial o, sin paciente, el aviso para buscarlo. |
+| **Modelo** | `types/record.ts`, `types/validation.ts` | Expediente, análisis y validación del internista. |
+| **Controlador** | `services/recordService.ts`, `services/validationService.ts` | Llaman a las rutas de `app/api/patients/` y `app/api/validations/`. |
 
 ## 2. Principios SOLID
 
@@ -88,8 +88,6 @@ Los métodos clave documentan su contrato con `@pre`, `@post` e `@inv`. Las prec
 | `LoginState` | `frontend/lib/loginState.ts` | `@inv` del estado y `@pre`/`@post` de cada transición. |
 | `getConnection` | `frontend/lib/db.ts` | `@inv` un solo pool por proceso. |
 | `validateLoginInput`, `login`, `postJson` | `frontend/lib/`, `frontend/services/` | `@pre` y `@post` de validación y comunicación. |
-| `ChatMessage`, `welcomeMessage`, `thinkingTime`, `nextBubble`, `nextStep` | `frontend/types/assistant.ts`, `frontend/lib/welcomeTour.ts` | `@inv` del mensaje y `@pre`/`@post` de cada regla del guion. |
-| `TypewriterText` (`onStopped`) | `frontend/components/assistant/TypewriterText.tsx` | `@post` tras detenerse ya no llama a `onDone`. |
 
 ## 4. Patrones de diseño GoF
 

@@ -143,7 +143,15 @@ CREATE TABLE dbo.PACIENTES (
     Id_EnfermedadDiagnosticada VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_ENFERMEDAD_DIAG REFERENCES dbo.ENFERMEDADES (Id_Enfermedad),
     Id_Comorbilidad            VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_COMORBILIDADES REFERENCES dbo.COMORBILIDADES (Id_Comorbilidad),
     Id_Tratamiento             VARCHAR(20)   NULL CONSTRAINT FK_PACIENTES_TRATAMIENTOS REFERENCES dbo.TRATAMIENTOS (Id_Tratamiento),
-    Id_Plan                    VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_PLANES REFERENCES dbo.PLANES (Id_Plan)
+    Id_Plan                    VARCHAR(10)   NULL CONSTRAINT FK_PACIENTES_PLANES REFERENCES dbo.PLANES (Id_Plan),
+    -- Validación del diagnóstico por el médico internista (P-151): 'P' pendiente, 'C' confirmado, NULL
+    -- sin enviar. Los médicos van sin llave foránea para conservar el historial si se elimina uno.
+    EstadoValidacion           CHAR(1)       NULL CONSTRAINT CK_PACIENTES_ESTADO_VALIDACION
+                                             CHECK (EstadoValidacion IS NULL OR EstadoValidacion COLLATE Latin1_General_BIN2 IN ('P', 'C')),
+    Id_MedicoSolicitante       INT           NULL,
+    FechaSolicitud             DATETIME2(0)  NULL,
+    Id_MedicoValidador         INT           NULL,
+    FechaValidacion            DATETIME2(0)  NULL
 );
 
 /* Id_Registro apunta al catálogo que indica TipoHallazgo (SINTOMAS, SIGNOS, ...).

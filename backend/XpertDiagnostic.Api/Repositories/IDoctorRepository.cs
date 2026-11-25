@@ -24,10 +24,6 @@ public interface IDoctorRepository
     /// </remarks>
     Task<bool> CrearConCuentaAsync(Doctor medico, User usuario, CancellationToken cancellationToken = default);
 
-    /// <summary>Marca que el usuario completó la bienvenida guiada.</summary>
-    /// <remarks>@post true si el usuario existe (queda BienvenidaVista = true); false si no existe.</remarks>
-    Task<bool> MarcarBienvenidaVistaAsync(int usuarioId, CancellationToken cancellationToken = default);
-
     /// <remarks>
     /// @post Perfil del usuario con los datos de su médico, o null si no existe. Una cuenta sin registro
     ///       de médico (administrador) devuelve nombre y especialidad vacíos. No modifica datos.

@@ -36,9 +36,6 @@ public class User
     [Column("Id_Area")]
     public int? IdArea { get; set; }
 
-    /// <summary>true cuando el usuario ya completó la bienvenida guiada del asistente (ESP-003).</summary>
-    public bool BienvenidaVista { get; set; }
-
     /// <summary>false cuando el administrador desactivó la cuenta (baja lógica: no se borra nada).</summary>
     public bool Activo { get; set; } = true;
 

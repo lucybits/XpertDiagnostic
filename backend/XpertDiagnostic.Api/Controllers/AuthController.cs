@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using XpertDiagnostic.Api.Configuration;
 using XpertDiagnostic.Api.Models.DTOs;
 using XpertDiagnostic.Api.Models.Results;
 using XpertDiagnostic.Api.Services.Interfaces;
@@ -19,8 +18,6 @@ namespace XpertDiagnostic.Api.Controllers;
 public class AuthController(IAuthService auth) : ControllerBase
 {
     private const string MensajeCredencialesIncorrectas = "ID o contraseña incorrectos. Vuelve a intentarlo.";
-    private const string MensajeEsCuentaDeMedico = "Esta cuenta es de médico. Inicia sesión desde el apartado Médico.";
-    private const string MensajeEsCuentaDeAdministrador = "Esta cuenta es de administrador. Inicia sesión desde el apartado Administrador.";
     private const string MensajeCuentaInactiva = "Tu cuenta está desactivada. Comunícate con el administrador del sistema.";
 
     /// <summary>Inicia sesión con ID de usuario y contraseña desde un apartado (Médico o Administrador).</summary>
@@ -28,10 +25,10 @@ public class AuthController(IAuthService auth) : ControllerBase
     /// @pre request cumple las reglas de <see cref="LoginRequest"/> (lo garantiza la validación del modelo).
     /// @post 200 con <see cref="LoginResponse"/> si las credenciales son correctas, el rol coincide con el
     ///       apartado y la cuenta está activa.
-    /// @post 401 con <see cref="ErrorResponse"/> si el ID no existe o la contraseña no coincide
-    ///       (mismo mensaje en ambos casos para no revelar qué IDs existen).
-    /// @post 403 con <see cref="ErrorResponse"/> si la contraseña es correcta pero la cuenta es de otro
-    ///       apartado o está desactivada.
+    /// @post 401 con <see cref="ErrorResponse"/> si el ID no existe, la contraseña no coincide o la cuenta es
+    ///       de otro apartado: el mismo mensaje en los tres casos, para no revelar qué IDs existen ni de qué
+    ///       tipo es la cuenta (P-157).
+    /// @post 403 con <see cref="ErrorResponse"/> si la contraseña es correcta pero la cuenta está desactivada.
     /// </remarks>
     [HttpPost("login")]
     [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
@@ -48,9 +45,8 @@ public class AuthController(IAuthService auth) : ControllerBase
         return resultado.Estado switch
         {
             LoginStatus.Exitoso => Ok(resultado.Respuesta),
-            LoginStatus.ApartadoIncorrecto => Prohibido(UserRoles.EsMedico(resultado.RolDeLaCuenta)
-                ? MensajeEsCuentaDeMedico
-                : MensajeEsCuentaDeAdministrador),
+            // Cuenta de otro apartado: se responde como credenciales incorrectas, sin decir de qué tipo es.
+            LoginStatus.ApartadoIncorrecto => Unauthorized(new ErrorResponse(MensajeCredencialesIncorrectas)),
             LoginStatus.CuentaInactiva => Prohibido(MensajeCuentaInactiva),
             _ => Unauthorized(new ErrorResponse(MensajeCredencialesIncorrectas))
         };

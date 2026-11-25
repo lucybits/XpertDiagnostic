@@ -122,47 +122,6 @@ public class DoctorServiceTests
     }
 
     [Fact]
-    public async Task MarcarBienvenidaVistaAsync_UsuarioExistente_LaMarca() // PT29
-    {
-        // Given el usuario 1 que no ha visto la bienvenida
-        var repositorio = new RepositorioMedicosFalso();
-        repositorio.Usuarios.Add(new User { Id = 1, PasswordHash = "x", Rol = UserRoles.MedicoTratante, IdMedico = 1 });
-        var servicio = new DoctorService(repositorio, new HasherFalso());
-
-        // When se marca su bienvenida
-        var marcada = await servicio.MarcarBienvenidaVistaAsync(1);
-
-        // Then queda marcada
-        Assert.True(marcada);
-        Assert.True(repositorio.Usuarios[0].BienvenidaVista);
-    }
-
-    [Fact]
-    public async Task MarcarBienvenidaVistaAsync_UsuarioInexistente_DevuelveFalse() // PT30
-    {
-        var servicio = new DoctorService(new RepositorioMedicosFalso(), new HasherFalso());
-
-        Assert.False(await servicio.MarcarBienvenidaVistaAsync(999));
-    }
-
-    [Fact]
-    public async Task ObtenerPerfilAsync_BienvenidaVista_LaInforma() // PT31
-    {
-        // Given el usuario 1 que ya vio la bienvenida
-        var repositorio = new RepositorioMedicosFalso();
-        repositorio.Medicos.Add(new Doctor { Id = 1, NombreCompleto = "Ana López", Especialidad = "Cardiología", CedulaProfesional = "7654321" });
-        repositorio.Usuarios.Add(new User { Id = 1, PasswordHash = "x", Rol = UserRoles.MedicoTratante, IdMedico = 1, BienvenidaVista = true });
-        var servicio = new DoctorService(repositorio, new HasherFalso());
-
-        // When se consulta su perfil
-        var perfil = await servicio.ObtenerPerfilAsync(1);
-
-        // Then el perfil lo indica
-        Assert.NotNull(perfil);
-        Assert.True(perfil.BienvenidaVista);
-    }
-
-    [Fact]
     public async Task RegistrarAsync_TipoInternista_CreaCuentaConRolI() // PT95
     {
         // Given un ID y una cédula libres

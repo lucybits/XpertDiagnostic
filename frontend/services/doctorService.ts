@@ -1,4 +1,4 @@
-import { getJson, postJson } from '@/lib/apiClient';
+import { getJson } from '@/lib/apiClient';
 import type { SessionProfile } from '@/types/doctor';
 
 /** Estado de la sesión: distingue "no hay sesión" (hay que volver al login) de "no se pudo consultar". */
@@ -56,16 +56,3 @@ export async function logoutAndGoToLogin(): Promise<void> {
   window.location.replace('/login');
 }
 
-/**
- * Marca en la cuenta que el médico completó la bienvenida guiada.
- *
- * @post Nunca lanza: true si el servidor lo confirmó; false si no hay sesión o falló la red.
- */
-export async function markWelcomeSeen(): Promise<boolean> {
-  try {
-    const response = await postJson<null>('/api/session/welcome', {});
-    return response.ok;
-  } catch {
-    return false;
-  }
-}

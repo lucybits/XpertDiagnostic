@@ -1,5 +1,6 @@
 import { getJson, postJson } from '@/lib/apiClient';
 import type { NewPatient, Patient } from '@/types/patient';
+import { isValidationState } from '@/types/validation';
 
 /** Paciente tal como lo devuelve el backend (PatientSummary). */
 interface BackendPatient {
@@ -10,6 +11,9 @@ interface BackendPatient {
   /** Calculada por el servidor a partir de la fecha de nacimiento. */
   edad: number;
   diagnostico: string | null;
+  /** 'P', 'C' o null (P-151). */
+  estadoValidacion?: string | null;
+  validadoPor?: string | null;
 }
 
 /** Convierte el paciente del backend al modelo del buscador. */
@@ -21,6 +25,8 @@ function toPatient(data: BackendPatient): Patient {
     birthDate: data.fechaNacimiento,
     age: data.edad,
     diagnosis: data.diagnostico,
+    validationState: isValidationState(data.estadoValidacion) ? data.estadoValidacion : null,
+    validatedBy: data.validadoPor ?? null,
   };
 }
 

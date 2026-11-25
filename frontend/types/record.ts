@@ -5,6 +5,16 @@ import type { NonPathologicalHistory } from './patient';
 /** Tipos de HALLAZGOS_PACIENTE. */
 export type FindingType = 'Sintoma' | 'Signo' | 'Estudio_lab' | 'Estudio_diagdif' | 'Comorbilidad' | 'Complicacion';
 
+/** Grupos de hallazgos en el orden de la historia clínica (interfaz de salida y pantalla del internista). */
+export const FINDING_GROUPS: readonly { type: FindingType; label: string }[] = [
+  { type: 'Comorbilidad', label: 'Comorbilidades' },
+  { type: 'Sintoma', label: 'Síntomas' },
+  { type: 'Signo', label: 'Signos' },
+  { type: 'Estudio_lab', label: 'Estudios de laboratorio' },
+  { type: 'Estudio_diagdif', label: 'Estudios de diagnóstico diferencial' },
+  { type: 'Complicacion', label: 'Complicaciones' },
+];
+
 /** Secciones que guardan hallazgos: nombre en la URL /api/patients/{id}/findings/{section}. */
 export const FINDING_SECTIONS = ['sintomas', 'signos', 'estudios-laboratorio', 'comorbilidades'] as const;
 export type FindingSection = (typeof FINDING_SECTIONS)[number];
@@ -48,6 +58,8 @@ export interface DiagnosisCandidate {
   totalCriterios: number;
   puntaje: number;
   apoyos: string[];
+  /** Primer tratamiento de la enfermedad en la base de conocimiento, o null (P-160). */
+  tratamientoSugerido?: string | null;
 }
 
 /** Resultado del análisis. provisional = true mientras no exista la máquina de inferencia del equipo. */

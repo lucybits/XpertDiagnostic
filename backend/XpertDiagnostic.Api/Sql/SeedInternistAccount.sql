@@ -39,8 +39,8 @@ BEGIN TRANSACTION;
 INSERT INTO dbo.MEDICOS (Id_Medico, NombreCompleto, Especialidad, CedulaProfesional)
 VALUES (654322, N'Internista de Prueba', N'Medicina Interna', '65432202');
 
-INSERT INTO dbo.USUARIOS (Id_Usuario, PASS, ROL, Id_Medico, Id_Area, BienvenidaVista, Activo)
-VALUES (654322, '$2a$11$awcLce16ICdrYN.wUWuCxOLcTI1u2oZiMTG6hf79MuNYUfkQpj2aG', 'I', 654322, NULL, 1, 1);
+INSERT INTO dbo.USUARIOS (Id_Usuario, PASS, ROL, Id_Medico, Id_Area, Activo)
+VALUES (654322, '$2a$11$awcLce16ICdrYN.wUWuCxOLcTI1u2oZiMTG6hf79MuNYUfkQpj2aG', 'I', 654322, NULL, 1);
 
 COMMIT TRANSACTION;
 

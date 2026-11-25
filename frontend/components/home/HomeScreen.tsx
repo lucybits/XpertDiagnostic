@@ -5,21 +5,24 @@ import Sidebar from './Sidebar';
 import TopNavbar from './TopNavbar';
 import { CLINICAL_SECTION_GROUPS, buildSectionGroups, sectionsWithData } from './clinicalSections';
 import { MOCK_DOCTOR, toDoctorProfile, type DoctorProfile } from './currentDoctor';
-import AssistantChat from '@/components/assistant/AssistantChat';
+import SectionWorkspace from '@/components/capture/SectionWorkspace';
 import PatientRecordPanel from './PatientRecordPanel';
 import PatientSearchDialog from './PatientSearchDialog';
 import { listPatients } from '@/services/patientService';
 import { getRecord } from '@/services/recordService';
-import { getSessionState, logoutAndGoToLogin, markWelcomeSeen } from '@/services/doctorService';
+import { getHistory } from '@/services/historyService';
+import type { PatientHistory } from '@/types/history';
+import { getSessionState, logoutAndGoToLogin } from '@/services/doctorService';
 import { HOME_ROUTE_BY_ROLE } from '@/types/auth';
 import { USER_ROLES, type SessionProfile } from '@/types/doctor';
 import type { Patient } from '@/types/patient';
+import type { ValidationSummary } from '@/types/validation';
 import type { DiagnosisResult, PatientRecord } from '@/types/record';
 import type { FindingType, PatientFinding } from './PatientRecordPanel';
 
 /**
- * Vista de la pantalla principal (en construcción).
- * Aquí se agregarán los componentes de la interfaz de entrada, como el chat de IA.
+ * Pantalla principal del médico tratante (interfaz de entrada): menú de secciones, captura del
+ * expediente en el centro y panel del expediente a la derecha.
  */
 export default function HomeScreen() {
   const firstSectionId = CLINICAL_SECTION_GROUPS[0].sections[0].id;
@@ -30,6 +33,8 @@ export default function HomeScreen() {
   const sectionGroups = useMemo(() => buildSectionGroups(completedSections), [completedSections]);
   // Expediente capturado (entradas) y último análisis (salida provisional) del paciente actual.
   const [patientRecord, setPatientRecord] = useState<PatientRecord | null>(null);
+  // Interrogatorio del paciente actual (P-159): antecedentes no patológicos y patológicos.
+  const [patientHistory, setPatientHistory] = useState<PatientHistory | null>(null);
   const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(null);
   // El análisis quedó desactualizado: se guardaron hallazgos después de hacerlo (P-112).
   const [isDiagnosisStale, setIsDiagnosisStale] = useState(false);
@@ -48,7 +53,7 @@ export default function HomeScreen() {
   const [session, setSession] = useState<SessionProfile | null | undefined>(undefined);
   // Cajón del expediente (pantallas menores a xl; en xl el panel siempre está visible).
   const [isRecordOpen, setIsRecordOpen] = useState<boolean>(false);
-  const [isChatHeaderCollapsed, setIsChatHeaderCollapsed] = useState<boolean>(false);
+  const [isSectionHeaderCollapsed, setIsSectionHeaderCollapsed] = useState<boolean>(false);
   // Barra superior y expediente plegados (P-75), cada uno con su propio estilo.
   const [isTopbarCollapsed, setIsTopbarCollapsed] = useState<boolean>(false);
   const [isRecordCollapsed, setIsRecordCollapsed] = useState<boolean>(false);
@@ -162,17 +167,29 @@ export default function HomeScreen() {
   const startWithPatient = (patient: Patient) => {
     setSelectedPatient(patient);
     setPatientRecord(null);
+    setPatientHistory(null);
     setDiagnosis(null);
     setIsDiagnosisStale(false);
     setCompletedSections(new Set());
     setActiveSectionId(firstSectionId);
-    void getRecord(patient.id).then((result) => {
-      if (!result.ok) return;
-      const done = sectionsWithData(result.data);
-      setPatientRecord(result.data);
+    // Hallazgos e interrogatorio (P-159) a la vez: con ambos se sabe qué secciones ya están capturadas.
+    void Promise.all([getRecord(patient.id), getHistory(patient.id)]).then(([recordResult, historyResult]) => {
+      if (!recordResult.ok) return;
+      const history = historyResult.ok ? historyResult.data : null;
+      const done = sectionsWithData(recordResult.data, history);
+      setPatientRecord(recordResult.data);
+      setPatientHistory(history);
       setCompletedSections(done);
       setActiveSectionId(firstOpenSection(done));
     });
+  };
+
+  // Se guardó una parte del interrogatorio (P-159): queda completada y se pasa a la siguiente sección.
+  const handleHistorySaved = (history: PatientHistory) => {
+    const done = new Set(completedSections).add(activeSectionId);
+    setPatientHistory(history);
+    setCompletedSections(done);
+    setActiveSectionId(nextSectionAfterSave(done));
   };
 
   // Se guardó la sección actual: queda completada y se pasa a la siguiente sin completar (P-103).
@@ -186,14 +203,15 @@ export default function HomeScreen() {
     setActiveSectionId(nextSectionAfterSave(done));
   };
 
-  // Diagnóstico confirmado y enviado a validación (P-111, P-145): se anota en el paciente (y en la
-  // lista del buscador), y el expediente queda "Pendiente" hasta que lo valide el internista.
-  const handleDiagnosisConfirmed = (diseaseName: string, record: PatientRecord) => {
-    setPatientRecord(record);
-    if (!selectedPatient) return;
-    const updated = { ...selectedPatient, diagnosis: diseaseName };
-    setSelectedPatient(updated);
-    setPatients((current) => current.map((p) => (p.id === updated.id ? updated : p)));
+  // Validación del diagnóstico (P-151): se envió al internista o él ya confirmó. Se anota en el paciente
+  // (y en la lista del buscador) para que el panel del expediente diga el estado y ofrezca el resultado.
+  const handleValidationChanged = (summary: ValidationSummary) => {
+    const update = (patient: Patient): Patient =>
+      patient.id !== summary.idPaciente
+        ? patient
+        : { ...patient, diagnosis: summary.diagnostico, validationState: summary.estado, validatedBy: summary.validador };
+    setSelectedPatient((current) => (current ? update(current) : current));
+    setPatients((current) => current.map(update));
   };
 
   const handleAnalyzed = (result: DiagnosisResult) => {
@@ -221,7 +239,7 @@ export default function HomeScreen() {
     setIsSidebarOpen(false);
   };
 
-  // Sección activa y su grupo, para el encabezado del chat.
+  // Sección activa y su grupo, para el encabezado de la sección.
   const orderedSections = sectionGroups.flatMap((group) =>
     group.sections.map((section) => ({ section, groupLabel: group.label })),
   );
@@ -230,14 +248,6 @@ export default function HomeScreen() {
     orderedSections.findIndex((entry) => entry.section.id === activeSectionId),
   );
   const active = orderedSections[activeIndex];
-
-  // Bienvenida guiada (ESP-003): se muestra siempre que el médico escribe sin paciente (P-71).
-  // Aceptar el aviso clínico se sigue registrando en la cuenta (USUARIOS.BienvenidaVista).
-  const handleWelcomeAccepted = () => {
-    void markWelcomeSeen().then((saved) => {
-      if (!saved) console.warn('No se pudo registrar que se aceptó el aviso clínico de la bienvenida.');
-    });
-  };
 
   return (
     <div className="flex h-dvh flex-1 overflow-hidden bg-white text-base text-slate-900">
@@ -269,7 +279,7 @@ export default function HomeScreen() {
         />
       )}
 
-      {/* Alto exacto de la ventana: el chat y el expediente hacen scroll por dentro. */}
+      {/* Alto exacto de la ventana: la captura y el expediente hacen scroll por dentro. */}
       <div className="flex h-dvh min-w-0 flex-1 flex-col">
         <TopNavbar
           doctor={doctor}
@@ -283,24 +293,24 @@ export default function HomeScreen() {
 
         <div className="flex min-h-0 flex-1">
           <main className="min-h-0 min-w-0 flex-1">
-            <AssistantChat
+            <SectionWorkspace
               key={`${active.section.id}-${selectedPatient?.id ?? 'none'}-${session === undefined ? 'loading' : 'ready'}`}
               groupLabel={active.groupLabel}
               section={active.section}
               position={activeIndex + 1}
               total={orderedSections.length}
-              isHeaderCollapsed={isChatHeaderCollapsed}
-              onToggleHeader={() => setIsChatHeaderCollapsed((collapsed) => !collapsed)}
+              isHeaderCollapsed={isSectionHeaderCollapsed}
+              onToggleHeader={() => setIsSectionHeaderCollapsed((collapsed) => !collapsed)}
               patient={selectedPatient}
-              doctorName={session?.nombreCompleto ?? doctor.displayName}
-              onWelcomeAccepted={handleWelcomeAccepted}
               onSearchPatient={openPatientSearch}
               record={patientRecord}
               onSectionSaved={handleSectionSaved}
+              history={patientHistory}
+              onHistorySaved={handleHistorySaved}
               diagnosis={diagnosis}
               isDiagnosisStale={isDiagnosisStale}
               onAnalyzed={handleAnalyzed}
-              onDiagnosisConfirmed={handleDiagnosisConfirmed}
+              onValidationChanged={handleValidationChanged}
             />
           </main>
 
@@ -317,7 +327,6 @@ export default function HomeScreen() {
               findings={recordFindings}
               diagnosis={diagnosis}
               isDiagnosisStale={isDiagnosisStale}
-              validationStatus={patientRecord?.estadoValidacion ?? null}
               collapsed={isRecordCollapsed}
               onToggleCollapsed={() => setIsRecordCollapsed((collapsed) => !collapsed)}
             />
@@ -344,7 +353,6 @@ export default function HomeScreen() {
               findings={recordFindings}
               diagnosis={diagnosis}
               isDiagnosisStale={isDiagnosisStale}
-              validationStatus={patientRecord?.estadoValidacion ?? null}
               onClose={() => setIsRecordOpen(false)}
             />
           </aside>

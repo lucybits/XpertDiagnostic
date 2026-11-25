@@ -53,6 +53,8 @@ builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
 builder.Services.AddScoped<IPatientRecordRepository, PatientRecordRepository>();
 builder.Services.AddScoped<IPatientResultRepository, PatientResultRepository>();
+builder.Services.AddScoped<IDiagnosisValidationRepository, DiagnosisValidationRepository>();
+builder.Services.AddScoped<IPatientHistoryRepository, PatientHistoryRepository>();
 
 // ── Capa de servicios ───────────────────────────────────────────────────
 builder.Services.AddSingleton(TimeProvider.System);
@@ -68,9 +70,12 @@ builder.Services.AddScoped<ICatalogService, CatalogService>();
 builder.Services.AddScoped<IPatientRecordService, PatientRecordService>();
 builder.Services.AddScoped<IDiagnosisService, DiagnosisService>();
 builder.Services.AddScoped<IPatientResultService, PatientResultService>();
-// Máquina de inferencia (P-103): implementación provisional hasta que el equipo
-// termine la suya; para cambiarla basta con registrar otra clase que implemente IInferenceEngine.
-builder.Services.AddScoped<IInferenceEngine, ProvisionalInferenceEngine>();
+builder.Services.AddScoped<IDiagnosisValidationService, DiagnosisValidationService>();
+builder.Services.AddScoped<IPatientHistoryService, PatientHistoryService>();
+// Máquina de inferencia del equipo (P-160): conversión de inference_engine.prg. Reemplaza al motor
+// provisional y al ai-service. Los servicios dependen de IInferenceEngine, no de esta clase.
+builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
+builder.Services.AddScoped<IInferenceEngine, InferenceEngine>();
 builder.Services.AddScoped<IDatabaseHealthService, DatabaseHealthService>();
 
 // ── Autenticación JWT (valida los tokens que emite JwtTokenService) ─────

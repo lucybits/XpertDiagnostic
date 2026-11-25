@@ -44,15 +44,6 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
         }
     }
 
-    public async Task<bool> MarcarBienvenidaVistaAsync(int usuarioId, CancellationToken cancellationToken = default)
-    {
-        // Actualización directa: no carga la entidad ni toca la contraseña.
-        var filas = await db.Usuarios
-            .Where(u => u.Id == usuarioId)
-            .ExecuteUpdateAsync(set => set.SetProperty(u => u.BienvenidaVista, true), cancellationToken);
-        return filas > 0;
-    }
-
     public Task<DoctorProfile?> ObtenerPerfilAsync(int usuarioId, CancellationToken cancellationToken = default) =>
         (from u in db.Usuarios.AsNoTracking()
          join m in db.Medicos.AsNoTracking() on u.IdMedico equals (int?)m.Id into medicos
@@ -62,8 +53,7 @@ public sealed class DoctorRepository(AppDbContext db) : IDoctorRepository
              u.Id,
              u.Rol,
              m == null ? string.Empty : m.NombreCompleto,
-             m == null ? string.Empty : m.Especialidad,
-             u.BienvenidaVista))
+             m == null ? string.Empty : m.Especialidad))
         .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IReadOnlyList<DoctorAccount>> ListarCuentasAsync(string? busqueda, CancellationToken cancellationToken = default)

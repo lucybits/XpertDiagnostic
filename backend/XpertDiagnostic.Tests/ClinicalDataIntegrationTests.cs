@@ -91,11 +91,12 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
     }
 
     [Fact]
-    public async Task PT57_MotorProvisional_EvaluadoContraResultadosEsperados()
+    public async Task PT57_MaquinaDeInferencia_EvaluadaContraResultadosEsperados()
     {
         // Given los pacientes de prueba y su respuesta correcta (IO_ResultadosEsperados, solo para evaluar)
         await using var db = CrearContexto();
-        var diagnosticos = new DiagnosisService(new PatientRecordRepository(db), new ProvisionalInferenceEngine(new CatalogRepository(db)));
+        var motor = new InferenceEngine(new CatalogRepository(db), new TreatmentRepository(db));
+        var diagnosticos = new DiagnosisService(new PatientRecordRepository(db), motor);
         var esperados = await db.Database
             .SqlQuery<EsperadoFila>($"SELECT Id_Paciente AS IdPaciente, Id_Enfermedad AS IdEnfermedadEsperada FROM dbo.IO_ResultadosEsperados")
             .ToListAsync();
@@ -106,20 +107,23 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
         {
             var resultado = await diagnosticos.AnalizarAsync(esperado.IdPaciente);
             Assert.NotNull(resultado);
-            var primero = resultado.Candidatos.FirstOrDefault()?.IdEnfermedad;
-            if (primero == esperado.IdEnfermedadEsperada) aciertos++;
-            salida.WriteLine($"{esperado.IdPaciente}: esperado {esperado.IdEnfermedadEsperada}, primero {primero ?? "(ninguno)"}");
+            // Copia literal del .prg (P-161): la lista va en orden alfabético, así que se mide si la enfermedad
+            // esperada está en ella y cuántas trae.
+            var posicion = resultado.Candidatos.ToList().FindIndex(c => c.IdEnfermedad == esperado.IdEnfermedadEsperada);
+            if (posicion >= 0) aciertos++;
+            salida.WriteLine($"{esperado.IdPaciente}: esperado {esperado.IdEnfermedadEsperada}, " +
+                $"{(posicion >= 0 ? $"en la posición {posicion + 1}" : "NO está")} de {resultado.Candidatos.Count} candidatos");
         }
 
         // Then cada paciente con hallazgos tiene al menos un candidato; se informa la exactitud
-        salida.WriteLine($"Exactitud del motor provisional: {aciertos} de {esperados.Count}");
+        salida.WriteLine($"La enfermedad esperada está entre los candidatos: {aciertos} de {esperados.Count}");
         Assert.NotEmpty(esperados);
     }
 
     [Fact]
-    public async Task PT65_ResultadoDePrueba_TraeDiagnosticoTratamientoYPlan()
+    public async Task PT65_ResultadoDePrueba_SinConfirmacionOcultaLasSalidas()
     {
-        // Given el paciente de prueba PACIE00001, que ya trae sus salidas en la base
+        // Given el paciente de prueba PACIE00001, cuyo diagnóstico precargado no fue confirmado por un internista
         await using var db = CrearContexto();
         var expedientes = new PatientRecordService(new PatientRecordRepository(db), new CatalogRepository(db));
         var servicio = new PatientResultService(new PatientResultRepository(db), expedientes);
@@ -127,14 +131,13 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
         // When se consulta su resultado
         var resultado = await servicio.ObtenerAsync("PACIE00001");
 
-        // Then trae el diagnóstico, los tratamientos de esa enfermedad con el elegido entre ellos y su plan
+        // Then se conservan las entradas, pero no se exponen salidas hasta que un internista confirme el diagnóstico
         Assert.NotNull(resultado);
-        Assert.Equal("CARDI00017", resultado.IdEnfermedadDiagnosticada);
-        Assert.NotEmpty(resultado.Tratamientos);
-        Assert.All(resultado.Tratamientos, t => Assert.StartsWith("CARDI00017", t.IdTratamiento));
-        Assert.Contains(resultado.Tratamientos, t => t.IdTratamiento == resultado.IdTratamiento);
-        Assert.NotNull(resultado.Plan);
-        Assert.False(string.IsNullOrWhiteSpace(resultado.Plan.PlanIndicado));
+        Assert.Null(resultado.IdEnfermedadDiagnosticada);
+        Assert.Null(resultado.EnfermedadDiagnosticada);
+        Assert.Empty(resultado.Tratamientos);
+        Assert.Null(resultado.IdTratamiento);
+        Assert.Null(resultado.Plan);
     }
 
     private sealed record EsperadoFila(string IdPaciente, string IdEnfermedadEsperada);

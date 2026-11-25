@@ -5,7 +5,7 @@
 | Identificador | ESP-002 |
 | Origen | Petición de Lucía (P-38): identificar al médico que inicia sesión y permitir que un administrador registre médicos con su cuenta. |
 | Estado | Implementada, pendiente de la ejecución manual de pruebas |
-| Tareas | [tareas/inicio-sesion.md](../tareas/inicio-sesion.md), T35 a T38 |
+| Tareas | [tareas/medicos-y-cuentas.md](../tareas/medicos-y-cuentas.md), T35 a T39 |
 | Casos de prueba | Sección 6 de este documento, PT17 a PT28 |
 
 ## 1. Objetivo

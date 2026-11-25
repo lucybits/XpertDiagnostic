@@ -4,17 +4,9 @@
 |---|---|
 | Identificador | ESP-005 |
 | Origen | P-102 y P-103: conectar la estructura visual con la lógica antes de tener la máquina de inferencia o el RAG. |
-| Estado | Implementada. La máquina de inferencia es provisional. Falta probar el flujo con sesión iniciada. |
-| Tareas | [tareas/inicio-sesion.md](../tareas/inicio-sesion.md), T52 a T54 |
-| Casos de prueba | Sección 6 de este documento, PT49 a PT57; PT101 a PT104 (P-145) |
-
-> **Cambio P-145 (3.4, flujo del médico tratante).** El tratante interroga, explora, formula una hipótesis y se apoya en el sistema para un diagnóstico que valida el internista:
->
-> - **Orden de captura:** *Interrogatorio* → **Antecedentes no patológicos** (7 casillas sí/no, `IO_AntecNoPatolPacientes`); *Evaluación clínica* → signos, síntomas, estudios y laboratorios, comorbilidades; *Diagnóstico* → **Hipótesis inicial** (texto libre de 3 a 1000 caracteres, `PACIENTES.HipotesisInicial`) y diagnóstico diferencial.
-> - **Endpoints nuevos (solo tratante):** `PUT /api/patients/{id}/non-pathological-history` y `PUT /api/patients/{id}/hypothesis`. `GET /api/patients/{id}/record` devuelve además `antecedentesNoPatologicos`, `hipotesisInicial` y `estadoValidacion`.
-> - **Confirmar = enviar a validación:** al confirmar un candidato (`PUT /api/patients/{id}/diagnosis`, solo tratante) el paciente queda `EstadoValidacion = 'Pendiente'` y la respuesta es el expediente, no la salida. El botón dice "Confirmar y enviar a validación" y ya no abre la interfaz de salida. Volver a confirmar regresa el estado a "Pendiente".
-> - **Validación del internista:** `PUT /api/patients/{id}/validation` (solo rol `I`) pasa de "Pendiente" a "Validado" (409 si no hay nada pendiente). La pantalla del internista sigue aplazada: el endpoint queda listo para ella.
-> - Migración para bases existentes: `AddPatientHypothesisAndValidation.sql`.
+| Estado | Implementada. Desde P-160 la máquina de inferencia es la del equipo (ESP-010, [13-maquina-de-inferencia.md](13-maquina-de-inferencia.md)). Falta probar el flujo con sesión iniciada. |
+| Tareas | [tareas/captura-y-analisis.md](../tareas/captura-y-analisis.md), T51 a T55 y T91 a T93 |
+| Casos de prueba | Sección 6 de este documento, PT49 a PT57 |
 
 ## 1. Objetivo
 
@@ -31,7 +23,7 @@ Que el médico capture las **entradas** de la máquina de inferencia de forma es
 | Secciones sin tabla (antecedentes patológicos, no patológicos, alergias, quirúrgicos) | Se quitaron. Las secciones quedan **alineadas con el modelo**. |
 | Varias comorbilidades | Se guardan en `HALLAZGOS_PACIENTE` (tipo `Comorbilidad`). La columna `PACIENTES.IdComorbilidad` queda sin usar por ahora. |
 
-**Criterio:** un sistema experto razona con IDs del catálogo, no con texto libre. Por eso la captura es estructurada y el LLM o RAG queda para redactar y explicar.
+**Criterio:** un sistema experto razona con IDs del catálogo, no con texto libre. Por eso la captura es estructurada. Decisión final del equipo (P-160): no hay LLM ni RAG; el diagnóstico lo calcula solo la máquina de inferencia del equipo.
 
 ## 3. Secciones
 
@@ -55,16 +47,13 @@ Que el médico capture las **entradas** de la máquina de inferencia de forma es
 | RF-39 | En "Enfermedades preexistentes" se elige una o ninguna (`PUT /api/patients/{id}/preexisting-disease`). |
 | RF-40 | Al guardar, la sección queda completada y se pasa a la primera sin completar. Al elegir un paciente con datos, se marcan completadas las secciones que ya tienen datos y se retoma en la primera que no los tiene. |
 | RF-41 | El panel "Expediente" muestra la enfermedad preexistente y los hallazgos guardados, agrupados por tipo y sin repetir descripciones. |
-| RF-42 | "Analizar expediente" (`POST /api/patients/{id}/analysis`) muestra hasta 3 enfermedades candidatas con su porcentaje de coincidencia, los criterios y los hallazgos que las apoyan. Si el motor es provisional, se indica. Analizar no guarda nada; el diagnóstico se guarda solo cuando el médico confirma un candidato (ESP-006, RF-44). |
+| RF-42 | "Analizar expediente" (`POST /api/patients/{id}/analysis`) muestra hasta 5 enfermedades probables con su porcentaje de coincidencia, los criterios, los hallazgos que las apoyan y su tratamiento sugerido (ESP-010). Analizar no guarda nada; el diagnóstico se guarda solo cuando el médico internista confirma un candidato (ESP-008). |
 | RF-43 | La máquina de inferencia es una interfaz (`IInferenceEngine`, inversión de dependencias). Cambiar de implementación solo requiere registrarla en `Program.cs`. Ninguna implementación lee `RESULTADOS_ESPERADOS`. |
 | RF-51 | Si se guarda una sección después de analizar, el análisis queda **desactualizado**: el panel del análisis muestra un aviso y deshabilita "Confirmar este diagnóstico", y el panel del expediente lo marca y lo atenúa. Al volver a analizar se quita la marca (P-112). |
 
-## 5. Máquina de inferencia provisional
+## 5. Máquina de inferencia
 
-`ProvisionalInferenceEngine` existe solo para conectar el flujo completo.
-
-- **Regla:** cada `IdRegistro` empieza con el ID de su enfermedad, como indica `CreateClinicalTables.sql` ("los 10 primeros caracteres son la enfermedad"). Para cada enfermedad, el motor cuenta cuántos hallazgos del paciente le pertenecen y lo divide entre sus criterios (síntomas, signos, estudios y comorbilidades).
-- **Límite conocido:** con los 10 pacientes de prueba acierta 10 de 10 (PT57). Ese resultado **no mide la calidad diagnóstica**, porque los hallazgos de esos pacientes ya se cargaron con los IDs de su enfermedad correcta. La calidad real se medirá con la máquina de inferencia del equipo, usando la misma prueba.
+El motor provisional (`ProvisionalInferenceEngine`) se retiró en P-160. La máquina de inferencia es ahora la del equipo, convertida de `inference_engine.prg`: ver [13-maquina-de-inferencia.md](13-maquina-de-inferencia.md) (ESP-010).
 
 ## 6. Casos de prueba
 
@@ -104,11 +93,9 @@ Que el médico capture las **entradas** de la máquina de inferencia de forma es
 - **When** se consulta el expediente.
 - **Then** aparece una sola vez.
 
-### PT55. Orden del motor provisional [auto, xUnit]
+### PT55. Orden de la máquina de inferencia
 
-- **Given** los hallazgos Disnea (en dos enfermedades) y Sibilancias (solo asma).
-- **When** se infiere.
-- **Then** hay dos candidatos ordenados por puntaje, y el asma tiene 2 de 3 criterios. Sin hallazgos, no hay candidatos.
+Pasó a [13-maquina-de-inferencia.md](13-maquina-de-inferencia.md) con el motor del equipo (P-160).
 
 ### PT56. Expediente real agrupado [auto, integración, solo lectura]
 

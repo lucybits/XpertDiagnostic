@@ -58,7 +58,7 @@ export default function ProfileMenu({ doctor }: ProfileMenuProps) {
         aria-expanded={isOpen}
         aria-controls="profile-menu"
         aria-label={`Cuenta de ${doctor.displayName}`}
-        className="flex items-center gap-3 rounded-full p-1 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 sm:rounded-xl sm:py-1.5 sm:pr-3 sm:pl-1.5"
+        className="flex items-center gap-3 rounded-none p-1 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 sm:rounded-xl sm:py-1.5 sm:pr-3 sm:pl-1.5"
       >
         <span
           aria-hidden="true"

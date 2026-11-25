@@ -111,30 +111,8 @@ public class PatientRecordServiceTests
         Assert.Single(expediente.Hallazgos);
     }
 
-    [Fact]
-    public async Task MotorProvisional_OrdenaPorProporcionDeCriterios() // PT55
-    {
-        // Given hallazgos: Disnea (en ambas) y Sibilancias (solo asma)
-        var motor = new ProvisionalInferenceEngine(new CatalogosFalsos());
-        FindingView[] hallazgos =
-        [
-            new("Sintoma", "CARDI00017SINTO00001", "Disnea", "presente", null),
-            new("Sintoma", "NEUMO00008SINTO00002", "disnea", "presente", null),
-            new("Sintoma", "NEUMO00008SINTO00003", "Sibilancias", "presente", null),
-        ];
-
-        // When se infiere
-        var candidatos = await motor.InferirAsync(hallazgos);
-        var vacio = await motor.InferirAsync([]);
-
-        // Then el asma (2 de 3 criterios) va antes que la miocardiopatía (1 de 1), ordenado por puntaje
-        Assert.Equal(["CARDI00017", "NEUMO00008"], candidatos.Select(c => c.IdEnfermedad).Order());
-        Assert.True(candidatos[0].Puntaje >= candidatos[1].Puntaje);
-        var asma = Assert.Single(candidatos, c => c.IdEnfermedad == "NEUMO00008");
-        Assert.Equal(2, asma.Coincidencias);
-        Assert.Equal(3, asma.TotalCriterios);
-        Assert.Empty(vacio);
-    }
+    // PT55 (motor provisional) pasó a InferenceEngineTests: desde P-160 el motor es la conversión de
+    // inference_engine.prg.
 
     [Fact]
     public async Task GuardarAntecedentes_Respuestas_SeVenEnElExpediente() // PT103
