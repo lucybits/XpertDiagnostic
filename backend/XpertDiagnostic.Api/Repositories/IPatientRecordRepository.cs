@@ -24,4 +24,15 @@ public interface IPatientRecordRepository
         IReadOnlyList<PatientFinding> hallazgos,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Hipótesis inicial, estado de validación y antecedentes no patológicos (P-145).</summary>
+    /// <remarks>@post null si el paciente no existe. No modifica datos.</remarks>
+    Task<PatientCaptureState?> ObtenerEstadoCapturaAsync(string idPaciente, CancellationToken cancellationToken = default);
+
+    /// <summary>Crea o reemplaza la fila del paciente en IO_AntecNoPatolPacientes.</summary>
+    /// <remarks>@pre el paciente existe. @post Queda exactamente una fila con esas respuestas.</remarks>
+    Task GuardarAntecedentesNoPatologicosAsync(NonPathologicalHistory antecedentes, CancellationToken cancellationToken = default);
+
+    /// <summary>Reemplaza la hipótesis inicial del paciente.</summary>
+    /// <remarks>@pre el paciente existe.</remarks>
+    Task GuardarHipotesisAsync(string idPaciente, string hipotesis, CancellationToken cancellationToken = default);
 }

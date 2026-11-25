@@ -1,5 +1,7 @@
 /** Expediente capturado y análisis (P-103), tal como los devuelve el backend. */
 
+import type { NonPathologicalHistory } from './patient';
+
 /** Tipos de HALLAZGOS_PACIENTE. */
 export type FindingType = 'Sintoma' | 'Signo' | 'Estudio_lab' | 'Estudio_diagdif' | 'Comorbilidad' | 'Complicacion';
 
@@ -26,10 +28,20 @@ export interface FindingView {
   unidades: string | null;
 }
 
-/** Entradas de la máquina de inferencia ya guardadas. */
+/**
+ * Validación del diagnóstico por el internista (P-145): null = en captura; 'Pendiente' = el tratante
+ * confirmó y lo envió; 'Validado' = el tratante ya puede ver la interfaz de salida.
+ */
+export type ValidationStatus = 'Pendiente' | 'Validado' | null;
+
+/** Expediente del paciente: entradas de la máquina de inferencia y lo que captura el tratante (P-145). */
 export interface PatientRecord {
   idPaciente: string;
   hallazgos: FindingView[];
+  /** null si el tratante todavía no hace el interrogatorio. */
+  antecedentesNoPatologicos: NonPathologicalHistory | null;
+  hipotesisInicial: string | null;
+  estadoValidacion: ValidationStatus;
 }
 
 /** Un hallazgo elegido al capturar. @inv valor null = "presente"; si viene, es un número. */

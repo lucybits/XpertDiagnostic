@@ -121,9 +121,9 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
     }
 
     [Fact]
-    public async Task PT65_ResultadoDePrueba_TraeDiagnosticoTratamientoYPlan()
+    public async Task PT65_ResultadoDePrueba_SinConfirmacionOcultaLasSalidas()
     {
-        // Given el paciente de prueba PACIE00001, que ya trae sus salidas en la base
+        // Given el paciente de prueba PACIE00001, cuyo diagnóstico precargado no fue confirmado por un internista
         await using var db = CrearContexto();
         var expedientes = new PatientRecordService(new PatientRecordRepository(db), new CatalogRepository(db));
         var servicio = new PatientResultService(new PatientResultRepository(db), expedientes);
@@ -131,14 +131,13 @@ public class ClinicalDataIntegrationTests(ITestOutputHelper salida)
         // When se consulta su resultado
         var resultado = await servicio.ObtenerAsync("PACIE00001");
 
-        // Then trae el diagnóstico, los tratamientos de esa enfermedad con el elegido entre ellos y su plan
+        // Then se conservan las entradas, pero no se exponen salidas hasta que un internista confirme el diagnóstico
         Assert.NotNull(resultado);
-        Assert.Equal("CARDI00017", resultado.IdEnfermedadDiagnosticada);
-        Assert.NotEmpty(resultado.Tratamientos);
-        Assert.All(resultado.Tratamientos, t => Assert.StartsWith("CARDI00017", t.IdTratamiento));
-        Assert.Contains(resultado.Tratamientos, t => t.IdTratamiento == resultado.IdTratamiento);
-        Assert.NotNull(resultado.Plan);
-        Assert.False(string.IsNullOrWhiteSpace(resultado.Plan.PlanIndicado));
+        Assert.Null(resultado.IdEnfermedadDiagnosticada);
+        Assert.Null(resultado.EnfermedadDiagnosticada);
+        Assert.Empty(resultado.Tratamientos);
+        Assert.Null(resultado.IdTratamiento);
+        Assert.Null(resultado.Plan);
     }
 
     private sealed record EsperadoFila(string IdPaciente, string IdEnfermedadEsperada);

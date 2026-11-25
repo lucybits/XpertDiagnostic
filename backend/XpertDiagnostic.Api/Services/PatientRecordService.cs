@@ -43,7 +43,8 @@ public sealed class PatientRecordService(IPatientRecordRepository expedientes, I
     public async Task<PatientRecord?> ObtenerAsync(string idPaciente, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(idPaciente);
-        if (!await _expedientes.ExistePacienteAsync(idPaciente, cancellationToken))
+        var captura = await _expedientes.ObtenerEstadoCapturaAsync(idPaciente, cancellationToken);
+        if (captura is null)
             return null;
 
         var filas = await _expedientes.ListarHallazgosAsync(idPaciente, cancellationToken);
@@ -54,7 +55,48 @@ public sealed class PatientRecordService(IPatientRecordRepository expedientes, I
             .Select(grupo => grupo.First())
             .ToList();
 
-        return new PatientRecord(idPaciente, hallazgos);
+        return new PatientRecord(idPaciente, hallazgos, captura.Antecedentes, captura.HipotesisInicial, captura.EstadoValidacion);
+    }
+
+    public async Task<SaveFindingsStatus> GuardarAntecedentesNoPatologicosAsync(
+        string idPaciente,
+        SaveNonPathologicalHistoryRequest respuestas,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(idPaciente);
+        ArgumentNullException.ThrowIfNull(respuestas);
+
+        if (!await _expedientes.ExistePacienteAsync(idPaciente, cancellationToken))
+            return SaveFindingsStatus.PacienteNoExiste;
+
+        await _expedientes.GuardarAntecedentesNoPatologicosAsync(new NonPathologicalHistory
+        {
+            IdPaciente = idPaciente,
+            Tabaquismo = respuestas.Tabaquismo,
+            Alcoholism = respuestas.Alcoholismo,
+            Toxicomans = respuestas.Toxicomanias,
+            Biomasa = respuestas.Biomasa,
+            TatuajPerf = respuestas.TatuajesPerforaciones,
+            Herbolaria = respuestas.Herbolaria,
+            Transfusio = respuestas.Transfusiones,
+        }, cancellationToken);
+        return SaveFindingsStatus.Guardado;
+    }
+
+    public async Task<SaveFindingsStatus> GuardarHipotesisAsync(
+        string idPaciente,
+        string hipotesis,
+        CancellationToken cancellationToken = default)
+    {
+        // @pre
+        ArgumentException.ThrowIfNullOrWhiteSpace(idPaciente);
+        ArgumentException.ThrowIfNullOrWhiteSpace(hipotesis);
+
+        if (!await _expedientes.ExistePacienteAsync(idPaciente, cancellationToken))
+            return SaveFindingsStatus.PacienteNoExiste;
+
+        await _expedientes.GuardarHipotesisAsync(idPaciente, hipotesis.Trim(), cancellationToken);
+        return SaveFindingsStatus.Guardado;
     }
 
     public async Task<SaveFindingsStatus> GuardarHallazgosAsync(

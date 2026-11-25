@@ -127,11 +127,16 @@ CREATE TABLE dbo.PACIENTES (
     Id_Paciente                VARCHAR(10)   NOT NULL CONSTRAINT PK_PACIENTES PRIMARY KEY,
     -- Nombre completo armado con Nombres + ApellidoPaterno + ApellidoMaterno (lo usan el buscador y el PDF).
     NombreCompleto            NVARCHAR(150) NOT NULL,
-    -- Datos que captura el administrador al dar de alta al paciente (P-144). La edad se calcula de la fecha.
+    -- Datos que captura el administrador al dar de alta al paciente (P-150). La edad se calcula de la fecha.
     Nombres                   NVARCHAR(60)  NULL,
     ApellidoPaterno           NVARCHAR(40)  NULL,
     ApellidoMaterno           NVARCHAR(40)  NULL,
     FechaNacimiento           DATE          NOT NULL CONSTRAINT CK_PACIENTES_FECHA_NACIMIENTO CHECK (FechaNacimiento >= '1890-01-01'),
+    -- Hipótesis diagnóstica inicial que escribe el médico tratante antes de analizar (P-151).
+    HipotesisInicial          NVARCHAR(1000) NULL,
+    -- Validación del diagnóstico por el médico internista (P-151): NULL = en captura,
+    -- 'Pendiente' = enviado a validación, 'Validado' = el tratante ya puede ver la interfaz de salida.
+    EstadoValidacion          VARCHAR(10)   NULL CONSTRAINT CK_PACIENTES_ESTADO_VALIDACION CHECK (EstadoValidacion IN ('Pendiente', 'Validado')),
     -- Obligatorio: un carácter, 'F' o 'M' en mayúscula (comparación binaria: la collation de la base no
     -- distingue mayúsculas).
     Sexo                      CHAR(1)       NOT NULL CONSTRAINT CK_PACIENTES_SEXO CHECK (Sexo COLLATE Latin1_General_BIN2 IN ('F', 'M')),

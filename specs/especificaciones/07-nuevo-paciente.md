@@ -8,6 +8,16 @@
 | Tareas | [tareas/nuevo-paciente.md](../tareas/nuevo-paciente.md), T48 a T50, T69 y T102 |
 | Casos de prueba | Sección 6 de este documento, PT35 a PT48 |
 
+> **Cambio P-144 (reparto de tareas por rol).** Desde P-144 el alta de pacientes la hace el **administrador**, desde la pestaña "Pacientes" del panel (ESP-007, RF-61); el médico tratante solo busca pacientes y los captura. Por eso:
+>
+> - **RF-30:** el último paso del recorrido ya no ofrece "Nuevo paciente"; dice: "Para empezar, **busca al paciente** que registró el administrador. Después iremos capturando juntos su expediente, sección por sección: antecedentes, síntomas, signos y estudios." El buscador, si no encuentra a alguien, indica pedirlo al administrador.
+> - **RF-31:** la ventana pide **nombre(s)** (2 a 60 caracteres), **apellido paterno** (2 a 40), **apellido materno** (opcional, 2 a 40) y **fecha de nacimiento** (no futura, edad de 0 a 130 años). Cada parte lleva al menos una letra y ningún número.
+> - **RF-32:** el servidor asigna el ID como antes y guarda `Nombres`, `ApellidoPaterno`, `ApellidoMaterno` y `FechaNacimiento`, más `NombreCompleto` armado con las tres partes (lo usan el buscador, la interfaz de salida y el PDF). Solo el administrador puede registrar (403 para los médicos). La lista se actualiza y el paciente no queda seleccionado (el administrador no captura).
+> - **Edad:** ya no se guarda; se calcula con la fecha de nacimiento cada vez que se consulta (`PatientAge.EnAnios`). La columna `Edad` se quitó con `UpdatePatientsNameAndBirthDate.sql`; los pacientes de prueba tienen como fecha el 1 de enero del año que corresponde a su edad.
+> - Los casos PT35 a PT38 y PT45 se reescribieron para estos campos; PT100 prueba el cálculo de la edad.
+>
+> Lo que sigue describe la versión original (P-99, P-102).
+
 ## 1. Objetivo
 
 Permitir que el médico abra el expediente de un paciente que todavía no está registrado, sin salir de la pantalla principal.

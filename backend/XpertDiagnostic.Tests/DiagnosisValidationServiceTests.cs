@@ -204,6 +204,18 @@ public class DiagnosisValidationServiceTests
 
         public Task<SaveFindingsStatus> GuardarHallazgosAsync(string idPaciente, CatalogType catalogo, IReadOnlyList<FindingInput> hallazgos, CancellationToken cancellationToken = default) =>
             Task.FromResult(SaveFindingsStatus.Guardado);
+
+        public Task<SaveFindingsStatus> GuardarAntecedentesNoPatologicosAsync(
+            string idPaciente,
+            SaveNonPathologicalHistoryRequest respuestas,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(SaveFindingsStatus.Guardado);
+
+        public Task<SaveFindingsStatus> GuardarHipotesisAsync(
+            string idPaciente,
+            string hipotesis,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(SaveFindingsStatus.Guardado);
     }
 
     /// <summary>Las columnas de validación de un solo paciente (PACIE00001).</summary>
