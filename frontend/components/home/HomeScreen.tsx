@@ -31,7 +31,7 @@ export default function HomeScreen() {
   // la primera sin completar en proceso y las demás bloqueadas.
   const [completedSections, setCompletedSections] = useState<ReadonlySet<string>>(() => new Set());
   const sectionGroups = useMemo(() => buildSectionGroups(completedSections), [completedSections]);
-  // Expediente capturado (entradas) y último análisis (salida provisional) del paciente actual.
+  // Expediente capturado (entradas) y último análisis (salida de la máquina de inferencia) del paciente actual.
   const [patientRecord, setPatientRecord] = useState<PatientRecord | null>(null);
   // Interrogatorio del paciente actual (P-159): antecedentes no patológicos y patológicos.
   const [patientHistory, setPatientHistory] = useState<PatientHistory | null>(null);

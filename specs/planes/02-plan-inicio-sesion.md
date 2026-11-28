@@ -53,7 +53,7 @@ Los errores de base de datos los convierte `GlobalExceptionHandler` en respuesta
 | D-06 | `GlobalExceptionHandler` centraliza los errores. | `try/catch` en cada controlador. | Controladores más simples y sin dependencia de `SqlClient`. |
 | D-07 | Token en una cookie `httpOnly` + `SameSite=Strict` establecida por la ruta de Next.js. | Devolver el token al navegador para guardarlo en `localStorage`. | Un script malicioso (XSS) no puede robar el token (RNF-01). |
 | D-08 | Patrón Estado con clases inmutables (`lib/loginState.ts`). | Varias banderas `useState` (`isLoading`, `error`, `success`). | Impide combinaciones inválidas y el doble envío (RF-08). |
-| D-09 | Singleton del pool de SQL Server en `lib/db.ts`, guardando la promesa en `globalThis`. | Una conexión nueva por solicitud. | Reutilizar conexiones, también entre recargas de desarrollo. |
+| D-09 | Singleton de la conexión a SQL Server en el backend (`Data/DatabaseConnection.cs`): una sola instancia, inicializada en `Program.cs`, que da un `AppDbContext` por solicitud. | Una conexión configurada en cada solicitud, o una segunda conexión desde el frontend. | Un solo punto de acceso a la base de datos; la configuración se arma una vez. |
 | D-10 | Extraer el formulario a `components/auth/LoginForm.tsx` conservando sus clases CSS. | Mantener todo en `page.tsx`. | Separar la vista de la página y la del formulario sin cambiar el diseño (R-UI-06). |
 
 ## 4. Archivos
@@ -69,7 +69,7 @@ Los errores de base de datos los convierte `GlobalExceptionHandler` en respuesta
 | Vista | `frontend/app/(auth)/login/page.tsx`, `frontend/components/auth/LoginForm.tsx` |
 | Controlador cliente | `frontend/services/authService.ts`, `frontend/app/api/login/route.ts` |
 | Modelo cliente | `frontend/types/auth.ts`, `frontend/lib/loginState.ts`, `frontend/lib/loginValidation.ts` |
-| Infraestructura cliente | `frontend/lib/apiClient.ts`, `frontend/lib/db.ts` |
+| Infraestructura cliente | `frontend/lib/apiClient.ts` |
 | Pruebas | `XpertDiagnostic.Tests/AuthServiceTests.cs`, `PasswordCredentialVerifierTests.cs`, `JwtTokenServiceTests.cs`, `UnitTest1.cs` |
 
 ## 5. Riesgos
@@ -78,4 +78,4 @@ Los errores de base de datos los convierte `GlobalExceptionHandler` en respuesta
 |---|---|
 | Contraseñas heredadas en texto plano en `USUARIOS.PASS`. | Migración automática a BCrypt (RF-05) y script `Sql/UpgradeUserPasswordColumn.sql`. |
 | Un integrante del equipo no tiene configurados los secretos. | La API se detiene con un mensaje claro y la guía de instalación explica cómo configurarlos. |
-| `/api/test-db` expone la base de datos desde el frontend. | Solo responde en desarrollo y no devuelve detalles del error. |
+| Que el frontend acceda a la base de datos por su cuenta. | El frontend no tiene credenciales ni conexión a SQL Server; para comprobar la conexión se usa `GET /api/health/db` del backend. |

@@ -32,7 +32,7 @@ Leyenda: `[x]` implementada · `[ ]` pendiente.
 | [x] T15 | Extraer `LoginForm.tsx` conservando el diseño; agregar etiquetas y atributos ARIA. | D-10, RNF-05 | PT14 | IA (P-04) | Pendiente |
 | [x] T16 | `services/authService.ts` y `lib/apiClient.ts`. | ARQ | PT12, PT15 | IA (P-04) | Pendiente |
 | [x] T17 | Ruta `/api/login` con validación y cookie `httpOnly`; "Recuérdame" funcional. | RNF-01, RF-09, D-07 | PT13 | IA (P-04) | Pendiente |
-| [x] T18 | Singleton del pool en `lib/db.ts`; `/api/test-db` solo en desarrollo. | D-09 | — | IA (P-04) | Pendiente |
+| [x] T18 | Singleton de la conexión a SQL Server en el backend (`Data/DatabaseConnection.cs`), inicializado en `Program.cs`. La conexión a la base de datos está solo en el backend. | D-09 | `DatabaseConnectionTests` | IA | Pendiente |
 | [x] T19 | Corregir las advertencias de ESLint `set-state-in-effect` en `page.tsx` y `LoginForm.tsx`. | Calidad | `npm run lint` | IA (P-04) | Pendiente |
 
 ## Documentación y proceso
@@ -50,7 +50,6 @@ Leyenda: `[x]` implementada · `[ ]` pendiente.
 | # | Tarea | Motivo |
 |---|---|---|
 | [ ] T25 | Definir el destino de "Términos y privacidad" y de "Recuperar contraseña", y convertirlos en controles accesibles con teclado. | Hoy son `<span>` sin acción (R-UI-03). |
-| [x] T26 | ~~Guardar `ai-service/requirements.txt` en UTF-8.~~ Ya no aplica: `ai-service` se eliminó (P-160). | Decisión del equipo: sin servicio de IA aparte. |
 | [x] T27 | Hacer el primer commit y crear las ramas `main` y `Develop`. | Hecho: el repositorio en GitHub tiene `main`, `Develop` y ramas por función. |
 | [x] T28 | Transición tras el login: capa con desenfoque y animación loading-dots, y redirección a la pantalla del rol. `/home` quedó protegida con `proxy.ts` (T65). | IA (P-08, P-143), revisión pendiente. |
 

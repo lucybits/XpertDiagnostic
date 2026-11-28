@@ -249,8 +249,6 @@ Archivos producidos o modificados por la IA en P-04 y P-07 que todavía no tiene
 | [ ] | `app/(auth)/login/page.tsx` | | | |
 | [ ] | `components/auth/LoginForm.tsx` | | | |
 | [ ] | `app/api/login/route.ts` | | | |
-| [ ] | `app/api/test-db/route.ts` | | | |
-| [ ] | `lib/db.ts` | | | |
 | [ ] | `lib/loginState.ts` | | | |
 | [ ] | `lib/loginValidation.ts`, `lib/apiClient.ts` | | | |
 | [ ] | `services/authService.ts`, `types/auth.ts` | | | |
@@ -488,5 +486,21 @@ Estas verificaciones las ejecutó el asistente de IA. Son evidencia complementar
 **Hallazgo.** Al probar con el tratante, PACIE00002 (paciente del seed con Tirotoxicosis ya guardada) decía "Tirotoxicosis: confirmado por el médico internista", pero en la pantalla del internista no aparecía ni en Pendientes ni en Confirmados. La IA había decidido que un diagnóstico guardado antes de la validación contara como confirmado. El sistema afirmaba una validación que nunca ocurrió.
 
 **Corrección (P-152).** El estado es solo el guardado: un diagnóstico sin pasar por el internista queda "sin enviar". El panel del expediente dice "Diagnóstico registrado, sin validar por el médico internista" y la interfaz de salida "Registrado sin validación del médico internista". Lección: en un sistema clínico, nunca inferir que una persona validó algo; solo mostrarlo si quedó registrado.
+
+---
+
+### A-29. "El motor no está conectado con la interfaz"
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-27 |
+| Revisó | Lucía |
+| Prompt | P-168 |
+| Archivo | `motor-inferencia/inference_engine.prg`, `backend/XpertDiagnostic.Api/Services/InferenceEngine.cs` |
+| Resultado | **Corregido** |
+
+**Hallazgo.** Al explicar la carpeta `motor-inferencia/`, la IA leyó solo el `.prg` y afirmó que el motor funcionaba aparte y no estaba conectado con la interfaz web. Era falso: desde P-160 su lógica está convertida a C# en `InferenceEngine.cs` y la usa la pantalla de captura.
+
+**Corrección (P-168).** La IA revisó el backend y corrigió la explicación: el `.prg` es la referencia original y `InferenceEngine.cs` es la versión que corre. Lección: antes de afirmar que algo no existe o no está conectado, buscar en todo el repositorio, no solo en la carpeta consultada.
 
 ---

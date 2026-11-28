@@ -196,12 +196,6 @@ export default function ValidationDetail({ detail, onConfirm }: ValidationDetail
               title="Diagnóstico diferencial"
               subtitle="Propuesto por la máquina de inferencia con los hallazgos actuales."
             />
-            {analisis.provisional && (
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-800">
-                <CircleAlert aria-hidden="true" className="h-4 w-4" />
-                Motor provisional
-              </span>
-            )}
           </div>
 
           {error && (

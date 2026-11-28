@@ -51,16 +51,15 @@ Herramienta para todas las entradas de esta sesión: **Claude Code** (extensión
 
 **Prompt**
 
-> Antes de empezar a moverle cosas al proyecto necesito saber bien en qué estado está, porque entré hace poco al equipo y no tengo claro qué ya está hecho y qué no. ¿Podrías revisar el proyecto tal como está ahorita y decirme lo que hay actualmente, un resumen? Me interesa el backend, el frontend, lo del servicio de IA y también la documentación.
+> Antes de empezar a moverle cosas al proyecto necesito saber bien en qué estado está, porque entré hace poco al equipo y no tengo claro qué ya está hecho y qué no. ¿Podrías revisar el proyecto tal como está ahorita y decirme lo que hay actualmente, un resumen? Me interesa el backend, el frontend y también la documentación.
 >
 > No cambies nada todavía, es solo para ubicarme. Y si ves cosas raras, a medias o pendientes, dímelas también, porque necesito saber dónde estamos parados antes de planear.
 
-**Resultado de la IA:** inventario del backend, el frontend, el servicio de IA y la documentación. Señaló pendientes:
+**Resultado de la IA:** inventario del backend, el frontend y la documentación. Señaló pendientes:
 
 - repositorios vacíos;
 - JWT generado pero no validado;
 - proyecto de pruebas fuera de la solución;
-- `requirements.txt` en UTF-16;
 - guía de instalación desactualizada.
 
 **Archivos afectados:** ninguno (solo lectura).
@@ -137,7 +136,7 @@ Herramienta para todas las entradas de esta sesión: **Claude Code** (extensión
 >
 > 1. Singleton: patrón creacional
 > Problema que se resuelve: crear una conexión nueva a SQL Server cada vez que se necesita podría generar conexiones repetidas y desperdiciar recursos.
-> Implementación: por ejemplo, en `frontend/lib/db.ts`, `getConnection()` guarda la conexión en la variable `pool`. Si ya existe, la devuelve; si no, establece la conexión y la conserva para reutilizarla. Esto evita abrir una conexión nueva en cada llamada dentro de ese módulo.
+> Implementación: por ejemplo, en el backend, `DatabaseConnection` guarda una sola instancia de la conexión configurada. Si ya existe, la devuelve; si no, la crea y la conserva para reutilizarla.
 >
 > 2. Fachada: patrón estructural
 > Problema que se resuelve: el proceso de autenticación requiere varios pasos, entre ellos buscar al usuario, verificar su contraseña y generar un token. Si el controlador tuviera que realizar todo directamente, acumularía lógica y conocería detalles de cada operación.
@@ -147,7 +146,7 @@ Herramienta para todas las entradas de esta sesión: **Claude Code** (extensión
 > Problema que se resuelve: durante el inicio de sesión, la interfaz debe responder a distintos momentos: captura de datos, espera de respuesta y presentación del resultado. Sin controlar esos cambios, no podría dar retroalimentación adecuada al usuario.
 > Implementación: por ejemplo, la página de inicio de sesión usa `useState` para guardar los campos, el indicador de carga y los mensajes de error o éxito. Cuando esos valores cambian, React actualiza la interfaz correspondiente.
 >
-> Alcance: Fachada y Estado se observan en el flujo de inicio de sesión; Singleton, en la conexión a SQL Server. Por eso es más preciso describirlos como patrones aplicados en esas partes del proyecto, y no en todos sus módulos.
+> Alcance: Fachada y Estado se observan en el flujo de inicio de sesión; Singleton, en la conexión a SQL Server del backend. Por eso es más preciso describirlos como patrones aplicados en esas partes del proyecto, y no en todos sus módulos.
 
 **Resultado de la IA:**
 
@@ -161,7 +160,6 @@ Herramienta para todas las entradas de esta sesión: **Claude Code** (extensión
   - contratos `@pre`, `@post` e `@inv`;
   - 17 pruebas unitarias.
 - Frontend:
-  - Singleton corregido, con la promesa compartida y guardado en `globalThis`;
   - patrón Estado con clases;
   - `LoginForm` extraído con las mismas clases CSS;
   - etiquetas ocultas y ARIA;
@@ -4115,9 +4113,9 @@ Mensaje enviado durante la tarea:
 
 **Prompt**
 
-> Aquí va el código de la máquina de inferencia en lenguaje XBase (compatible con dBase, FoxPro, etc.). Por favor convierte estos algoritmos para usarlos con las tablas de la base de datos en SQL Server. El código fuente está en `inference_engine.prg`. Las tablas con prefijo "IO" son de entrada y salida; las de prefijo "BDC", la base de conocimiento; las demás, temporales. Este motor de inferencia lo vamos a usar reemplazando el AI service, porque tiene la lógica de cómo se calculan las enfermedades probables, que tiene que ser lo más precisa posible. Es el definitivo; no vamos a construir RAG ni nada.
+> Aquí va el código de la máquina de inferencia en lenguaje XBase (compatible con dBase, FoxPro, etc.). Por favor convierte estos algoritmos para usarlos con las tablas de la base de datos en SQL Server. El código fuente está en `inference_engine.prg`. Las tablas con prefijo "IO" son de entrada y salida; las de prefijo "BDC", la base de conocimiento; las demás, temporales. Este motor de inferencia lo vamos a usar porque tiene la lógica de cómo se calculan las enfermedades probables, que tiene que ser lo más precisa posible. Es el definitivo; no vamos a construir RAG ni nada.
 >
-> Decisiones (al preguntar la IA): ordenar por coincidencias; cargar la base de conocimiento completa; usar todos los hallazgos; borrar `ai-service`.
+> Decisiones (al preguntar la IA): ordenar por coincidencias; cargar la base de conocimiento completa; usar todos los hallazgos.
 
 **Resultado de la IA:**
 
@@ -4125,10 +4123,9 @@ Mensaje enviado durante la tarea:
 - `InferenceEngine` (C#): mismo algoritmo, ordenado por coincidencias y luego por proporción, con todos los tipos de hallazgo, comparación sin mayúsculas, acentos ni espacios repetidos, y las 5 más probables con su primer tratamiento. Reemplaza a `ProvisionalInferenceEngine` (eliminado).
 - Base de conocimiento: `Sql/Tools/generate_knowledge_base.ps1` lee los DBF y genera `LoadKnowledgeBase.sql`. Repara 613 textos partidos por una coma en la importación original. Cargado en la base local: 924 enfermedades, 2,350 síntomas, 2,827 signos y 4,416 tratamientos.
 - Frontend: "Tratamiento sugerido" en cada candidato (tratante e internista).
-- Se eliminó `ai-service/` y sus menciones en la guía y los specs.
 - Pruebas: PT55 reescrita, PT115 a PT121 nuevas, PT57 con el motor nuevo.
 
-**Archivos afectados:** `backend/XpertDiagnostic.Api/Services/InferenceEngine.cs` (nuevo), `Services/ProvisionalInferenceEngine.cs` (eliminado), `Services/Interfaces/IInferenceEngine.cs`, `Repositories/ITreatmentRepository.cs` y `TreatmentRepository.cs` (nuevos), `Models/Results/DiagnosisResult.cs`, `Program.cs`, `Sql/Tools/generate_knowledge_base.ps1` (nuevo), `Sql/LoadKnowledgeBase.sql` (nuevo, generado), `XpertDiagnostic.Tests/InferenceEngineTests.cs` (nuevo), `XpertDiagnostic.Tests/PatientRecordServiceTests.cs`, `XpertDiagnostic.Tests/ClinicalDataIntegrationTests.cs`; `frontend/types/record.ts`, `frontend/components/capture/DiagnosisPanel.tsx`, `frontend/components/internist/ValidationDetail.tsx`; `ai-service/` (eliminado); `specs/especificaciones/13-maquina-de-inferencia.md` (nuevo), `08-captura-y-analisis.md`, `07-nuevo-paciente.md`, `specs/guias/guia-instalacion.md`, `specs/tareas/inicio-sesion.md`, `specs/README.md`.
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Services/InferenceEngine.cs` (nuevo), `Services/ProvisionalInferenceEngine.cs` (eliminado), `Services/Interfaces/IInferenceEngine.cs`, `Repositories/ITreatmentRepository.cs` y `TreatmentRepository.cs` (nuevos), `Models/Results/DiagnosisResult.cs`, `Program.cs`, `Sql/Tools/generate_knowledge_base.ps1` (nuevo), `Sql/LoadKnowledgeBase.sql` (nuevo, generado), `XpertDiagnostic.Tests/InferenceEngineTests.cs` (nuevo), `XpertDiagnostic.Tests/PatientRecordServiceTests.cs`, `XpertDiagnostic.Tests/ClinicalDataIntegrationTests.cs`; `frontend/types/record.ts`, `frontend/components/capture/DiagnosisPanel.tsx`, `frontend/components/internist/ValidationDetail.tsx`; `specs/especificaciones/13-maquina-de-inferencia.md` (nuevo), `08-captura-y-analisis.md`, `07-nuevo-paciente.md`, `specs/guias/guia-instalacion.md`, `specs/tareas/inicio-sesion.md`, `specs/README.md`.
 
 **Verificación automática:** `dotnet test` (sin integración) 145 correctas. PT57 contra la base real con la base de conocimiento completa: 10 de 10. `LoadKnowledgeBase.sql` corrido dos veces (la segunda no agrega nada). `npx tsc --noEmit -p .` y `npx eslint` sin errores.
 
@@ -4296,3 +4293,57 @@ Mensaje enviado durante la tarea:
 **Verificación automática:** ninguna (solo documentación).
 
 **Revisión humana:** pendiente. La IA señaló que ESP-007 y ESP-008 usan los mismos números de requisito (RF-50 a RF-59).
+
+### P-167. Sección "Hipótesis inicial" entre el interrogatorio y los signos
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-25 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el tratante escriba su hipótesis inicial en el orden correcto de la captura |
+| Especificación / tarea | ESP-009, T107 |
+
+**Prompt**
+
+> Hipótesis inicial debe ir despuesito del interrogatorio y antes de las secciones.
+
+**Resultado de la IA:**
+
+- Al traer `Develop`, el backend de la hipótesis (columna, endpoint, ruta y servicio del frontend) ya estaba, pero sin pantalla. Se corrió `AddPatientHypothesisAndValidation.sql` en la base de Lucía, que solo agregó `HipotesisInicial`.
+- Nueva sección "Hipótesis inicial" (ícono de foco) al final del grupo Interrogatorio, antes de Signos. `HypothesisCapture` muestra un área de texto con contador, valida de 3 a 1000 caracteres, guarda y pasa a la siguiente sección. Si ya hay hipótesis, la sección aparece completa y el texto se carga para corregirlo.
+- ESP-009: RF-69 y PT124.
+
+**Archivos afectados:** `frontend/components/capture/HypothesisCapture.tsx` (nuevo), `frontend/components/capture/SectionWorkspace.tsx`, `frontend/components/home/clinicalSections.ts`, `specs/especificaciones/12-interrogatorio.md`, `specs/tareas/interrogatorio.md`, `specs/tareas/README.md`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores; `dotnet test` 150 correctas.
+
+**Revisión humana:** pendiente de revisión visual. La IA señaló dos choques con lo que llegó de `Develop`: `CreateClinicalTables.sql` declara `EstadoValidacion` dos veces (`'Pendiente'/'Validado'` y `'P'/'C'`), y `PatientRecordServiceTests` usa PT103 y PT104, que ya existen en ESP-008.
+
+### P-168. Quitar el indicador "provisional" del motor de inferencia
+
+| Campo | Valor |
+|---|---|
+| Fecha | 2026-11-27 |
+| Autor del prompt | Lucía |
+| Herramienta / modelo | Claude Code (extensión VS Code), Claude Opus 5.5 |
+| Objetivo | Que el código y la interfaz solo hablen de la máquina de inferencia, sin restos del motor provisional |
+| Especificación / tarea | ESP-010, T109 |
+
+**Prompt**
+
+> ¿Cómo se pueden eliminar todas las referencias al motor provisional para poner lo de máquina de inferencia, que es nuevo? — Sí, hazlo.
+
+**Resultado de la IA:**
+
+- Explicación: en P-160 (commit `7104e5b`) se borró `ProvisionalInferenceEngine` y `InferenceEngine` quedó registrado en `Program.cs`.
+- El menú de ayuda todavía decía a los médicos "el motor actual es provisional". Ahora dice "El diagnóstico es orientativo; la decisión clínica es del médico."
+- Se eliminó la propiedad `Provisional` de `IInferenceEngine`, `InferenceEngine` y `DiagnosisResult`, el campo `provisional` del tipo `DiagnosisResult` del frontend y las etiquetas "Motor provisional" / "provisional" de `DiagnosisPanel`, `ValidationDetail` y `PatientRecordPanel` (ya no se mostraban, porque el valor siempre era `false`).
+- Se actualizaron los comentarios que hablaban del motor provisional.
+- No se tocaron la bitácora, la auditoría ni las tareas cerradas: son el historial del proyecto.
+
+**Archivos afectados:** `backend/XpertDiagnostic.Api/Program.cs`, `Services/Interfaces/IInferenceEngine.cs`, `Services/InferenceEngine.cs`, `Services/DiagnosisService.cs`, `Services/DiagnosisValidationService.cs`, `Models/Results/DiagnosisResult.cs`, `backend/XpertDiagnostic.Tests/PatientRecordServiceTests.cs`, `DiagnosisValidationServiceTests.cs`, `frontend/types/record.ts`, `frontend/components/capture/DiagnosisPanel.tsx`, `frontend/components/home/HelpMenu.tsx`, `HomeScreen.tsx`, `PatientRecordPanel.tsx`, `frontend/components/internist/ValidationDetail.tsx`, `specs/especificaciones/13-maquina-de-inferencia.md`, `specs/tareas/maquina-de-inferencia.md`, `specs/tareas/README.md`.
+
+**Verificación automática:** `tsc` y `eslint` sin errores; `dotnet test` 150 correctas.
+
+**Revisión humana:** pendiente. Antes, en la misma sesión, la IA afirmó que el motor no estaba conectado con la interfaz; Lucía lo corrigió (A-29).

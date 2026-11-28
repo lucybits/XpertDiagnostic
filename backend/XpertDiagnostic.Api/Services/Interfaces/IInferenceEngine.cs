@@ -5,15 +5,12 @@ namespace XpertDiagnostic.Api.Services.Interfaces;
 /// <summary>
 /// Máquina de inferencia (P-103). Recibe los hallazgos del paciente (entradas) y propone el diagnóstico
 /// diferencial (salida). La implementación registrada es <c>InferenceEngine</c>, conversión del motor del
-/// equipo (inference_engine.prg, P-160); no hay RAG ni servicio de IA aparte.
+/// equipo (inference_engine.prg, P-160).
 /// </summary>
 public interface IInferenceEngine
 {
     /// <summary>Nombre corto de la implementación (se muestra junto al resultado).</summary>
     string Nombre { get; }
-
-    /// <summary>true mientras sea una implementación de demostración.</summary>
-    bool Provisional { get; }
 
     /// <summary>Diagnóstico diferencial a partir de los hallazgos.</summary>
     /// <remarks>

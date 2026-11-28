@@ -2,7 +2,7 @@
 
 Esta guía explica cómo descargar el repositorio, preparar las herramientas y arrancar los componentes disponibles en Windows. Está escrita para la estructura actual del repositorio.
 
-> Estado actual: el inicio de sesión funciona de extremo a extremo (frontend → API → SQL Server). Para eso, la API necesita una base de datos `XpertDiagnostic` existente con la tabla `USUARIOS`, y la configuración secreta descrita en la sección 5. El diagnóstico lo calcula la máquina de inferencia del equipo dentro de la API (`InferenceEngine`, conversión de `inference_engine.prg`, P-160); no hay un servicio de IA aparte.
+> Estado actual: el inicio de sesión funciona de extremo a extremo (frontend → API → SQL Server). Para eso, la API necesita una base de datos `XpertDiagnostic` existente con la tabla `USUARIOS`, y la configuración secreta descrita en la sección 5. El diagnóstico lo calcula la máquina de inferencia del equipo dentro de la API (`InferenceEngine`, conversión de `inference_engine.prg`, P-160).
 
 ## 1. Requisitos de equipo y programas
 
@@ -76,7 +76,7 @@ XpertDiagnostic/
 │   │   ├── appsettings.Development.json
 │   │   ├── Configuration/        (opciones tipadas: JwtOptions)
 │   │   ├── Controllers/          (AuthController, HealthController)
-│   │   ├── Data/                 (AppDbContext)
+│   │   ├── Data/                 (AppDbContext, DatabaseConnection: patrón Singleton)
 │   │   ├── Middleware/           (GlobalExceptionHandler)
 │   │   ├── Models/
 │   │   │   ├── DTOs/             (LoginRequest, LoginResponse, ErrorResponse)
@@ -117,15 +117,13 @@ XpertDiagnostic/
     │   ├── (auth)/login/page.tsx (vista: página de inicio de sesión)
     │   ├── (app)/home/page.tsx (ruta de la pantalla principal)
     │   └── api/
-    │       ├── login/route.ts    (reenvía el login al backend y guarda la cookie)
-    │       └── test-db/route.ts  (prueba de conexión, solo en desarrollo)
+    │       └── login/route.ts    (reenvía el login al backend y guarda la cookie)
     ├── components/
     │   ├── auth/LoginForm.tsx    (vista: formulario)
     │   ├── home/HomeScreen.tsx (vista: pantalla principal)
     │   └── ui/LoadingDots.tsx
     ├── lib/
     │   ├── apiClient.ts          (cliente HTTP)
-    │   ├── db.ts                 (patrón Singleton: conexión a SQL Server)
     │   ├── loginState.ts         (patrón Estado: estados del formulario)
     │   └── loginValidation.ts    (validación del formulario)
     ├── public/                   (imágenes, fuente y animaciones)
@@ -223,7 +221,7 @@ Set-Location frontend
 Copy-Item .env.example .env.local
 ```
 
-`BACKEND_API_URL` ya apunta a `http://localhost:5140`. Las variables `DB_*` solo las usa la ruta de diagnóstico `/api/test-db`.
+`BACKEND_API_URL` ya apunta a `http://localhost:5140`. Es la única variable: el frontend no se conecta a SQL Server, todos los datos pasan por la API.
 
 Instala las dependencias y arranca el servidor:
 

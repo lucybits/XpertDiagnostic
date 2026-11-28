@@ -13,7 +13,7 @@
 El interrogatorio es el primer grupo del menú del médico tratante, antes de la evaluación clínica:
 
 ```
-Interrogatorio: Antecedentes no patológicos → Antecedentes patológicos
+Interrogatorio: Antecedentes no patológicos → Antecedentes patológicos → Hipótesis inicial
 Evaluación clínica: Signos → Síntomas → Estudios y laboratorios → Comorbilidades
 Resultado: Diagnóstico diferencial
 ```
@@ -28,6 +28,7 @@ Sigue la misma regla que las demás secciones: se captura en orden, la siguiente
 | RF-62 | **Patológicos:** veintiún campos de texto libre (alergias, crónico-degenerativos, endocrinológicos, cardiológicos, dislipidemias, pulmonares, neumológicos, gastrointestinales, urológicos y renales, neurológicos, psiquiátricos, reumatológicos, osteomusculares, dermatológicos, oftalmológicos, otorrinolaringológicos, infectológicos, hematológicos, oncológicos, ginecológicos y traumatismos). Hasta 255 caracteres cada uno; en blanco = sin antecedentes de ese tipo (se guarda null). |
 | RF-63 | Guardar crea la fila del paciente o la reemplaza: siempre queda una por paciente en cada tabla. |
 | RF-64 | Solo el médico tratante guarda (`T`); los médicos (`T` e `I`) consultan. |
+| RF-69 | (P-167) **Hipótesis inicial:** después de los antecedentes y antes de los signos, el tratante escribe su impresión diagnóstica (de 3 a 1000 caracteres) en `PACIENTES.HipotesisInicial`, con `PUT api/patients/{id}/hypothesis` (solo `T`). La sección queda completa si ya hay una hipótesis guardada. No entra a la máquina de inferencia. |
 
 ## 3. Datos
 
@@ -73,6 +74,12 @@ Usa las tablas del equipo de base de datos sin cambios: `IO_AntecNoPatolPaciente
 - **Given** un ID que no existe.
 - **When** se guardan antecedentes.
 - **Then** no se guarda nada.
+
+### PT124. Hipótesis inicial en pantalla [manual, pendiente]
+
+- **Given** un paciente con el interrogatorio guardado y sin hipótesis.
+- **When** el tratante abre "Hipótesis inicial", escribe menos de 3 caracteres y luego un texto válido, y guarda.
+- **Then** con el texto corto aparece el aviso y no se guarda; con el válido, la sección queda completa y se abre "Signos". Al volver a abrirla, aparece el texto guardado. La regla del backend la prueba `GuardarHipotesis_TextoConEspacios_SeGuardaLimpio` en `PatientRecordServiceTests`.
 
 ### PT114. Flujo en pantalla [manual, pendiente]
 

@@ -38,7 +38,7 @@ AuthController ──► IAuthService (AuthService) ──► IUserRepository (U
 | **Vista** | `app/(auth)/login/page.tsx`, `components/auth/LoginForm.tsx`, `components/ui/` | Presentación y eventos del usuario. |
 | **Controlador** | `services/authService.ts`, `app/api/login/route.ts` | Comunica la vista con el backend. Traduce códigos HTTP a resultados del dominio y guarda el token en una cookie segura. |
 | **Modelo** | `types/auth.ts`, `lib/loginState.ts`, `lib/loginValidation.ts` | Tipos del dominio, estados del formulario y reglas de validación. |
-| **Infraestructura** | `lib/apiClient.ts`, `lib/db.ts` | Cliente HTTP y conexión a SQL Server. |
+| **Infraestructura** | `lib/apiClient.ts` | Cliente HTTP hacia el backend. El frontend no se conecta a SQL Server: solo el backend accede a la base de datos (`AppDbContext`). |
 
 **Pacientes y catálogos (P-102).** Siguen el mismo esquema por capas que médicos:
 
@@ -70,7 +70,7 @@ AuthController ──► IAuthService (AuthService) ──► IUserRepository (U
 | **O**: abierto/cerrado | Para cambiar el algoritmo de hash o el tipo de token se crea otra implementación de `IPasswordCredentialVerifier` o `ITokenService` y se registra en `Program.cs`, sin modificar `AuthService`. Para agregar un estado al formulario se agrega una clase en `loginState.ts`, sin tocar los demás estados. |
 | **L**: sustitución de Liskov | Cualquier implementación de `IUserRepository` puede reemplazar a otra. Las pruebas usan `RepositorioFalso` en memoria en lugar de SQL Server y `AuthService` funciona igual. |
 | **I**: segregación de interfaces | Las interfaces son pequeñas y específicas (`ITokenService`, `IPasswordCredentialVerifier`, `IDatabaseHealthService`) en lugar de una sola interfaz grande de seguridad. |
-| **D**: inversión de dependencias | Controladores y servicios dependen de interfaces, no de clases concretas. El contenedor de inyección de dependencias de `Program.cs` decide qué implementación usar. Por ejemplo, `DiagnosisService` depende de `IInferenceEngine`; hoy se registra `ProvisionalInferenceEngine`, y la máquina de inferencia del equipo se conectará registrando su clase, sin cambiar el servicio, el controlador ni el frontend. |
+| **D**: inversión de dependencias | Controladores y servicios dependen de interfaces, no de clases concretas. El contenedor de inyección de dependencias de `Program.cs` decide qué implementación usar. Por ejemplo, `DiagnosisService` depende de `IInferenceEngine`, y `Program.cs` registra la máquina de inferencia (`InferenceEngine`); cambiar de motor no cambia el servicio, el controlador ni el frontend. |
 
 ## 3. Contratos: precondiciones, postcondiciones e invariantes
 
@@ -86,27 +86,34 @@ Los métodos clave documentan su contrato con `@pre`, `@post` e `@inv`. Las prec
 | `AuthController.Login` | `Controllers/AuthController.cs` | `@post` 200 / 401 según el resultado. |
 | `User`, `LoginRequest`, `JwtOptions` | `Models/`, `Configuration/` | `@inv` del modelo. `JwtOptions` se valida al arrancar. |
 | `LoginState` | `frontend/lib/loginState.ts` | `@inv` del estado y `@pre`/`@post` de cada transición. |
-| `getConnection` | `frontend/lib/db.ts` | `@inv` un solo pool por proceso. |
+| `DatabaseConnection` | `Data/DatabaseConnection.cs` | `@inv` como máximo una instancia por proceso, siempre con la misma cadena de conexión. `@pre`/`@post` de `Inicializar` y `CrearContexto`. |
 | `validateLoginInput`, `login`, `postJson` | `frontend/lib/`, `frontend/services/` | `@pre` y `@post` de validación y comunicación. |
 
 ## 4. Patrones de diseño GoF
 
 ### 4.1 Singleton (creacional): conexión a SQL Server
 
-**Archivo:** `frontend/lib/db.ts`
+**Archivos:** `backend/XpertDiagnostic.Api/Data/DatabaseConnection.cs` y su uso en `Program.cs`
 
-**Problema que resuelve.** Crear una conexión nueva a SQL Server cada vez que se necesita generaría conexiones repetidas y desperdiciaría recursos del servidor de base de datos.
+**Problema que resuelve.** Toda la API consulta la misma base de datos. Si cada solicitud leyera la cadena de conexión y armara su propia configuración de Entity Framework, se repetiría el mismo trabajo en cada consulta y distintas partes del sistema podrían quedar conectadas a bases diferentes.
 
-**Implementación.** `getConnection()` es el único punto de acceso al pool de conexiones:
+**Implementación.** `DatabaseConnection` es un Singleton clásico:
 
-- La primera llamada crea el pool y lo guarda.
-- Las siguientes llamadas devuelven el mismo pool.
+- **Constructor privado:** nadie puede crear la clase con `new`.
+- **`Inicializar(cadena)`:** `Program.cs` la llama una vez al arrancar, con la cadena de conexión de la configuración segura (user-secrets o variables de entorno). La primera llamada crea la instancia y las siguientes devuelven la misma. Si alguien intenta inicializarla con otra cadena, lanza un error y conserva la original.
+- **`Instancia`:** es el único punto de acceso global.
+- **`Opciones`:** la configuración de Entity Framework (`UseSqlServer`) se arma una sola vez y la comparten todos los contextos.
+- **`CrearContexto()`:** entrega un `AppDbContext` nuevo para cada solicitud. `Program.cs` lo registra con `AddScoped(_ => DatabaseConnection.Instancia.CrearContexto())`, y los repositorios lo reciben por su constructor.
 
-Además, la implementación cuida tres casos:
+El contexto no es único a propósito: un `AppDbContext` no puede usarse desde dos solicitudes a la vez. Lo que se comparte es la conexión configurada. Las conexiones físicas a SQL Server se reutilizan con el pool de conexiones de .NET.
 
-- **Solicitudes simultáneas:** se guarda la *promesa* de conexión y no el pool ya conectado. Así, si llegan varias solicitudes mientras se abre la primera conexión, todas comparten esa misma conexión en lugar de abrir una cada una.
-- **Recarga en desarrollo:** la instancia se guarda en `globalThis`, para que la recarga de módulos de Next.js no cree pools nuevos.
-- **Fallas:** si la conexión falla o el pool emite un error, la instancia se descarta y la siguiente llamada vuelve a intentar.
+**Solicitudes simultáneas.** La creación de la instancia está protegida con un candado (`lock`), de modo que si dos hilos la piden al mismo tiempo solo uno la crea.
+
+**Seguridad.** La cadena de conexión se guarda en un campo privado y no se expone fuera de la clase.
+
+**Pruebas.** `DatabaseConnectionTests` comprueba cuatro cosas: que inicializar dos veces da la misma instancia, que otra cadena de conexión se rechaza sin cambiar la original, que cada contexto es nuevo pero con la misma configuración, y que una cadena vacía se rechaza.
+
+Solo el backend se conecta a SQL Server. El frontend no tiene conexión propia; todo pasa por la API.
 
 ### 4.2 Fachada (estructural): proceso de autenticación
 
@@ -146,7 +153,7 @@ Algunas transiciones no tienen sentido en ciertos estados y devuelven el mismo e
 
 ### Alcance
 
-Fachada y Estado se aplican en el flujo de inicio de sesión, y Singleton en la conexión a SQL Server. Es más preciso describirlos como patrones aplicados en esas partes del proyecto que en todos sus módulos.
+Fachada y Estado se aplican en el flujo de inicio de sesión, y Singleton en la conexión a SQL Server del backend. Es más preciso describirlos como patrones aplicados en esas partes del proyecto que en todos sus módulos.
 
 ## 5. Seguridad del inicio de sesión
 

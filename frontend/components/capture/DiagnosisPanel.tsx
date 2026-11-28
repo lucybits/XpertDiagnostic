@@ -20,8 +20,7 @@ type DiagnosisPanelProps = {
 
 /**
  * Último paso (P-103): analiza los hallazgos guardados con la máquina de inferencia registrada en
- * el backend y muestra el diagnóstico diferencial. Mientras el motor sea provisional lo dice
- * claramente. El médico tratante no confirma: envía el diagnóstico diferencial al médico internista,
+ * el backend y muestra el diagnóstico diferencial. El médico tratante no confirma: envía el diagnóstico diferencial al médico internista,
  * que confirma uno de los candidatos (P-151). Aquí se ve si está en validación o ya confirmado.
  */
 export default function DiagnosisPanel({ patientId, result, isStale, onAnalyzed, onValidationChanged }: DiagnosisPanelProps) {
@@ -104,11 +103,6 @@ export default function DiagnosisPanel({ patientId, result, isStale, onAnalyzed,
               Diagnóstico diferencial
             </h3>
           </div>
-          {result?.provisional && (
-            <span className="rounded-md bg-amber-100 px-2 py-0.5 text-sm font-medium text-amber-900">
-              Motor provisional
-            </span>
-          )}
         </header>
 
         <div className="space-y-3 px-5 py-4">

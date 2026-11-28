@@ -62,9 +62,8 @@ export interface DiagnosisCandidate {
   tratamientoSugerido?: string | null;
 }
 
-/** Resultado del análisis. provisional = true mientras no exista la máquina de inferencia del equipo. */
+/** Resultado del análisis de la máquina de inferencia (P-160). */
 export interface DiagnosisResult {
   motor: string;
-  provisional: boolean;
   candidatos: DiagnosisCandidate[];
 }

@@ -9,6 +9,7 @@ import type { ValidationSummary } from '@/types/validation';
 import type { PatientHistory } from '@/types/history';
 import DiagnosisPanel from './DiagnosisPanel';
 import HistoryCapture from './HistoryCapture';
+import HypothesisCapture from './HypothesisCapture';
 import SectionCapture from './SectionCapture';
 import SectionHeader, { ShowSectionHeaderButton } from './SectionHeader';
 import SessionPatientPill from './SessionPatientPill';
@@ -107,6 +108,20 @@ export default function SectionWorkspace({
                   onAnalyzed={onAnalyzed}
                   onValidationChanged={onValidationChanged}
                 />
+              ) : section.capture.kind === 'hypothesis' ? (
+                // El campo toma lo guardado al montarse: se espera a que llegue el expediente.
+                record === null ? (
+                  <p role="status" className="mx-auto w-full max-w-4xl px-4 py-8 text-slate-700 sm:px-8">
+                    Cargando expediente…
+                  </p>
+                ) : (
+                  <HypothesisCapture
+                    patientId={patient.id}
+                    sectionLabel={section.label}
+                    record={record}
+                    onSaved={onSectionSaved}
+                  />
+                )
               ) : section.capture.kind === 'non-pathological' || section.capture.kind === 'pathological' ? (
                 // El formulario toma lo guardado al montarse: se espera a que llegue el interrogatorio.
                 history === null ? (

@@ -8,8 +8,7 @@ namespace XpertDiagnostic.Api.Services;
 
 /// <summary>
 /// Máquina de inferencia de XpertDiagnostic: conversión a C# y SQL Server de inference_engine.prg
-/// (Ing. Antonio Castañeda de la Lanza, Visual FoxPro), que reemplaza al motor provisional y al ai-service
-/// (P-160).
+/// (Ing. Antonio Castañeda de la Lanza, Visual FoxPro), P-160.
 /// </summary>
 /// <remarks>
 /// Algoritmo del .prg, paso por paso:
@@ -50,8 +49,6 @@ public sealed class InferenceEngine(ICatalogRepository catalogos, ITreatmentRepo
     private readonly ITreatmentRepository _tratamientos = tratamientos ?? throw new ArgumentNullException(nameof(tratamientos));
 
     public string Nombre => "Máquina de inferencia XpertDiagnostic";
-
-    public bool Provisional => false;
 
     public async Task<IReadOnlyList<DiagnosisCandidate>> InferirAsync(
         IReadOnlyList<FindingView> hallazgos,
