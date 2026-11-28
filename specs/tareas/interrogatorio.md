@@ -13,3 +13,6 @@ Leyenda: `[x]` implementada · `[ ]` pendiente.
 | [x] T82 | API `api/patients/{id}/history`: consultar (`T` e `I`) y guardar no patológicos y patológicos (`T`). | RF-63, RF-64 | PT113 | IA (P-159) | Pendiente |
 | [x] T83 | Formulario del grupo "Interrogatorio" antes de las secciones: siete preguntas de sí o no y 21 campos de texto; al guardar se pasa a la siguiente sección. | RF-61, RF-62 | PT114 | IA (P-159) | Pendiente |
 | [ ] T84 | Ejecutar a mano PT114 y revisar el formulario en pantalla. | R-PRU-01 | PT114 | Equipo | — |
+| [x] T106 | Backend de la hipótesis inicial: columna `HipotesisInicial`, `PUT api/patients/{id}/hypothesis` y su ruta y servicio del frontend. | RF-69 | `PatientRecordServiceTests` | Equipo (commit d844439) | — |
+| [x] T107 | Sección "Hipótesis inicial" después del interrogatorio y antes de los signos (`HypothesisCapture`). | RF-69 | PT124 | IA (P-167) | Pendiente |
+| [ ] T108 | Ejecutar a mano PT124. | R-PRU-01 | PT124 | Equipo | — |

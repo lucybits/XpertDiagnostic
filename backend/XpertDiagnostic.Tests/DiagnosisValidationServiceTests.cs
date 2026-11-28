@@ -192,7 +192,7 @@ public class DiagnosisValidationServiceTests
     private sealed class DiagnosticosFalsos(IReadOnlyList<DiagnosisCandidate> candidatos) : IDiagnosisService
     {
         public Task<DiagnosisResult?> AnalizarAsync(string idPaciente, CancellationToken cancellationToken = default) =>
-            Task.FromResult(idPaciente == Paciente ? new DiagnosisResult("Prueba", true, candidatos) : null);
+            Task.FromResult(idPaciente == Paciente ? new DiagnosisResult("Prueba", candidatos) : null);
     }
 
     private sealed class ExpedientesFalsos : IPatientRecordService

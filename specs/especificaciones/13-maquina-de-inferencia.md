@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Identificador | ESP-010 |
-| Origen | Decisión final del equipo (P-160): la máquina de inferencia del Ing. Antonio Castañeda de la Lanza (`inference_engine.prg`, XBase/Visual FoxPro) es el motor definitivo. Reemplaza al motor provisional y al `ai-service`; no habrá LLM ni RAG. |
+| Origen | Decisión final del equipo (P-160): la máquina de inferencia del Ing. Antonio Castañeda de la Lanza (`inference_engine.prg`, XBase/Visual FoxPro) es el motor definitivo. Reemplaza al motor provisional; no habrá LLM ni RAG. |
 | Estado | Implementada como copia literal del `.prg` (P-161) y evaluada con los pacientes de prueba: PT57, la enfermedad esperada está en la lista en 10 de 10. |
 | Tareas | [tareas/maquina-de-inferencia.md](../tareas/maquina-de-inferencia.md), T57, T85 a T87, T103 y T104 |
 | Casos de prueba | Sección 6 de este documento: PT55, PT57 y PT115 a PT121 |
@@ -58,7 +58,7 @@ Se corre **después** de `SeedClinicalData.sql`, porque ese script borra las tab
 - `Services/InferenceEngine.cs` implementa `IInferenceEngine` y se registra en `Program.cs` (inversión de dependencias: `DiagnosisService` y la validación no cambian).
 - `Repositories/ITreatmentRepository.cs` y `TreatmentRepository.cs` dan el primer tratamiento por enfermedad.
 - `DiagnosisCandidate` agrega `TratamientoSugerido`.
-- Se eliminaron `ProvisionalInferenceEngine` y la carpeta `ai-service/`.
+- Se eliminó `ProvisionalInferenceEngine` (P-160) y después la propiedad `Provisional` de `IInferenceEngine` y de `DiagnosisResult` (P-168).
 - Frontend: `DiagnosisPanel.tsx` (tratante) y `ValidationDetail.tsx` (internista) muestran el tratamiento sugerido.
 
 ## 6. Casos de prueba

@@ -46,7 +46,10 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // ── Capa de datos ───────────────────────────────────────────────────────
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+// Patrón Singleton (plan 01, §4.1): la conexión a SQL Server se configura una sola vez al arrancar y
+// toda la API la usa a través de DatabaseConnection.Instancia. Cada solicitud recibe su propio contexto.
+DatabaseConnection.Inicializar(connectionString);
+builder.Services.AddScoped(_ => DatabaseConnection.Instancia.CrearContexto());
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
@@ -72,8 +75,8 @@ builder.Services.AddScoped<IDiagnosisService, DiagnosisService>();
 builder.Services.AddScoped<IPatientResultService, PatientResultService>();
 builder.Services.AddScoped<IDiagnosisValidationService, DiagnosisValidationService>();
 builder.Services.AddScoped<IPatientHistoryService, PatientHistoryService>();
-// Máquina de inferencia del equipo (P-160): conversión de inference_engine.prg. Reemplaza al motor
-// provisional y al ai-service. Los servicios dependen de IInferenceEngine, no de esta clase.
+// Máquina de inferencia (P-160): conversión de inference_engine.prg. Los servicios dependen de
+// IInferenceEngine, no de esta clase.
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
 builder.Services.AddScoped<IInferenceEngine, InferenceEngine>();
 builder.Services.AddScoped<IDatabaseHealthService, DatabaseHealthService>();

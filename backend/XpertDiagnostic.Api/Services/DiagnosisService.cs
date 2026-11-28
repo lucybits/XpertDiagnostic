@@ -22,6 +22,6 @@ public sealed class DiagnosisService(IPatientRecordRepository expedientes, IInfe
 
         var hallazgos = await _expedientes.ListarHallazgosAsync(idPaciente, cancellationToken);
         var candidatos = await _motor.InferirAsync(hallazgos, cancellationToken);
-        return new DiagnosisResult(_motor.Nombre, _motor.Provisional, candidatos);
+        return new DiagnosisResult(_motor.Nombre, candidatos);
     }
 }

@@ -7,8 +7,8 @@ namespace XpertDiagnostic.Api.Services;
 
 /// <summary>
 /// Validación del diagnóstico por el médico internista (P-151). Los candidatos los da la máquina de
-/// inferencia registrada (por ahora la provisional): el servicio no sabe cuál es, solo usa
-/// <see cref="IDiagnosisService"/>. Así, cuando llegue la máquina del equipo, este flujo no cambia.
+/// inferencia (P-160) a través de <see cref="IDiagnosisService"/>: el servicio no depende de su
+/// implementación.
 /// </summary>
 /// <remarks>@inv Las dependencias no son null durante toda la vida del objeto.</remarks>
 public sealed class DiagnosisValidationService(

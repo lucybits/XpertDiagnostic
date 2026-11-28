@@ -7,7 +7,7 @@ using XpertDiagnostic.Api.Services;
 namespace XpertDiagnostic.Tests;
 
 /// <summary>
-/// Pruebas de la captura estructurada y de la máquina de inferencia provisional (P-103), con dobles
+/// Pruebas de la captura estructurada (P-103), con dobles
 /// en memoria. Cada caso corresponde a un escenario de specs/especificaciones/08-captura-y-analisis.md.
 /// </summary>
 public class PatientRecordServiceTests
@@ -111,8 +111,8 @@ public class PatientRecordServiceTests
         Assert.Single(expediente.Hallazgos);
     }
 
-    // PT55 (motor provisional) pasó a InferenceEngineTests: desde P-160 el motor es la conversión de
-    // inference_engine.prg.
+    // PT55 (análisis de hallazgos) pasó a InferenceEngineTests: el motor es la conversión de
+    // inference_engine.prg (P-160).
 
     [Fact]
     public async Task GuardarAntecedentes_Respuestas_SeVenEnElExpediente() // PT103

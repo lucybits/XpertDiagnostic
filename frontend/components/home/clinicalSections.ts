@@ -4,6 +4,7 @@ import {
   ClipboardPlus,
   FlaskConical,
   HeartPulse,
+  Lightbulb,
   Stethoscope,
   Thermometer,
   type LucideIcon,
@@ -25,6 +26,7 @@ export type SectionCapture =
   | { kind: 'findings'; section: FindingSection; catalog: CatalogName; findingType: FindingType; noun: string }
   | { kind: 'non-pathological' }
   | { kind: 'pathological' }
+  | { kind: 'hypothesis' }
   | { kind: 'analysis' };
 
 export interface ClinicalSection {
@@ -65,6 +67,8 @@ const SECTION_DEFINITIONS: readonly { id: string; label: string; sections: reado
     sections: [
       { id: 'non-pathological', label: 'Antecedentes no patológicos', icon: ClipboardList, capture: { kind: 'non-pathological' } },
       { id: 'pathological', label: 'Antecedentes patológicos', icon: HeartPulse, capture: { kind: 'pathological' } },
+      // Después del interrogatorio y antes de los hallazgos (P-167): la impresión inicial del tratante.
+      { id: 'hypothesis', label: 'Hipótesis inicial', icon: Lightbulb, capture: { kind: 'hypothesis' } },
     ],
   },
   {
@@ -152,6 +156,8 @@ export function sectionsWithData(record: PatientRecord, history: PatientHistory 
       } else if (capture.kind === 'non-pathological' && history?.noPatologicos) {
         done.add(section.id);
       } else if (capture.kind === 'pathological' && history?.patologicos) {
+        done.add(section.id);
+      } else if (capture.kind === 'hypothesis' && record.hipotesisInicial?.trim()) {
         done.add(section.id);
       }
     }

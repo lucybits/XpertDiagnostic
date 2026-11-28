@@ -20,7 +20,7 @@ public sealed record DiagnosisCandidate(
 /// <remarks>
 /// @inv Candidatos: todas las enfermedades con al menos una coincidencia, una por nombre y en orden
 ///      alfabético, como inference_engine.prg (P-161). Coincidencias y puntaje son informativos.
-/// @inv Motor indica qué implementación lo produjo; Provisional = false con la máquina de inferencia del
-///      equipo (P-160). Nada se guarda en PACIENTES hasta que el internista lo confirme (P-151).
+/// @inv Motor indica qué implementación lo produjo (la máquina de inferencia, P-160). Nada se guarda en
+///      PACIENTES hasta que el internista lo confirme (P-151).
 /// </remarks>
-public sealed record DiagnosisResult(string Motor, bool Provisional, IReadOnlyList<DiagnosisCandidate> Candidatos);
+public sealed record DiagnosisResult(string Motor, IReadOnlyList<DiagnosisCandidate> Candidatos);

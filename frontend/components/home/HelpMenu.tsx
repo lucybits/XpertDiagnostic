@@ -80,7 +80,7 @@ export default function HelpMenu({ buttonClassName }: { buttonClassName: string 
           ))}
         </ol>
         <p className="mt-3 border-t-2 border-slate-100 pt-3 text-sm text-slate-800">
-          El diagnóstico es orientativo y el motor actual es provisional; la decisión clínica es del médico.
+          El diagnóstico es orientativo; la decisión clínica es del médico.
         </p>
       </div>
     </div>

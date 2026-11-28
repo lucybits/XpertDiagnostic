@@ -282,9 +282,6 @@ export default function PatientRecordPanel({
         <section aria-labelledby={`${ids}-record-diagnosis-title`}>
           <h3 id={`${ids}-record-diagnosis-title`} className="mb-3 flex items-center gap-2 font-semibold">
             Diagnóstico diferencial
-            {diagnosis?.provisional && !isDiagnosisStale && (
-              <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900">provisional</span>
-            )}
             {diagnosis && isDiagnosisStale && (
               <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900">desactualizado</span>
             )}
